@@ -6,7 +6,7 @@ import { login, type LoginState } from "./actions";
 
 const initial: LoginState = { ok: true };
 
-export default function LoginForm() {
+export default function LoginForm({ showDemoHint }: { showDemoHint: boolean }) {
   const [state, action, pending] = useActionState(login, initial);
   const params = useSearchParams();
   const next = params.get("next") ?? "/admin";
@@ -15,12 +15,23 @@ export default function LoginForm() {
     <form action={action} className="space-y-4">
       <input type="hidden" name="next" value={next} />
       <label className="block">
+        <span className="text-sm font-bold text-ink">Username</span>
+        <input
+          name="username"
+          type="text"
+          required
+          autoFocus
+          autoComplete="username"
+          autoCapitalize="none"
+          className="mt-1 block w-full rounded-xl border border-line bg-white px-4 py-3 text-base outline-none transition placeholder:text-ink-muted focus:border-amber focus:ring-4 focus:ring-amber/20"
+        />
+      </label>
+      <label className="block">
         <span className="text-sm font-bold text-ink">Password</span>
         <input
           name="password"
           type="password"
           required
-          autoFocus
           autoComplete="current-password"
           className="mt-1 block w-full rounded-xl border border-line bg-white px-4 py-3 text-base outline-none transition placeholder:text-ink-muted focus:border-amber focus:ring-4 focus:ring-amber/20"
         />
@@ -35,6 +46,14 @@ export default function LoginForm() {
       >
         {pending ? "Checking…" : "Sign in"}
       </button>
+
+      {showDemoHint ? (
+        <div className="rounded-xl border border-amber/30 bg-amber/10 px-3 py-2 text-xs text-ink">
+          <span className="font-extrabold uppercase tracking-wider text-amber-bold">Demo</span>{" "}
+          username <span className="font-mono font-bold">Demo1234</span> · password{" "}
+          <span className="font-mono font-bold">Demo1234</span>
+        </div>
+      ) : null}
     </form>
   );
 }

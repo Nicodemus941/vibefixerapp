@@ -1,6 +1,20 @@
-import type { Entry } from "../lib/store";
+import {
+  CLAIM_STATUS_LABEL,
+  TECH_LABEL,
+  TECH_OPTIONS,
+  type Entry,
+} from "../lib/store";
 import StatusPill from "./StatusPill";
-import { setStatus, setNotes, completeAndAskForReview } from "./actions";
+import {
+  addPhoto,
+  completeAndAskForReview,
+  removePhoto,
+  setAssignedTo,
+  setClaim,
+  setNotes,
+  setPrice,
+  setStatus,
+} from "./actions";
 
 const SERVICE_LABEL: Record<string, string> = {
   "chip-repair": "Chip / crack",
@@ -43,9 +57,11 @@ function urgencyClass(iso: string, status: Entry["status"]): string {
   return "";
 }
 
-// Single-row entry card. Rendered server-side; status changes go through
-// server actions that revalidate the page so the UI stays simple. Designed
-// for one-handed mobile use — large tap targets, color-coded urgency.
+function fmtMoney(v?: number): string {
+  if (v == null || !Number.isFinite(v)) return "";
+  return `$${v.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+}
+
 export default function EntryCard({ entry }: { entry: Entry }) {
   const dial = fmtPhoneDial(entry.phone);
   const sms = `sms:${dial}`;
@@ -53,6 +69,8 @@ export default function EntryCard({ entry }: { entry: Entry }) {
   const mapsUrl = entry.zip
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(entry.zip + " FL")}`
     : null;
+  const tech: Entry["assignedTo"] = entry.assignedTo ?? "unassigned";
+  const isReturning = (entry.priorVisitsCount ?? 0) > 0;
 
   return (
     <article
@@ -67,6 +85,11 @@ export default function EntryCard({ entry }: { entry: Entry }) {
         <span className="text-[11px] font-medium text-ink-muted">
           · {fmtElapsed(entry.receivedAt)}
         </span>
+        {isReturning ? (
+          <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-wider text-brand-deep">
+            Returning · {entry.priorVisitsCount}+ prior
+          </span>
+        ) : null}
         {entry.slotDayLabel ? (
           <span className="ml-auto rounded-full bg-brand/15 px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-brand-deep">
             {entry.slotDayLabel} · {entry.slotRangeLabel}
@@ -161,28 +184,182 @@ export default function EntryCard({ entry }: { entry: Entry }) {
         </form>
       </div>
 
-      {/* Notes */}
+      {/* Tech assignment + price + insurance claim */}
+      <div className="grid gap-3 border-t border-line bg-white px-4 py-4 text-sm sm:grid-cols-3 sm:px-5">
+        <form action={setAssignedTo} className="space-y-1">
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted">
+            Assigned to
+          </label>
+          <div className="flex gap-2">
+            <select
+              name="tech"
+              defaultValue={tech}
+              className="block w-full rounded-lg border border-line bg-white px-3 py-2 text-sm font-semibold outline-none transition focus:border-amber focus:ring-2 focus:ring-amber/20"
+            >
+              {TECH_OPTIONS.map((t) => (
+                <option key={t} value={t}>
+                  {TECH_LABEL[t]}
+                </option>
+              ))}
+            </select>
+            <input type="hidden" name="id" value={entry.id} />
+            <button
+              type="submit"
+              className="rounded-lg bg-ink px-3 text-xs font-extrabold uppercase tracking-wider text-white hover:bg-ink-soft"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+
+        <form action={setPrice} className="space-y-1">
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted">
+            Price · quoted / paid
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="hidden"
+              name="id"
+              value={entry.id}
+            />
+            <input
+              name="priceQuoted"
+              defaultValue={entry.priceQuoted ?? ""}
+              inputMode="decimal"
+              placeholder="$ Quote"
+              className="block w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-amber focus:ring-2 focus:ring-amber/20"
+            />
+            <input
+              name="pricePaid"
+              defaultValue={entry.pricePaid ?? ""}
+              inputMode="decimal"
+              placeholder="$ Paid"
+              className="block w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-amber focus:ring-2 focus:ring-amber/20"
+            />
+            <button
+              type="submit"
+              className="rounded-lg bg-ink px-3 text-xs font-extrabold uppercase tracking-wider text-white hover:bg-ink-soft"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+
+        <form action={setClaim} className="space-y-1">
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted">
+            Insurance claim
+          </label>
+          <div className="flex gap-2">
+            <input type="hidden" name="id" value={entry.id} />
+            <input
+              name="claimNumber"
+              defaultValue={entry.claimNumber ?? ""}
+              placeholder="Claim #"
+              className="block w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-amber focus:ring-2 focus:ring-amber/20"
+            />
+            <select
+              name="claimStatus"
+              defaultValue={entry.claimStatus ?? ""}
+              className="block w-32 rounded-lg border border-line bg-white px-2 py-2 text-sm outline-none transition focus:border-amber focus:ring-2 focus:ring-amber/20"
+            >
+              <option value="">— Status —</option>
+              {(Object.keys(CLAIM_STATUS_LABEL) as (keyof typeof CLAIM_STATUS_LABEL)[]).map(
+                (s) => (
+                  <option key={s} value={s}>
+                    {CLAIM_STATUS_LABEL[s]}
+                  </option>
+                ),
+              )}
+            </select>
+            <button
+              type="submit"
+              className="rounded-lg bg-ink px-3 text-xs font-extrabold uppercase tracking-wider text-white hover:bg-ink-soft"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Photos */}
+      {entry.photos && entry.photos.length > 0 ? (
+        <div className="border-t border-line px-4 py-3 sm:px-5">
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-ink-muted">
+            Photos
+          </div>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {entry.photos.map((url) => (
+              <div key={url} className="group relative aspect-square overflow-hidden rounded-lg border border-line bg-bone">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt="Job photo"
+                  className="h-full w-full object-cover"
+                />
+                <form
+                  action={removePhoto}
+                  className="absolute right-1 top-1 opacity-0 transition group-hover:opacity-100"
+                >
+                  <input type="hidden" name="id" value={entry.id} />
+                  <input type="hidden" name="url" value={url} />
+                  <button
+                    type="submit"
+                    className="rounded-full bg-flame/90 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white"
+                  >
+                    Remove
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Add photo URL + notes */}
       <details className="group border-t border-line">
         <summary className="cursor-pointer list-none px-4 py-2 text-xs font-bold text-ink-muted hover:text-ink sm:px-5">
-          + Add note
+          + Add photo or note
           <span className="float-right transition group-open:rotate-180">▾</span>
         </summary>
-        <form action={setNotes} className="px-4 pb-4 sm:px-5">
-          <input type="hidden" name="id" value={entry.id} />
-          <textarea
-            name="notes"
-            defaultValue={entry.notes ?? ""}
-            rows={2}
-            placeholder="e.g. wants 8 AM Saturday, has 2 cars to do…"
-            className="block w-full rounded-xl border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-amber focus:ring-2 focus:ring-amber/20"
-          />
-          <button
-            type="submit"
-            className="mt-2 inline-flex items-center rounded-lg bg-ink px-3 py-1.5 text-xs font-bold text-white hover:bg-ink-soft"
-          >
-            Save note
-          </button>
-        </form>
+        <div className="space-y-3 px-4 pb-4 sm:px-5">
+          <form action={addPhoto} className="flex gap-2">
+            <input type="hidden" name="id" value={entry.id} />
+            <input
+              name="photoUrl"
+              type="url"
+              placeholder="Paste photo URL (https://…)"
+              className="block w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-amber focus:ring-2 focus:ring-amber/20"
+            />
+            <button
+              type="submit"
+              className="rounded-lg bg-ink px-3 text-xs font-extrabold uppercase tracking-wider text-white hover:bg-ink-soft"
+            >
+              Add photo
+            </button>
+          </form>
+          <form action={setNotes}>
+            <input type="hidden" name="id" value={entry.id} />
+            <textarea
+              name="notes"
+              defaultValue={entry.notes ?? ""}
+              rows={2}
+              placeholder="e.g. wants 8 AM Saturday, has 2 cars to do…"
+              className="block w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-amber focus:ring-2 focus:ring-amber/20"
+            />
+            <button
+              type="submit"
+              className="mt-2 inline-flex items-center rounded-lg bg-ink px-3 py-1.5 text-xs font-bold text-white hover:bg-ink-soft"
+            >
+              Save note
+            </button>
+          </form>
+          {(entry.priceQuoted != null || entry.pricePaid != null) ? (
+            <p className="text-xs text-ink-muted">
+              {entry.priceQuoted != null ? `Quoted ${fmtMoney(entry.priceQuoted)} ` : ""}
+              {entry.pricePaid != null ? `· Paid ${fmtMoney(entry.pricePaid)}` : ""}
+            </p>
+          ) : null}
+        </div>
       </details>
     </article>
   );

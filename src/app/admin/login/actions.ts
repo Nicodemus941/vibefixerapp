@@ -5,18 +5,19 @@ import { redirect } from "next/navigation";
 import {
   AUTH_COOKIE_MAX_AGE,
   AUTH_COOKIE_NAME,
-  checkPassword,
+  checkCredentials,
   makeToken,
 } from "../../lib/auth";
 
 export type LoginState = { ok: boolean; error?: string };
 
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
+  const username = String(formData.get("username") ?? "");
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/admin");
 
-  if (!checkPassword(password)) {
-    return { ok: false, error: "Wrong password. Try again." };
+  if (!checkCredentials(username, password)) {
+    return { ok: false, error: "Wrong username or password." };
   }
 
   const token = await makeToken();

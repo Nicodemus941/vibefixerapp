@@ -20,6 +20,22 @@ export type Status =
 
 export type Source = "quote" | "booking" | "fast-lead";
 
+export type Tech = "eric" | "kyle" | "damian" | "unassigned";
+export const TECH_OPTIONS: Tech[] = ["unassigned", "eric", "kyle", "damian"];
+export const TECH_LABEL: Record<Tech, string> = {
+  unassigned: "Unassigned",
+  eric: "Eric",
+  kyle: "Kyle",
+  damian: "Damian",
+};
+
+export type ClaimStatus = "filed" | "approved" | "paid";
+export const CLAIM_STATUS_LABEL: Record<ClaimStatus, string> = {
+  filed: "Filed",
+  approved: "Approved",
+  paid: "Paid",
+};
+
 export type Entry = {
   id: string;
   source: Source;
@@ -42,6 +58,14 @@ export type Entry = {
   // ops-only
   notes?: string;
   reviewAskSent?: boolean;
+  assignedTo?: Tech;
+  priceQuoted?: number;
+  pricePaid?: number;
+  claimNumber?: string;
+  claimStatus?: ClaimStatus;
+  photos?: string[];
+  // computed at append time
+  priorVisitsCount?: number;
 };
 
 const MAX_ENTRIES = 500;
@@ -238,10 +262,23 @@ async function saveAll(entries: Entry[]): Promise<void> {
   await kvSetString(ALL_KEY, JSON.stringify(trimmed));
 }
 
+function lastTen(p: string): string {
+  return p.replace(/\D/g, "").slice(-10);
+}
+
 export async function appendEntry(entry: Entry): Promise<void> {
   const all = await loadAll();
-  // Newest first.
-  all.unshift(entry);
+  // Customer history: count prior visits with the same phone (last 10 digits).
+  const phoneKey = lastTen(entry.phone);
+  const priorVisitsCount = phoneKey
+    ? all.filter((e) => lastTen(e.phone) === phoneKey).length
+    : 0;
+  const enriched: Entry = {
+    ...entry,
+    priorVisitsCount,
+    assignedTo: entry.assignedTo ?? "unassigned",
+  };
+  all.unshift(enriched);
   await saveAll(all);
 }
 
@@ -267,7 +304,20 @@ export async function getEntry(id: string): Promise<Entry | null> {
   return all.find((e) => e.id === id) ?? null;
 }
 
-export type Patch = Partial<Pick<Entry, "status" | "notes" | "reviewAskSent">>;
+export type Patch = Partial<
+  Pick<
+    Entry,
+    | "status"
+    | "notes"
+    | "reviewAskSent"
+    | "assignedTo"
+    | "priceQuoted"
+    | "pricePaid"
+    | "claimNumber"
+    | "claimStatus"
+    | "photos"
+  >
+>;
 
 export async function patchEntry(id: string, patch: Patch): Promise<Entry | null> {
   const all = await loadAll();
@@ -285,6 +335,8 @@ export type DailyStats = {
   bookingsToday: number;
   completedToday: number;
   newQueue: number;        // status="new"
+  bookedRevenueToday: number;  // sum of priceQuoted on bookings whose slot is today
+  paidRevenueToday: number;    // sum of pricePaid on completed entries today
   todayBookingsList: Entry[];
 };
 
@@ -302,6 +354,12 @@ export async function dailyStats(): Promise<DailyStats> {
     (e) => e.status === "completed" && isSameDay(e.receivedAt),
   ).length;
   const newQueue = all.filter((e) => e.status === "new").length;
+  const bookedRevenueToday = all
+    .filter((e) => e.source === "booking" && isSameDay(e.slotStart))
+    .reduce((s, e) => s + (e.priceQuoted ?? 0), 0);
+  const paidRevenueToday = all
+    .filter((e) => e.status === "completed" && isSameDay(e.receivedAt))
+    .reduce((s, e) => s + (e.pricePaid ?? 0), 0);
   const todayBookingsList = all
     .filter((e) => e.source === "booking" && isSameDay(e.slotStart))
     .sort((a, b) => (a.slotStart ?? "").localeCompare(b.slotStart ?? ""));
@@ -311,8 +369,51 @@ export async function dailyStats(): Promise<DailyStats> {
     bookingsToday,
     completedToday,
     newQueue,
+    bookedRevenueToday,
+    paidRevenueToday,
     todayBookingsList,
   };
+}
+
+// ---------- Calendar block-off (admin-controlled slot availability) -------
+// Stored separately from entries. A block can be a whole-day mark or a
+// single slot id ("YYYY-MM-DDTHH:MM"). slots.ts checks against this list
+// when rendering bookable windows.
+
+export type CalendarBlock = { date: string; slotId?: string; reason?: string };
+const BLOCKS_KEY = "fast:calendar:blocks";
+let mockBlocks: CalendarBlock[] = [];
+
+export async function listBlocks(): Promise<CalendarBlock[]> {
+  if (!isKvConfigured()) return [...mockBlocks];
+  const raw = await kvGetString(BLOCKS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed as CalendarBlock[];
+  } catch {
+    return [];
+  }
+}
+
+export async function setBlocks(blocks: CalendarBlock[]): Promise<void> {
+  if (!isKvConfigured()) {
+    mockBlocks = blocks;
+    return;
+  }
+  await kvSetString(BLOCKS_KEY, JSON.stringify(blocks));
+}
+
+export async function toggleBlock(date: string, slotId?: string): Promise<CalendarBlock[]> {
+  const blocks = await listBlocks();
+  const existsIdx = blocks.findIndex(
+    (b) => b.date === date && (b.slotId ?? "") === (slotId ?? ""),
+  );
+  if (existsIdx >= 0) blocks.splice(existsIdx, 1);
+  else blocks.push({ date, slotId });
+  await setBlocks(blocks);
+  return blocks;
 }
 
 export function isMockMode(): boolean {

@@ -33,13 +33,19 @@ function Stat({
   );
 }
 
+function fmtMoney(v: number): string {
+  if (!Number.isFinite(v) || v === 0) return "$0";
+  return `$${v.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+}
+
 export default function Scoreboard({ stats }: { stats: DailyStats }) {
   return (
-    <section className="grid gap-3 sm:grid-cols-4">
+    <section className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
       <Stat label="New leads" value={stats.newQueue} hot={stats.newQueue > 0} />
       <Stat label="Leads today" value={stats.leadsToday} />
       <Stat label="Bookings today" value={stats.bookingsToday} />
-      <Stat label="Completed today" value={stats.completedToday} />
+      <Stat label="Booked $$$" value={fmtMoney(stats.bookedRevenueToday)} />
+      <Stat label="Paid today" value={fmtMoney(stats.paidRevenueToday)} />
     </section>
   );
 }

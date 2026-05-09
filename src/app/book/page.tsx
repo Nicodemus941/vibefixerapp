@@ -5,7 +5,8 @@ import { BUSINESS } from "../config";
 import Logo from "../components/Logo";
 import Footer from "../components/Footer";
 import BookingFlow from "./BookingFlow";
-import { generateDays } from "../lib/slots";
+import { buildBlockLookup, generateDays } from "../lib/slots";
+import { listBlocks } from "../lib/store";
 
 export const metadata: Metadata = {
   title: "Book a slot",
@@ -25,8 +26,9 @@ const TRUST = [
   "Family-owned · 15+ years",
 ];
 
-export default function BookPage() {
-  const days = generateDays();
+export default async function BookPage() {
+  const blocks = await listBlocks();
+  const days = generateDays(new Date(), 7, buildBlockLookup(blocks));
 
   return (
     <div className="min-h-screen bg-bone">

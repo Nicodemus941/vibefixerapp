@@ -3,9 +3,9 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { notifyBooking } from "../lib/notifications";
-import { describeSlot, findSlot, generateDays } from "../lib/slots";
+import { buildBlockLookup, describeSlot, findSlot, generateDays } from "../lib/slots";
 import { codeForPhone, normalizeCode } from "../lib/referral";
-import { appendEntry, newEntryId, type Source } from "../lib/store";
+import { appendEntry, listBlocks, newEntryId, type Source } from "../lib/store";
 
 export type BookingState = {
   ok: boolean;
@@ -51,7 +51,8 @@ export async function submitBooking(
 
   // Re-resolve the slot from the live availability so users can't
   // submit a stale or invalid id.
-  const days = generateDays();
+  const blocks = await listBlocks();
+  const days = generateDays(new Date(), 7, buildBlockLookup(blocks));
   const slot = slotId ? findSlot(slotId, days) : null;
   if (!slot) errors.slot = "Pick a slot from the list above.";
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Logo from "../../components/Logo";
 import LoginForm from "./LoginForm";
+import { isUsingDefaults } from "../../lib/auth";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default function LoginPage() {
+  const showDemoHint = isUsingDefaults();
   return (
     <div className="flex min-h-screen items-center justify-center bg-spotlight p-6">
       <div className="w-full max-w-sm rounded-3xl bg-white p-7 shadow-pop">
@@ -21,11 +23,11 @@ export default function LoginPage() {
           Ops cockpit
         </h1>
         <p className="mt-1 text-center text-sm text-ink-muted">
-          Family only. Same password for Eric, Kyle, Damian.
+          Family only. Same login for Eric, Kyle, Damian.
         </p>
         <div className="mt-6">
           <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-bone" />}>
-            <LoginForm />
+            <LoginForm showDemoHint={showDemoHint} />
           </Suspense>
         </div>
       </div>

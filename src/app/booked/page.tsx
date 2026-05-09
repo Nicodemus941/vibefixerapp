@@ -4,8 +4,9 @@ import { BUSINESS } from "../config";
 import Logo from "../components/Logo";
 import TrackOnMount from "../components/TrackOnMount";
 import ShareReferral from "../components/ShareReferral";
-import { describeSlot, findSlot, generateDays } from "../lib/slots";
+import { buildBlockLookup, describeSlot, findSlot, generateDays } from "../lib/slots";
 import { normalizeCode } from "../lib/referral";
+import { listBlocks } from "../lib/store";
 
 export const metadata: Metadata = {
   title: "Booked — see you soon",
@@ -27,7 +28,8 @@ export default async function BookedPage({ searchParams }: Props) {
   const params = await searchParams;
   const slotId = params.slot ?? "";
   const code = normalizeCode(params.code ?? "");
-  const days = generateDays();
+  const blocks = await listBlocks();
+  const days = generateDays(new Date(), 7, buildBlockLookup(blocks));
   const slot = slotId ? findSlot(slotId, days) : null;
   const desc = slot ? describeSlot(slot) : null;
 

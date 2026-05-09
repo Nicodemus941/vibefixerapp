@@ -91,7 +91,15 @@ export default function Footer() {
           <div>
             © {new Date().getFullYear()} {BUSINESS.name}. Family-owned in {BUSINESS.city}.
           </div>
-          <div>Mobile windshield repair &amp; replacement · We come to you.</div>
+          <div className="flex items-center gap-4">
+            <span>Mobile windshield repair &amp; replacement · We come to you.</span>
+            <a
+              href="/admin"
+              className="rounded-full border border-white/20 bg-white/5 px-3 py-1 font-semibold text-white/85 transition hover:border-amber/60 hover:bg-amber/10 hover:text-amber"
+            >
+              Owner login →
+            </a>
+          </div>
         </div>
       </div>
     </footer>

@@ -162,7 +162,28 @@ function parseHHMM(s: string): number {
   return h * 60 + m;
 }
 
-export function generateDays(now: Date = new Date(), days = 7): Day[] {
+export type BlockLookup = {
+  blockedDates: Set<string>;
+  blockedSlotIds: Set<string>;
+};
+
+export function buildBlockLookup(
+  blocks: { date: string; slotId?: string }[],
+): BlockLookup {
+  const blockedDates = new Set<string>();
+  const blockedSlotIds = new Set<string>();
+  for (const b of blocks) {
+    if (b.slotId) blockedSlotIds.add(b.slotId);
+    else blockedDates.add(b.date);
+  }
+  return { blockedDates, blockedSlotIds };
+}
+
+export function generateDays(
+  now: Date = new Date(),
+  days = 7,
+  blocks: BlockLookup = { blockedDates: new Set(), blockedSlotIds: new Set() },
+): Day[] {
   const today = inBusinessTz(now);
   const result: Day[] = [];
 
@@ -192,12 +213,30 @@ export function generateDays(now: Date = new Date(), days = 7): Day[] {
       continue;
     }
 
+    if (blocks.blockedDates.has(dateStr)) {
+      result.push({
+        date: dateStr,
+        weekdayShort,
+        weekdayLong,
+        monthDayLabel,
+        isToday,
+        isTomorrow,
+        isClosed: true,
+        closedReason: "Blocked off",
+        slots: [],
+      });
+      continue;
+    }
+
     const starts = SLOT_STARTS_BY_DAY[dow] ?? [];
     const slots: Slot[] = [];
 
     for (let s = 0; s < starts.length; s++) {
       const startMin = parseHHMM(starts[s]);
       const endMin = startMin + SLOT_LENGTH_MIN;
+      const slotId = `${dateStr}T${starts[s]}`;
+
+      if (blocks.blockedSlotIds.has(slotId)) continue;
 
       // Filter past slots if it's today.
       if (isToday) {

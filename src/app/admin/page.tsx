@@ -3,7 +3,15 @@ import Link from "next/link";
 import TopBar from "./TopBar";
 import Scoreboard from "./Scoreboard";
 import EntryCard from "./EntryCard";
-import { dailyStats, isMockMode, listEntries } from "../lib/store";
+import AutoRefresh from "./AutoRefresh";
+import {
+  dailyStats,
+  isMockMode,
+  listEntries,
+  TECH_LABEL,
+  TECH_OPTIONS,
+  type Tech,
+} from "../lib/store";
 
 export const metadata: Metadata = {
   title: "Today · Ops cockpit",
@@ -49,20 +57,33 @@ function Empty({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default async function AdminTodayPage() {
+type Props = { searchParams: Promise<{ tech?: string }> };
+
+export default async function AdminTodayPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const techFilter = (TECH_OPTIONS.find((t) => t === params.tech) || "") as
+    | ""
+    | Tech;
+
   const [stats, allEntries] = await Promise.all([
     dailyStats(),
     listEntries({ limit: 200 }),
   ]);
 
-  const hot = allEntries.filter((e) => e.status === "new");
-  const todayBookings = stats.todayBookingsList;
+  const filterByTech = (e: { assignedTo?: Tech }) =>
+    !techFilter || (e.assignedTo ?? "unassigned") === techFilter;
+
+  const hot = allEntries.filter((e) => e.status === "new").filter(filterByTech);
+  const todayBookings = stats.todayBookingsList.filter(filterByTech);
   const recentlyCompleted = allEntries
     .filter((e) => e.status === "completed")
+    .filter(filterByTech)
     .slice(0, 6);
-  const inFlight = allEntries.filter(
-    (e) => e.status === "contacted" || e.status === "booked",
-  ).filter((e) => !todayBookings.some((b) => b.id === e.id)).slice(0, 8);
+  const inFlight = allEntries
+    .filter((e) => e.status === "contacted" || e.status === "booked")
+    .filter((e) => !todayBookings.some((b) => b.id === e.id))
+    .filter(filterByTech)
+    .slice(0, 8);
 
   const mock = isMockMode();
   const greeting = (() => {
@@ -72,12 +93,16 @@ export default async function AdminTodayPage() {
     return "Good evening, Eric.";
   })();
 
+  function chipHref(tech: "" | Tech) {
+    return tech ? `/admin?tech=${tech}` : "/admin";
+  }
+
   return (
     <div className="min-h-screen bg-bone">
       <TopBar mockMode={mock} />
+      <AutoRefresh />
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-        {/* Greeting + day */}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="headline text-2xl font-extrabold sm:text-3xl">
@@ -94,8 +119,7 @@ export default async function AdminTodayPage() {
           </div>
           {mock ? (
             <div className="rounded-xl border border-amber/40 bg-amber/10 px-3 py-2 text-xs font-semibold text-ink">
-              Demo data shown. Connect Vercel KV in project settings to see real
-              leads here.
+              Demo data shown. Connect Vercel KV to see real leads here.
             </div>
           ) : null}
         </div>
@@ -103,6 +127,36 @@ export default async function AdminTodayPage() {
         {/* Scoreboard */}
         <div className="mt-6">
           <Scoreboard stats={stats} />
+        </div>
+
+        {/* Per-tech filter chips */}
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted">
+            Showing
+          </span>
+          <Link
+            href={chipHref("")}
+            className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+              techFilter === ""
+                ? "border-amber bg-amber text-ink"
+                : "border-line bg-white text-ink-muted hover:border-amber hover:text-ink"
+            }`}
+          >
+            Everyone
+          </Link>
+          {TECH_OPTIONS.map((t) => (
+            <Link
+              key={t}
+              href={chipHref(t)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                techFilter === t
+                  ? "border-brand bg-brand text-white"
+                  : "border-line bg-white text-ink-muted hover:border-brand hover:text-ink"
+              }`}
+            >
+              {TECH_LABEL[t]}
+            </Link>
+          ))}
         </div>
 
         {/* HOT — uncontacted leads */}
@@ -140,14 +194,10 @@ export default async function AdminTodayPage() {
           )}
         </section>
 
-        {/* In-flight: contacted or booked but not today */}
+        {/* In-flight */}
         {inFlight.length > 0 ? (
           <section className="mt-10 space-y-3">
-            <SectionHeading
-              title="In flight"
-              count={inFlight.length}
-              tone="soft"
-            />
+            <SectionHeading title="In flight" count={inFlight.length} tone="soft" />
             <div className="space-y-3">
               {inFlight.map((e) => (
                 <EntryCard key={e.id} entry={e} />
@@ -172,12 +222,12 @@ export default async function AdminTodayPage() {
           </section>
         ) : null}
 
-        <div className="mt-12 text-center">
-          <Link
-            href="/admin/inbox"
-            className="text-sm font-bold text-ink-muted hover:text-ink"
-          >
-            See all leads &amp; bookings →
+        <div className="mt-12 flex items-center justify-center gap-6 text-sm font-bold text-ink-muted">
+          <Link href="/admin/inbox" className="hover:text-ink">
+            Inbox →
+          </Link>
+          <Link href="/admin/calendar" className="hover:text-ink">
+            Calendar →
           </Link>
         </div>
       </main>
