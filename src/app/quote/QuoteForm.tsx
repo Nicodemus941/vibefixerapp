@@ -26,6 +26,18 @@ export default function QuoteForm() {
 
   return (
     <form action={action} className="space-y-5">
+      {/* Honeypot — hidden from sighted users, bots fill it. */}
+      <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+        <label>
+          Company (leave blank)
+          <input
+            type="text"
+            name="company"
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </label>
+      </div>
       <div>
         {field("Your name", "(so we know who to ask for)")}
         <input

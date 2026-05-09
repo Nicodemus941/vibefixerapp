@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { notifyLead } from "../lib/notifications";
 
 export type QuoteState = {
   ok: boolean;
@@ -20,6 +22,8 @@ export async function submitQuote(_prev: QuoteState, formData: FormData): Promis
   const damage = String(formData.get("damage") ?? "").trim();
   const insurance = String(formData.get("insurance") ?? "").trim();
   const zip = String(formData.get("zip") ?? "").trim();
+  // Honeypot: real users won't fill this hidden field; bots will.
+  const honeypot = String(formData.get("company") ?? "").trim();
 
   const errors: QuoteState["errors"] = {};
   if (name.length < 2) errors.name = "Please enter your name.";
@@ -31,18 +35,32 @@ export async function submitQuote(_prev: QuoteState, formData: FormData): Promis
     return { ok: false, errors };
   }
 
-  // TODO(business owner): wire up to email/SMS/Twilio/etc. For now log to server.
-  // This file runs server-side only.
-  console.log("[F.A.S.T. lead]", {
-    at: new Date().toISOString(),
+  // Silently swallow obvious bot submissions to keep Eric's inbox clean.
+  if (honeypot) {
+    redirect("/thank-you");
+  }
+
+  const h = await headers();
+  const lead = {
     name,
     phone,
     vehicle,
     service,
-    damage,
-    insurance,
-    zip,
-  });
+    damage: damage || undefined,
+    insurance: insurance || undefined,
+    zip: zip || undefined,
+    receivedAt: new Date().toISOString(),
+    ip: h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? undefined,
+    userAgent: h.get("user-agent") ?? undefined,
+  };
+
+  // Fire notifications. We don't await failure — even if email/SMS hiccup,
+  // the customer still reaches /thank-you. Logs capture everything for debug.
+  try {
+    await notifyLead(lead);
+  } catch (err) {
+    console.error("[F.A.S.T. notify] failed:", err);
+  }
 
   redirect("/thank-you");
 }
