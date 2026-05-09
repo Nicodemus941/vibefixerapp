@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { notifyLead } from "../lib/notifications";
 import { codeForPhone, normalizeCode } from "../lib/referral";
+import { appendEntry, newEntryId, type Source } from "../lib/store";
 
 export type QuoteState = {
   ok: boolean;
@@ -67,6 +68,27 @@ export async function submitQuote(_prev: QuoteState, formData: FormData): Promis
     console.error("[F.A.S.T. notify] failed:", err);
   }
 
+  // Persist for the ops dashboard.
+  try {
+    await appendEntry({
+      id: newEntryId(),
+      source: "quote" satisfies Source,
+      status: "new",
+      receivedAt: lead.receivedAt,
+      name: lead.name,
+      phone: lead.phone,
+      vehicle: lead.vehicle,
+      service: lead.service,
+      damage: lead.damage,
+      insurance: lead.insurance,
+      zip: lead.zip,
+      referredBy: lead.referredBy,
+      ownReferralCode: lead.ownReferralCode,
+    });
+  } catch (err) {
+    console.error("[F.A.S.T. store] failed:", err);
+  }
+
   redirect(ownCode ? `/thank-you?code=${ownCode}` : "/thank-you");
 }
 
@@ -116,6 +138,25 @@ export async function submitFastLead(
     await notifyLead(lead);
   } catch (err) {
     console.error("[F.A.S.T. fast-lead] notify failed:", err);
+  }
+
+  try {
+    await appendEntry({
+      id: newEntryId(),
+      source: "fast-lead" satisfies Source,
+      status: "new",
+      receivedAt: lead.receivedAt,
+      name: lead.name,
+      phone: lead.phone,
+      vehicle: lead.vehicle,
+      service: lead.service,
+      damage: lead.damage,
+      zip: lead.zip,
+      referredBy: lead.referredBy,
+      ownReferralCode: lead.ownReferralCode,
+    });
+  } catch (err) {
+    console.error("[F.A.S.T. fast-lead store] failed:", err);
   }
 
   return { ok: true, done: true };

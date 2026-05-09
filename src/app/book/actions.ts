@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { notifyBooking } from "../lib/notifications";
 import { describeSlot, findSlot, generateDays } from "../lib/slots";
 import { codeForPhone, normalizeCode } from "../lib/referral";
+import { appendEntry, newEntryId, type Source } from "../lib/store";
 
 export type BookingState = {
   ok: boolean;
@@ -101,6 +102,30 @@ export async function submitBooking(
     await notifyBooking(booking);
   } catch (err) {
     console.error("[F.A.S.T. booking] notify failed:", err);
+  }
+
+  try {
+    await appendEntry({
+      id: newEntryId(),
+      source: "booking" satisfies Source,
+      status: "booked",
+      receivedAt: booking.receivedAt,
+      name: booking.name,
+      phone: booking.phone,
+      vehicle: booking.vehicle,
+      service: booking.service,
+      damage: booking.damage,
+      insurance: booking.insurance,
+      zip: booking.zip,
+      referredBy: booking.referredBy,
+      ownReferralCode: booking.ownReferralCode,
+      slotStart: booking.slotStart,
+      slotEnd: booking.slotEnd,
+      slotDayLabel: booking.slotDayLabel,
+      slotRangeLabel: booking.slotRangeLabel,
+    });
+  } catch (err) {
+    console.error("[F.A.S.T. booking store] failed:", err);
   }
 
   const params = new URLSearchParams({ slot: slot.id });
