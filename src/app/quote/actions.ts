@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { notifyLead } from "../lib/notifications";
+import { codeForPhone, normalizeCode } from "../lib/referral";
 
 export type QuoteState = {
   ok: boolean;
@@ -24,6 +25,7 @@ export async function submitQuote(_prev: QuoteState, formData: FormData): Promis
   const zip = String(formData.get("zip") ?? "").trim();
   // Honeypot: real users won't fill this hidden field; bots will.
   const honeypot = String(formData.get("company") ?? "").trim();
+  const referredBy = normalizeCode(String(formData.get("ref") ?? ""));
 
   const errors: QuoteState["errors"] = {};
   if (name.length < 2) errors.name = "Please enter your name.";
@@ -41,6 +43,7 @@ export async function submitQuote(_prev: QuoteState, formData: FormData): Promis
   }
 
   const h = await headers();
+  const ownCode = codeForPhone(phone);
   const lead = {
     name,
     phone,
@@ -52,6 +55,8 @@ export async function submitQuote(_prev: QuoteState, formData: FormData): Promis
     receivedAt: new Date().toISOString(),
     ip: h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? undefined,
     userAgent: h.get("user-agent") ?? undefined,
+    referredBy: referredBy || undefined,
+    ownReferralCode: ownCode || undefined,
   };
 
   // Fire notifications. We don't await failure — even if email/SMS hiccup,
@@ -62,5 +67,5 @@ export async function submitQuote(_prev: QuoteState, formData: FormData): Promis
     console.error("[F.A.S.T. notify] failed:", err);
   }
 
-  redirect("/thank-you");
+  redirect(ownCode ? `/thank-you?code=${ownCode}` : "/thank-you");
 }

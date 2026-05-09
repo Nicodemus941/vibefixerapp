@@ -12,6 +12,8 @@ export type Lead = {
   receivedAt: string;
   ip?: string;
   userAgent?: string;
+  referredBy?: string;        // code from a friend's share link
+  ownReferralCode?: string;   // this customer's share code
 };
 
 const SERVICE_LABELS: Record<string, string> = {
@@ -74,11 +76,12 @@ function leadHtml(lead: Lead) {
           ${lead.insurance ? `<tr><td style="padding:8px 0;color:#475569;">Insurance</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(lead.insurance)}</td></tr>` : ""}
           ${lead.zip ? `<tr><td style="padding:8px 0;color:#475569;">ZIP</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(lead.zip)}</td></tr>` : ""}
           ${lead.damage ? `<tr><td style="padding:8px 0;color:#475569;vertical-align:top;">Damage</td><td style="padding:8px 0;">${escapeHtml(lead.damage)}</td></tr>` : ""}
+          ${lead.referredBy ? `<tr><td style="padding:8px 0;color:#475569;">Referred by</td><td style="padding:8px 0;font-weight:700;color:#d97706;">${escapeHtml(lead.referredBy)}</td></tr>` : ""}
           <tr><td style="padding:8px 0;color:#475569;">Received</td><td style="padding:8px 0;">${escapeHtml(fmtTimestamp(lead.receivedAt))}</td></tr>
         </table>
 
         <p style="margin-top:24px;font-size:12px;color:#94a3b8;line-height:1.5;">
-          Reply within minutes during business hours for the highest close rate. Most quote leads convert when they're contacted in under 5 minutes.
+          Reply within minutes during business hours for the highest close rate. Most quote leads convert when they're contacted in under 5 minutes.${lead.referredBy ? " This customer came from a referral — credit both sides if they book." : ""}
         </p>
       </div>
     </div>
@@ -244,7 +247,8 @@ async function sendEricSms(lead: Lead): Promise<SendResult> {
   const body =
     `📍 F.A.S.T. lead: ${lead.name} · ${lead.vehicle} · ${service} · ${fmtPhoneDisplay(lead.phone)}` +
     (lead.insurance ? ` · ${lead.insurance}` : "") +
-    (lead.zip ? ` · ${lead.zip}` : "");
+    (lead.zip ? ` · ${lead.zip}` : "") +
+    (lead.referredBy ? ` · ref:${lead.referredBy}` : "");
   return twilioSend(to, body.slice(0, 320));
 }
 
@@ -319,6 +323,7 @@ function bookingHtml(b: Booking) {
           ${b.insurance ? `<tr><td style="padding:8px 0;color:#475569;">Insurance</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(b.insurance)}</td></tr>` : ""}
           ${b.zip ? `<tr><td style="padding:8px 0;color:#475569;">ZIP</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(b.zip)}</td></tr>` : ""}
           ${b.damage ? `<tr><td style="padding:8px 0;color:#475569;vertical-align:top;">Damage</td><td style="padding:8px 0;">${escapeHtml(b.damage)}</td></tr>` : ""}
+          ${b.referredBy ? `<tr><td style="padding:8px 0;color:#475569;">Referred by</td><td style="padding:8px 0;font-weight:700;color:#d97706;">${escapeHtml(b.referredBy)}</td></tr>` : ""}
           <tr><td style="padding:8px 0;color:#475569;">Booked</td><td style="padding:8px 0;">${escapeHtml(fmtTimestamp(b.receivedAt))}</td></tr>
         </table>
       </div>
@@ -374,7 +379,8 @@ async function sendEricBookingSms(b: Booking): Promise<SendResult> {
   const service = SERVICE_LABELS[b.service] ?? b.service;
   const body =
     `🗓️ F.A.S.T. booking: ${b.slotDayLabel} ${b.slotRangeLabel} · ${b.name} · ${b.vehicle} · ${service} · ${fmtPhoneDisplay(b.phone)}` +
-    (b.insurance ? ` · ${b.insurance}` : "");
+    (b.insurance ? ` · ${b.insurance}` : "") +
+    (b.referredBy ? ` · ref:${b.referredBy}` : "");
   return twilioSend(to, body.slice(0, 320));
 }
 

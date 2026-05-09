@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { notifyBooking } from "../lib/notifications";
 import { describeSlot, findSlot, generateDays } from "../lib/slots";
+import { codeForPhone, normalizeCode } from "../lib/referral";
 
 export type BookingState = {
   ok: boolean;
@@ -43,6 +44,7 @@ export async function submitBooking(
   const insurance = String(formData.get("insurance") ?? "").trim();
   const zip = String(formData.get("zip") ?? "").trim();
   const honeypot = String(formData.get("company") ?? "").trim();
+  const referredBy = normalizeCode(String(formData.get("ref") ?? ""));
 
   const errors: BookingState["errors"] = {};
 
@@ -75,6 +77,7 @@ export async function submitBooking(
   const slotDayLabel = dayLabel(d);
 
   const h = await headers();
+  const ownCode = codeForPhone(phone);
   const booking = {
     name,
     phone,
@@ -86,6 +89,8 @@ export async function submitBooking(
     receivedAt: new Date().toISOString(),
     ip: h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? undefined,
     userAgent: h.get("user-agent") ?? undefined,
+    referredBy: referredBy || undefined,
+    ownReferralCode: ownCode || undefined,
     slotStart: `${slot.date}T${String(Math.floor(slot.startMinutes / 60)).padStart(2, "0")}:${String(slot.startMinutes % 60).padStart(2, "0")}`,
     slotEnd: `${slot.date}T${String(Math.floor(slot.endMinutes / 60)).padStart(2, "0")}:${String(slot.endMinutes % 60).padStart(2, "0")}`,
     slotRangeLabel: slot.rangeLabel,
@@ -98,5 +103,7 @@ export async function submitBooking(
     console.error("[F.A.S.T. booking] notify failed:", err);
   }
 
-  redirect(`/booked?slot=${encodeURIComponent(slot.id)}`);
+  const params = new URLSearchParams({ slot: slot.id });
+  if (ownCode) params.set("code", ownCode);
+  redirect(`/booked?${params.toString()}`);
 }

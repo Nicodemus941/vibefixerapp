@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BUSINESS } from "../config";
 import Logo from "../components/Logo";
+import TrackOnMount from "../components/TrackOnMount";
+import ShareReferral from "../components/ShareReferral";
 import { describeSlot, findSlot, generateDays } from "../lib/slots";
+import { normalizeCode } from "../lib/referral";
 
 export const metadata: Metadata = {
   title: "Booked — see you soon",
@@ -18,17 +21,26 @@ function dayLabel(d: ReturnType<typeof describeSlot>): string {
   return `${d.weekdayLong}, ${d.monthDayLabel}`;
 }
 
-type Props = { searchParams: Promise<{ slot?: string }> };
+type Props = { searchParams: Promise<{ slot?: string; code?: string }> };
 
 export default async function BookedPage({ searchParams }: Props) {
   const params = await searchParams;
   const slotId = params.slot ?? "";
+  const code = normalizeCode(params.code ?? "");
   const days = generateDays();
   const slot = slotId ? findSlot(slotId, days) : null;
   const desc = slot ? describeSlot(slot) : null;
 
   return (
     <div className="min-h-screen bg-spotlight text-white">
+      <TrackOnMount
+        event="booking_completed"
+        params={{
+          section: "book",
+          slot_id: slot?.id,
+          slot_day: slot?.date,
+        }}
+      />
       <header className="absolute inset-x-0 top-0 z-10">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
           <Logo tone="paper" />
@@ -120,6 +132,8 @@ export default async function BookedPage({ searchParams }: Props) {
             </div>
           ))}
         </div>
+
+        {code ? <ShareReferral code={code} tone="dark" /> : null}
 
         <p className="mt-12 text-sm text-white/55">
           Thank you for trusting a local family business.

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Hero from "./components/Hero";
 import PainStack from "./components/PainStack";
 import Services from "./components/Services";
@@ -14,10 +15,14 @@ import FAQ from "./components/FAQ";
 import FinalCTA from "./components/FinalCTA";
 import Footer from "./components/Footer";
 import Reveal from "./components/Reveal";
+import ReferralBanner from "./components/ReferralBanner";
 
 export default function Home() {
   return (
     <main>
+      <Suspense fallback={null}>
+        <ReferralBanner />
+      </Suspense>
       <Hero />
       <Reveal><PainStack /></Reveal>
       <Reveal><Services /></Reveal>

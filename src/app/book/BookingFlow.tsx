@@ -1,9 +1,12 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { submitBooking, type BookingState } from "./actions";
 import type { Day } from "../lib/slots";
+import { normalizeCode } from "../lib/referral";
+
+const REF_STORAGE_KEY = "fast.ref.code";
 
 const initialState: BookingState = { ok: true };
 
@@ -55,6 +58,22 @@ export default function BookingFlow({ days }: { days: Day[] }) {
     days[firstOpen >= 0 ? firstOpen : 0]?.date ?? "",
   );
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [refCode, setRefCode] = useState<string>("");
+
+  // Pull a referral code from URL (?ref=…) or session storage (set by the
+  // ReferralBanner when the visitor first arrived via a /?ref=… link).
+  useEffect(() => {
+    const fromUrl = normalizeCode(params.get("ref"));
+    if (fromUrl) {
+      setRefCode(fromUrl);
+      try { sessionStorage.setItem(REF_STORAGE_KEY, fromUrl); } catch {}
+      return;
+    }
+    try {
+      const stored = sessionStorage.getItem(REF_STORAGE_KEY);
+      if (stored) setRefCode(normalizeCode(stored));
+    } catch {}
+  }, [params]);
 
   const selectedDay = useMemo(
     () => days.find((d) => d.date === selectedDate) ?? null,
@@ -83,6 +102,19 @@ export default function BookingFlow({ days }: { days: Day[] }) {
           />
         </label>
       </div>
+      <input type="hidden" name="ref" value={refCode} />
+
+      {refCode ? (
+        <div className="rounded-2xl border border-amber/40 bg-amber/10 px-4 py-3 text-sm font-semibold text-ink">
+          Friend referral applied · code{" "}
+          <span className="rounded bg-ink px-2 py-0.5 text-xs font-extrabold uppercase tracking-wider text-amber">
+            {refCode}
+          </span>
+          <span className="ml-1 font-medium text-ink-muted">
+            — Eric will see this and credit both of you.
+          </span>
+        </div>
+      ) : null}
 
       {/* STEP 1 — pick a day */}
       <section>

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { BUSINESS } from "./config";
 import StickyCTA from "./components/StickyCTA";
+import Analytics from "./components/Analytics";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-paper text-ink antialiased">
         {children}
         <StickyCTA />
+        <Analytics />
       </body>
     </html>
   );

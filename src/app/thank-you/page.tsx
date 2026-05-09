@@ -2,15 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BUSINESS } from "../config";
 import Logo from "../components/Logo";
+import TrackOnMount from "../components/TrackOnMount";
+import ShareReferral from "../components/ShareReferral";
+import { normalizeCode } from "../lib/referral";
 
 export const metadata: Metadata = {
   title: "Quote received — we'll be in touch",
   description: "Thanks for reaching out. We'll call or text shortly.",
 };
 
-export default function ThankYouPage() {
+type Props = { searchParams: Promise<{ code?: string }> };
+
+export default async function ThankYouPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const code = normalizeCode(params.code ?? "");
   return (
     <div className="min-h-screen bg-spotlight text-white">
+      <TrackOnMount event="lead_submitted" params={{ section: "quote" }} />
       <header className="absolute inset-x-0 top-0 z-10">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
           <Logo tone="paper" />
@@ -68,6 +76,8 @@ export default function ThankYouPage() {
             </div>
           ))}
         </div>
+
+        {code ? <ShareReferral code={code} tone="dark" /> : null}
 
         <p className="mt-12 text-sm text-white/55">
           In the meantime — thank you for trusting a local family business.

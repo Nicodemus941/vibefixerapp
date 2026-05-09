@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { submitQuote, type QuoteState } from "./actions";
+import { normalizeCode } from "../lib/referral";
 
 const initialState: QuoteState = { ok: true };
+const REF_STORAGE_KEY = "fast.ref.code";
 
 const SERVICES = [
   { value: "chip-repair", label: "Rock chip / small crack" },
@@ -27,6 +29,20 @@ function field(label: string, sub?: string) {
 export default function QuoteForm() {
   const [state, action, pending] = useActionState(submitQuote, initialState);
   const params = useSearchParams();
+  const [refCode, setRefCode] = useState("");
+
+  useEffect(() => {
+    const fromUrl = normalizeCode(params.get("ref"));
+    if (fromUrl) {
+      setRefCode(fromUrl);
+      try { sessionStorage.setItem(REF_STORAGE_KEY, fromUrl); } catch {}
+      return;
+    }
+    try {
+      const stored = sessionStorage.getItem(REF_STORAGE_KEY);
+      if (stored) setRefCode(normalizeCode(stored));
+    } catch {}
+  }, [params]);
 
   const presetYear = params.get("year")?.trim() ?? "";
   const presetMake = params.get("make")?.trim() ?? "";
@@ -52,6 +68,16 @@ export default function QuoteForm() {
           />
         </label>
       </div>
+      <input type="hidden" name="ref" value={refCode} />
+
+      {refCode ? (
+        <div className="rounded-xl border border-amber/40 bg-amber/10 px-4 py-2.5 text-sm font-semibold text-ink">
+          Friend referral applied · code{" "}
+          <span className="rounded bg-ink px-2 py-0.5 text-xs font-extrabold uppercase tracking-wider text-amber">
+            {refCode}
+          </span>
+        </div>
+      ) : null}
       <div>
         {field("Your name", "(so we know who to ask for)")}
         <input
