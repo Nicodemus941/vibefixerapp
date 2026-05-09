@@ -44,7 +44,7 @@ export default function FAQ() {
     <section id="faq" className="relative bg-bone py-20 sm:py-28">
       <div className="mx-auto max-w-4xl px-5 sm:px-8">
         <div className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-amber/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-bold">
+          <span className="inline-flex items-center gap-2 rounded-full bg-brand/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-deep">
             Frequently asked
           </span>
           <h2 className="headline mt-4 text-3xl font-extrabold sm:text-5xl">

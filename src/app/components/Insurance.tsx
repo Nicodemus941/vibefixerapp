@@ -15,7 +15,7 @@ export default function Insurance() {
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
-            <span className="inline-flex items-center gap-2 rounded-full bg-trust/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-trust">
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-deep">
               Insurance, handled
             </span>
             <h2 className="headline mt-4 text-3xl font-extrabold sm:text-5xl">
@@ -36,7 +36,7 @@ export default function Insurance() {
                 "We give you the answer in under 5 minutes",
               ].map((line) => (
                 <li key={line} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber text-ink">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand text-white">
                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5">
                       <path
                         fill="currentColor"

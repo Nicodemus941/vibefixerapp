@@ -41,7 +41,7 @@ export default function Process() {
     <section id="how" className="relative bg-white py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-trust/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-trust">
+          <span className="inline-flex items-center gap-2 rounded-full bg-brand/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-deep">
             How it works
           </span>
           <h2 className="headline mt-4 text-3xl font-extrabold sm:text-5xl">
@@ -59,10 +59,10 @@ export default function Process() {
               className="relative flex flex-col rounded-2xl border border-line bg-bone p-7"
             >
               <div className="flex items-center justify-between">
-                <span className="text-5xl font-extrabold tracking-tight text-ink/10">
+                <span className="text-5xl font-extrabold tracking-tight text-brand/25">
                   {step.n}
                 </span>
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-amber">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-ink text-amber">
                   <svg viewBox="0 0 24 24" className="h-5 w-5">
                     {step.icon}
                   </svg>

@@ -16,7 +16,7 @@ export default function OfferStack() {
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="grid items-start gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
-            <span className="inline-flex items-center gap-2 rounded-full bg-amber/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-bold">
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-deep">
               What you actually get
             </span>
             <h2 className="headline mt-4 text-3xl font-extrabold sm:text-5xl">
