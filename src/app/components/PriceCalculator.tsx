@@ -50,7 +50,7 @@ export default function PriceCalculator() {
     return estimate(year, category, service);
   }, [year, make, safeModel, service]);
 
-  const lockHref = `/quote?year=${year}&make=${encodeURIComponent(
+  const lockHref = `/book?year=${year}&make=${encodeURIComponent(
     make,
   )}&model=${encodeURIComponent(safeModel)}&service=${service}`;
 

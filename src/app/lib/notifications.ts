@@ -195,3 +195,124 @@ export async function notifyLead(lead: Lead) {
   console.log("[F.A.S.T. notify]", JSON.stringify({ lead, summary }, null, 2));
   return summary;
 }
+
+// ---------- Booking notifications ----------
+
+export type Booking = Lead & {
+  slotStart: string;       // ISO timestamp of slot start
+  slotRangeLabel: string;  // "10:30 AM – 12:00 PM"
+  slotDayLabel: string;    // "Tomorrow · Tue, May 12"
+};
+
+function bookingHtml(b: Booking) {
+  const service = SERVICE_LABELS[b.service] ?? b.service;
+  const phone = fmtPhoneDisplay(b.phone);
+  const dial = toE164(b.phone) ?? b.phone;
+  return `
+<!doctype html>
+<html><body style="margin:0;background:#0c4040;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0b1f3a;">
+  <div style="max-width:560px;margin:0 auto;padding:24px;">
+    <div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);">
+      <div style="background:linear-gradient(135deg,#1f8c8c,#0c4040);color:#fff;padding:20px 24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#f59e0b;">🗓️ New booking · F.A.S.T.</div>
+        <div style="font-size:22px;font-weight:800;margin-top:4px;">${escapeHtml(b.name)}</div>
+        <div style="font-size:14px;opacity:.85;margin-top:2px;">${escapeHtml(service)} · ${escapeHtml(b.vehicle)}</div>
+      </div>
+
+      <div style="background:#f59e0b;padding:18px 24px;color:#0b1f3a;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;opacity:.8;">Locked-in slot</div>
+        <div style="font-size:18px;font-weight:800;margin-top:2px;">${escapeHtml(b.slotDayLabel)}</div>
+        <div style="font-size:24px;font-weight:800;">${escapeHtml(b.slotRangeLabel)}</div>
+      </div>
+
+      <div style="padding:8px 24px 24px;">
+        <a href="tel:${dial}" style="display:block;margin-top:16px;background:#0c4040;color:#fff;text-align:center;padding:14px;border-radius:12px;font-weight:700;text-decoration:none;">📞 Call ${phone}</a>
+        <a href="sms:${dial}?body=${encodeURIComponent(`Hi ${b.name.split(" ")[0]}, this is Eric from F.A.S.T. — confirming your install. We're set for ${b.slotDayLabel}, ${b.slotRangeLabel}. `)}" style="display:block;margin-top:8px;background:#1f8c8c;color:#fff;text-align:center;padding:14px;border-radius:12px;font-weight:700;text-decoration:none;">💬 Text ${phone}</a>
+
+        <table style="width:100%;margin-top:24px;border-collapse:collapse;font-size:14px;">
+          <tr><td style="padding:8px 0;color:#475569;width:120px;">Vehicle</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(b.vehicle)}</td></tr>
+          <tr><td style="padding:8px 0;color:#475569;">Service</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(service)}</td></tr>
+          ${b.insurance ? `<tr><td style="padding:8px 0;color:#475569;">Insurance</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(b.insurance)}</td></tr>` : ""}
+          ${b.zip ? `<tr><td style="padding:8px 0;color:#475569;">ZIP</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(b.zip)}</td></tr>` : ""}
+          ${b.damage ? `<tr><td style="padding:8px 0;color:#475569;vertical-align:top;">Damage</td><td style="padding:8px 0;">${escapeHtml(b.damage)}</td></tr>` : ""}
+          <tr><td style="padding:8px 0;color:#475569;">Booked</td><td style="padding:8px 0;">${escapeHtml(fmtTimestamp(b.receivedAt))}</td></tr>
+        </table>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:11px;color:#cbd5e1;">${BUSINESS.name} · ${BUSINESS.city}</div>
+  </div>
+</body></html>`.trim();
+}
+
+function bookingText(b: Booking) {
+  const service = SERVICE_LABELS[b.service] ?? b.service;
+  const lines = [
+    `NEW BOOKING — F.A.S.T. Family Autoglass`,
+    ``,
+    `When: ${b.slotDayLabel}, ${b.slotRangeLabel}`,
+    ``,
+    `Name: ${b.name}`,
+    `Phone: ${fmtPhoneDisplay(b.phone)}`,
+    `Vehicle: ${b.vehicle}`,
+    `Service: ${service}`,
+    b.insurance ? `Insurance: ${b.insurance}` : null,
+    b.zip ? `ZIP: ${b.zip}` : null,
+    b.damage ? `Damage: ${b.damage}` : null,
+    `Booked at: ${fmtTimestamp(b.receivedAt)}`,
+  ].filter(Boolean);
+  return lines.join("\n");
+}
+
+async function sendEricBookingEmail(b: Booking): Promise<SendResult> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const to = process.env.LEAD_EMAIL_TO ?? BUSINESS.email;
+  const from = process.env.LEAD_EMAIL_FROM ?? "F.A.S.T. Bookings <onboarding@resend.dev>";
+  if (!apiKey) return { ok: false, skipped: true, reason: "RESEND_API_KEY not set" };
+
+  const subject = `🗓️ ${b.name} booked: ${b.slotDayLabel} ${b.slotRangeLabel} · ${b.vehicle}`;
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject,
+      html: bookingHtml(b),
+      text: bookingText(b),
+    }),
+  });
+  return { ok: res.ok, status: res.status };
+}
+
+async function sendEricBookingSms(b: Booking): Promise<SendResult> {
+  const to = process.env.LEAD_SMS_TO;
+  if (!to) return { ok: false, skipped: true, reason: "LEAD_SMS_TO not set" };
+  const service = SERVICE_LABELS[b.service] ?? b.service;
+  const body =
+    `🗓️ F.A.S.T. booking: ${b.slotDayLabel} ${b.slotRangeLabel} · ${b.name} · ${b.vehicle} · ${service} · ${fmtPhoneDisplay(b.phone)}` +
+    (b.insurance ? ` · ${b.insurance}` : "");
+  return twilioSend(to, body.slice(0, 320));
+}
+
+async function sendCustomerBookingSms(b: Booking): Promise<SendResult> {
+  const firstName = b.name.split(/\s+/)[0] ?? b.name;
+  const body =
+    `Hi ${firstName} — you're booked with F.A.S.T. Family Autoglass for ${b.slotDayLabel}, ${b.slotRangeLabel} (${b.vehicle}). ` +
+    `Eric will text 30 min before arrival. Need to reschedule? Reply to this text or call ${BUSINESS.phoneDisplay}.`;
+  return twilioSend(b.phone, body);
+}
+
+export async function notifyBooking(booking: Booking) {
+  const results = await Promise.allSettled([
+    sendEricBookingEmail(booking),
+    sendEricBookingSms(booking),
+    sendCustomerBookingSms(booking),
+  ]);
+  const summary = {
+    email: results[0].status === "fulfilled" ? results[0].value : { ok: false, reason: String(results[0].reason) },
+    ericSms: results[1].status === "fulfilled" ? results[1].value : { ok: false, reason: String(results[1].reason) },
+    customerSms: results[2].status === "fulfilled" ? results[2].value : { ok: false, reason: String(results[2].reason) },
+  };
+  console.log("[F.A.S.T. booking]", JSON.stringify({ booking, summary }, null, 2));
+  return summary;
+}

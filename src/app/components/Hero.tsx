@@ -67,10 +67,10 @@ export default function Hero() {
               </a>
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/70">
                 <a
-                  href="/quote"
+                  href="/book"
                   className="font-semibold text-white underline decoration-amber decoration-2 underline-offset-4 hover:decoration-4"
                 >
-                  Or get a free quote online →
+                  Or book a slot online →
                 </a>
                 <span className="hidden sm:inline">·</span>
                 <a

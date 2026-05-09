@@ -30,10 +30,10 @@ export default function StickyCTA() {
           Call now
         </a>
         <a
-          href="/quote"
+          href="/book"
           className="flex flex-1 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-bold text-white"
         >
-          Free quote
+          Book online
         </a>
       </div>
     </div>

@@ -1,0 +1,133 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
+import { BUSINESS } from "../config";
+import Logo from "../components/Logo";
+import Footer from "../components/Footer";
+import BookingFlow from "./BookingFlow";
+import { generateDays } from "../lib/slots";
+
+export const metadata: Metadata = {
+  title: "Book a slot",
+  description:
+    "Pick a time that works for you. We come to your driveway — same day or next day, your schedule.",
+};
+
+// Booking availability is real-time, so always render fresh.
+export const dynamic = "force-dynamic";
+
+const TRUST = [
+  "We come to you — driveway, office, anywhere",
+  "Same-day chip & crack repair",
+  "Next-day full windshield install",
+  "We file your insurance claim",
+  "Honest cash quotes — no markup",
+  "Family-owned · 15+ years",
+];
+
+export default function BookPage() {
+  const days = generateDays();
+
+  return (
+    <div className="min-h-screen bg-bone">
+      <header className="bg-brand-ink">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+          <Logo tone="paper" />
+          <Link
+            href="/"
+            className="text-sm font-semibold text-white/75 hover:text-white"
+          >
+            ← Back home
+          </Link>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20">
+        <div className="grid gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <span className="inline-flex items-center gap-2 rounded-full bg-amber/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-bold">
+              Pick a slot · Book in 60 seconds
+            </span>
+            <h1 className="headline mt-4 text-3xl font-extrabold sm:text-5xl">
+              Lock in your time.{" "}
+              <span className="underline-amber">No callbacks needed.</span>
+            </h1>
+            <p className="mt-5 text-lg text-ink-muted">
+              Tap a slot, drop your details, get a confirmation text in seconds.
+              Eric or one of the boys shows up at your driveway.
+            </p>
+
+            <div className="mt-8 rounded-3xl border border-line bg-white p-6 shadow-card sm:p-8">
+              <Suspense
+                fallback={
+                  <div className="h-[640px] animate-pulse rounded-xl bg-bone" />
+                }
+              >
+                <BookingFlow days={days} />
+              </Suspense>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-line bg-white p-5 text-sm text-ink-muted">
+              Prefer to talk first?{" "}
+              <a
+                href={`tel:${BUSINESS.phoneDial}`}
+                className="font-bold text-ink underline decoration-amber decoration-2 underline-offset-4"
+              >
+                Call Eric — {BUSINESS.phoneDisplay}
+              </a>{" "}
+              or{" "}
+              <a
+                href={`sms:${BUSINESS.phoneDial}?&body=${encodeURIComponent(BUSINESS.smsBody)}`}
+                className="font-bold text-ink underline decoration-amber decoration-2 underline-offset-4"
+              >
+                text us a photo
+              </a>
+              .
+            </div>
+          </div>
+
+          <aside className="lg:col-span-5">
+            <div className="sticky top-6 space-y-6">
+              <div className="rounded-3xl border border-amber/30 bg-amber/10 p-6">
+                <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-bold">
+                  What you get
+                </div>
+                <ul className="mt-4 space-y-2.5 text-sm">
+                  {TRUST.map((t) => (
+                    <li key={t} className="flex items-start gap-2.5 text-ink">
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="mt-0.5 h-4 w-4 shrink-0 text-amber-bold"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="m9.55 17.6-5.3-5.3 1.42-1.42 3.88 3.88 8.78-8.78L19.75 7.4 9.55 17.6Z"
+                        />
+                      </svg>
+                      <span className="font-medium">{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="overflow-hidden rounded-3xl bg-brand-ink p-6 text-white">
+                <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber">
+                  Speed promise
+                </div>
+                <p className="mt-3 text-xl font-extrabold leading-tight">
+                  Most chip repairs done <span className="underline-amber">same day</span>.
+                </p>
+                <p className="mt-2 text-sm text-white/70">
+                  Call before {BUSINESS.cutoffTime} and we'll have your full
+                  windshield replaced by tomorrow.
+                </p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
