@@ -69,3 +69,54 @@ export async function submitQuote(_prev: QuoteState, formData: FormData): Promis
 
   redirect(ownCode ? `/thank-you?code=${ownCode}` : "/thank-you");
 }
+
+// ----- Fast lead (exit-intent modal) ---------------------------------------
+// Minimum-friction capture for visitors about to bounce. Phone only (name + zip
+// optional). Hits the same notifyLead path so Eric gets a normal lead alert.
+
+export type FastLeadState = {
+  ok: boolean;
+  done?: boolean;
+  errors?: Partial<Record<"phone" | "form", string>>;
+};
+
+export async function submitFastLead(
+  _prev: FastLeadState,
+  formData: FormData,
+): Promise<FastLeadState> {
+  const phone = String(formData.get("phone") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  const zip = String(formData.get("zip") ?? "").trim();
+  const honeypot = String(formData.get("company") ?? "").trim();
+  const referredBy = normalizeCode(String(formData.get("ref") ?? ""));
+
+  if (!isValidPhone(phone)) {
+    return { ok: false, errors: { phone: "Please enter a valid phone number." } };
+  }
+  if (honeypot) {
+    return { ok: true, done: true };
+  }
+
+  const h = await headers();
+  const lead = {
+    name: name || "Exit-intent visitor",
+    phone,
+    vehicle: "Not provided yet",
+    service: "not-sure",
+    zip: zip || undefined,
+    receivedAt: new Date().toISOString(),
+    ip: h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? undefined,
+    userAgent: h.get("user-agent") ?? undefined,
+    referredBy: referredBy || undefined,
+    ownReferralCode: codeForPhone(phone) || undefined,
+    damage: "Captured via exit-intent modal — call back ASAP.",
+  };
+
+  try {
+    await notifyLead(lead);
+  } catch (err) {
+    console.error("[F.A.S.T. fast-lead] notify failed:", err);
+  }
+
+  return { ok: true, done: true };
+}

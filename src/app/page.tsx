@@ -16,6 +16,7 @@ import FinalCTA from "./components/FinalCTA";
 import Footer from "./components/Footer";
 import Reveal from "./components/Reveal";
 import ReferralBanner from "./components/ReferralBanner";
+import ExitIntentModal from "./components/ExitIntentModal";
 
 export default function Home() {
   return (
@@ -38,6 +39,7 @@ export default function Home() {
       <Reveal><FAQ /></Reveal>
       <Reveal><FinalCTA /></Reveal>
       <Footer />
+      <ExitIntentModal />
     </main>
   );
 }

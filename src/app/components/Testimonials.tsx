@@ -1,3 +1,5 @@
+import Counter from "./Counter";
+
 // Testimonials sourced verbatim from fastfamilyautoglass.com/testimonial.
 // "Eric" is the owner. Customers wrote these themselves — wording is exact.
 const REVIEWS = [
@@ -67,7 +69,9 @@ export default function Testimonials() {
           <div className="flex items-center gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-card">
             <Stars />
             <div>
-              <div className="text-lg font-extrabold leading-tight">5.0 from neighbors</div>
+              <div className="text-lg font-extrabold leading-tight">
+                <Counter to={5} decimals={1} /> from neighbors
+              </div>
               <div className="text-xs text-ink-muted">North Port &amp; nearby</div>
             </div>
           </div>
