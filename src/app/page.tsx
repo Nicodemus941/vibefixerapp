@@ -3,6 +3,7 @@ import PainStack from "./components/PainStack";
 import Services from "./components/Services";
 import Process from "./components/Process";
 import Story from "./components/Story";
+import TeamStrip from "./components/TeamStrip";
 import Testimonials from "./components/Testimonials";
 import Insurance from "./components/Insurance";
 import OfferStack from "./components/OfferStack";
@@ -19,6 +20,7 @@ export default function Home() {
       <Reveal><Services /></Reveal>
       <Reveal><Process /></Reveal>
       <Reveal><Story /></Reveal>
+      <Reveal><TeamStrip /></Reveal>
       <Reveal><OfferStack /></Reveal>
       <Reveal><Insurance /></Reveal>
       <Reveal><Testimonials /></Reveal>

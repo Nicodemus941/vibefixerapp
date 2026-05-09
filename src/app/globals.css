@@ -13,6 +13,10 @@
   --color-flame: #ef4f2e;
   --color-flame-bold: #d33b1c;
   --color-trust: #1d4ed8;
+  /* F.A.S.T. brand teal — pulled from fastfamilyautoglass.com logo + header */
+  --color-brand: #3fb6b6;
+  --color-brand-deep: #1f8c8c;
+  --color-brand-soft: #d6f0f0;
 
   --font-display: var(--font-display, "Inter", system-ui, sans-serif);
   --font-sans: var(--font-sans, "Inter", system-ui, sans-serif);
