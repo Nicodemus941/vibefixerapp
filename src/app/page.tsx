@@ -1,6 +1,7 @@
 import Hero from "./components/Hero";
 import PainStack from "./components/PainStack";
 import Services from "./components/Services";
+import PriceCalculator from "./components/PriceCalculator";
 import Process from "./components/Process";
 import Story from "./components/Story";
 import TeamStrip from "./components/TeamStrip";
@@ -18,6 +19,7 @@ export default function Home() {
       <Hero />
       <Reveal><PainStack /></Reveal>
       <Reveal><Services /></Reveal>
+      <Reveal><PriceCalculator /></Reveal>
       <Reveal><Process /></Reveal>
       <Reveal><Story /></Reveal>
       <Reveal><TeamStrip /></Reveal>

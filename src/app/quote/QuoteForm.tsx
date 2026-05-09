@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import { submitQuote, type QuoteState } from "./actions";
 
 const initialState: QuoteState = { ok: true };
@@ -11,6 +12,8 @@ const SERVICES = [
   { value: "side-back", label: "Side, vent, or rear glass" },
   { value: "not-sure", label: "Not sure — please advise" },
 ];
+
+const VALID_SERVICES = new Set(SERVICES.map((s) => s.value));
 
 function field(label: string, sub?: string) {
   return (
@@ -23,6 +26,17 @@ function field(label: string, sub?: string) {
 
 export default function QuoteForm() {
   const [state, action, pending] = useActionState(submitQuote, initialState);
+  const params = useSearchParams();
+
+  const presetYear = params.get("year")?.trim() ?? "";
+  const presetMake = params.get("make")?.trim() ?? "";
+  const presetModel = params.get("model")?.trim() ?? "";
+  const presetVehicle =
+    [presetYear, presetMake, presetModel].filter(Boolean).join(" ").trim();
+  const presetServiceParam = params.get("service")?.trim() ?? "";
+  const presetService = VALID_SERVICES.has(presetServiceParam)
+    ? presetServiceParam
+    : "";
 
   return (
     <form action={action} className="space-y-5">
@@ -84,6 +98,7 @@ export default function QuoteForm() {
         <input
           name="vehicle"
           required
+          defaultValue={presetVehicle}
           placeholder="2021 Toyota RAV4"
           className="block w-full rounded-xl border border-line bg-white px-4 py-3 text-base outline-none transition placeholder:text-ink-muted focus:border-amber focus:ring-4 focus:ring-amber/20"
         />
@@ -105,6 +120,7 @@ export default function QuoteForm() {
                 name="service"
                 value={s.value}
                 required
+                defaultChecked={presetService === s.value}
                 className="h-4 w-4 accent-amber"
               />
               {s.label}

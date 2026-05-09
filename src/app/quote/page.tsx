@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { BUSINESS } from "../config";
 import Logo from "../components/Logo";
 import Footer from "../components/Footer";
@@ -51,7 +52,9 @@ export default function QuotePage() {
             </p>
 
             <div className="mt-8 rounded-3xl border border-line bg-white p-6 shadow-card sm:p-8">
-              <QuoteForm />
+              <Suspense fallback={<div className="h-[480px] animate-pulse rounded-xl bg-bone" />}>
+                <QuoteForm />
+              </Suspense>
             </div>
 
             <div className="mt-6 rounded-2xl border border-line bg-white p-5 text-sm text-ink-muted">
