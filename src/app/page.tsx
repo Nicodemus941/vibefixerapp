@@ -9,20 +9,21 @@ import OfferStack from "./components/OfferStack";
 import FAQ from "./components/FAQ";
 import FinalCTA from "./components/FinalCTA";
 import Footer from "./components/Footer";
+import Reveal from "./components/Reveal";
 
 export default function Home() {
   return (
     <main>
       <Hero />
-      <PainStack />
-      <Services />
-      <Process />
-      <Story />
-      <OfferStack />
-      <Insurance />
-      <Testimonials />
-      <FAQ />
-      <FinalCTA />
+      <Reveal><PainStack /></Reveal>
+      <Reveal><Services /></Reveal>
+      <Reveal><Process /></Reveal>
+      <Reveal><Story /></Reveal>
+      <Reveal><OfferStack /></Reveal>
+      <Reveal><Insurance /></Reveal>
+      <Reveal><Testimonials /></Reveal>
+      <Reveal><FAQ /></Reveal>
+      <Reveal><FinalCTA /></Reveal>
       <Footer />
     </main>
   );

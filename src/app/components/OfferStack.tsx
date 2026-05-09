@@ -1,16 +1,14 @@
 import { BUSINESS } from "../config";
 
 const STACK = [
-  { item: "Licensed mobile tech at YOUR location", value: 120 },
-  { item: "We file your insurance claim for you", value: 150 },
-  { item: "Same-day chip & crack repair", value: 250 },
-  { item: `Next-day replacement (call by ${BUSINESS.cutoffTime})`, value: 200 },
-  { item: "OEM-quality glass + proper urethane bond", value: 300 },
-  { item: "After-hours, weekend, and on-site service", value: 150 },
-  { item: "No waiting room. No shop trips.", value: 100 },
+  "A licensed mobile tech at YOUR location — not a shop",
+  "Your insurance claim filed for you — start to finish",
+  "Same-day rock chip and crack repair",
+  `Next-day full windshield replacement (call by ${BUSINESS.cutoffTime})`,
+  "OEM-quality glass + proper urethane bond, every time",
+  "After-hours, weekend, and on-site appointments",
+  "Honest answers — and we pick up the phone",
 ];
-
-const TOTAL = STACK.reduce((s, x) => s + x.value, 0);
 
 export default function OfferStack() {
   return (
@@ -33,7 +31,7 @@ export default function OfferStack() {
 
             <div className="mt-8 rounded-2xl border-2 border-amber bg-amber/10 p-6">
               <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-bold">
-                Bottom line
+                What it costs
               </div>
               <div className="mt-1 text-3xl font-extrabold text-ink">
                 $0 with most insurance.
@@ -42,13 +40,13 @@ export default function OfferStack() {
                 Cash quotes are honest, flat-rate, and usually a fraction of dealer pricing.
               </div>
               <a
-                href="/quote"
+                href={`tel:${BUSINESS.phoneDial}`}
                 className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-ink px-5 py-3 text-sm font-bold text-white transition hover:bg-ink-soft"
               >
-                Get my free quote
                 <svg viewBox="0 0 24 24" className="h-4 w-4">
-                  <path fill="currentColor" d="M5 12h13l-4.3-4.3 1.4-1.4 6.7 6.7-6.7 6.7-1.4-1.4 4.3-4.3H5v-2Z" />
+                  <path fill="currentColor" d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24c1.16.39 2.41.6 3.7.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A18 18 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.29.21 2.54.6 3.7a1 1 0 0 1-.24 1.05l-2.24 2.04Z" />
                 </svg>
+                Call Eric — {BUSINESS.phoneDisplay}
               </a>
             </div>
           </div>
@@ -59,12 +57,12 @@ export default function OfferStack() {
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-ink-muted">
                   The F.A.S.T. value stack
                 </div>
-                <div className="text-xs text-ink-muted">est. retail value</div>
+                <div className="text-xs font-semibold text-amber-bold">all included</div>
               </div>
               <ul className="divide-y divide-line">
-                {STACK.map((row) => (
+                {STACK.map((item) => (
                   <li
-                    key={row.item}
+                    key={item}
                     className="flex items-center justify-between gap-4 px-6 py-4"
                   >
                     <div className="flex items-start gap-3">
@@ -76,10 +74,10 @@ export default function OfferStack() {
                           />
                         </svg>
                       </span>
-                      <span className="text-[15px] font-medium text-ink">{row.item}</span>
+                      <span className="text-[15px] font-medium text-ink">{item}</span>
                     </div>
-                    <span className="shrink-0 text-sm font-bold text-ink-muted line-through">
-                      ${row.value}
+                    <span className="shrink-0 rounded-full bg-amber/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-bold">
+                      Included
                     </span>
                   </li>
                 ))}
@@ -87,15 +85,15 @@ export default function OfferStack() {
               <div className="flex items-center justify-between gap-4 bg-ink px-6 py-5 text-white">
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber">
-                    Total value
+                    Bottom line
                   </div>
-                  <div className="text-2xl font-extrabold">${TOTAL.toLocaleString()}+</div>
+                  <div className="text-xl font-extrabold">All of it. One call.</div>
                 </div>
                 <div className="text-right">
                   <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber">
-                    Your cost with insurance
+                    Your cost
                   </div>
-                  <div className="text-2xl font-extrabold">$0</div>
+                  <div className="text-2xl font-extrabold">$0 with insurance</div>
                 </div>
               </div>
             </div>

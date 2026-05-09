@@ -17,22 +17,31 @@ export default function FinalCTA() {
           and get you back on the road safely — usually by tomorrow.
         </p>
 
-        <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-9 flex flex-col items-center justify-center gap-4">
           <a
             href={`tel:${BUSINESS.phoneDial}`}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber px-7 py-5 text-base font-extrabold text-ink shadow-pop transition hover:-translate-y-0.5 hover:bg-amber-bold sm:w-auto sm:text-lg"
+            className="inline-flex w-full max-w-md items-center justify-center gap-3 rounded-2xl bg-amber px-7 py-6 text-lg font-extrabold text-ink shadow-pop transition hover:-translate-y-0.5 hover:bg-amber-bold sm:w-auto sm:px-12 sm:text-2xl"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5">
+            <svg viewBox="0 0 24 24" className="h-6 w-6">
               <path fill="currentColor" d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24c1.16.39 2.41.6 3.7.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A18 18 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.29.21 2.54.6 3.7a1 1 0 0 1-.24 1.05l-2.24 2.04Z" />
             </svg>
-            Call {BUSINESS.phoneDisplay}
+            Call Eric · {BUSINESS.phoneDisplay}
           </a>
-          <a
-            href="/quote"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/25 bg-white/5 px-7 py-5 text-base font-bold text-white backdrop-blur-sm transition hover:bg-white/10 sm:w-auto sm:text-lg"
-          >
-            Get my free quote
-          </a>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/70">
+            <a
+              href="/quote"
+              className="font-semibold text-white underline decoration-amber decoration-2 underline-offset-4 hover:decoration-4"
+            >
+              Or get a free quote online →
+            </a>
+            <span className="hidden sm:inline">·</span>
+            <a
+              href={`sms:${BUSINESS.phoneDial}?&body=${encodeURIComponent(BUSINESS.smsBody)}`}
+              className="font-semibold text-white underline decoration-amber/60 decoration-2 underline-offset-4 hover:decoration-4"
+            >
+              Or text us a photo
+            </a>
+          </div>
         </div>
 
         <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-3 text-sm sm:grid-cols-3">

@@ -1,33 +1,25 @@
-// NOTE: These are placeholder testimonials. Replace with real Google reviews
-// once available — keep the same shape (name, location, body, vehicle).
+// Testimonials sourced verbatim from fastfamilyautoglass.com/testimonial.
+// "Eric" is the owner. Customers wrote these themselves — wording is exact.
 const REVIEWS = [
   {
-    name: "Maria T.",
-    location: "North Port, FL",
-    vehicle: "2021 Toyota RAV4",
+    name: "Jessica",
     body:
-      "Called at 9 AM. Truck was in my driveway by 11. Done before lunch. They called my insurance and I never had to deal with it. This is how it should be.",
+      "Eric came to my office and repaired my windshield. Not only did he come to my office so I could continue to work, he also vacuumed my car out. Top Notch Service!!",
   },
   {
-    name: "Brandon W.",
-    location: "Port Charlotte, FL",
-    vehicle: "2018 F-150",
+    name: "Evan",
     body:
-      "Got a quote from Safelite that was insane. F.A.S.T. came out, did it for less, used good glass, and the bond is rock solid 6 months later. Highly recommend.",
+      "Eric and his sons came and serviced my vehicle in my driveway and the work was just Phenomenal!",
   },
   {
-    name: "Janelle R.",
-    location: "Venice, FL",
-    vehicle: "2023 Honda Pilot",
+    name: "Nick",
     body:
-      "I work nights. They came out at 7 AM on a Saturday — at MY house — so I didn't lose a day. These guys actually mean it when they say family.",
+      "Eric was amazing and very informative from start to finish! I am only using his company from here on out.",
   },
   {
-    name: "Carlos M.",
-    location: "Englewood, FL",
-    vehicle: "2019 Civic",
+    name: "Ashley",
     body:
-      "Rock chip turned into a crack overnight. Texted them a photo. Repaired by dinner. $0 with my insurance. Saved me a $700 replacement.",
+      "F.A.S.T Family Autoglass goes above and beyond for their customers. Eric the owner was on top of my windshield replacement from the moment he answered the phone. Repair was done the next day!",
   },
 ];
 
@@ -47,14 +39,10 @@ function Stars() {
 }
 
 function Avatar({ name }: { name: string }) {
-  const initials = name
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("");
+  const initial = name[0]?.toUpperCase() ?? "?";
   return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber to-amber-bold text-sm font-extrabold text-ink">
-      {initials}
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber to-amber-bold text-base font-extrabold text-ink">
+      {initial}
     </span>
   );
 }
@@ -66,18 +54,21 @@ export default function Testimonials() {
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full bg-amber/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-bold">
-              What our customers say
+              Real words from real customers
             </span>
             <h2 className="headline mt-4 text-3xl font-extrabold sm:text-5xl">
-              Real reviews from{" "}
-              <span className="underline-amber">real neighbors.</span>
+              People talk about{" "}
+              <span className="underline-amber">Eric.</span>
             </h2>
+            <p className="mt-4 text-ink-muted">
+              These are the exact words our customers wrote — not paid, not edited.
+            </p>
           </div>
           <div className="flex items-center gap-3 rounded-2xl border border-line bg-white px-5 py-4 shadow-card">
             <Stars />
             <div>
-              <div className="text-lg font-extrabold leading-tight">5.0 rating</div>
-              <div className="text-xs text-ink-muted">based on local reviews</div>
+              <div className="text-lg font-extrabold leading-tight">5.0 from neighbors</div>
+              <div className="text-xs text-ink-muted">North Port &amp; nearby</div>
             </div>
           </div>
         </div>
@@ -96,14 +87,25 @@ export default function Testimonials() {
                 <Avatar name={r.name} />
                 <div>
                   <div className="text-sm font-bold">{r.name}</div>
-                  <div className="text-xs text-ink-muted">
-                    {r.location} · {r.vehicle}
-                  </div>
+                  <div className="text-xs text-ink-muted">Verified customer</div>
                 </div>
               </figcaption>
             </figure>
           ))}
         </div>
+
+        <p className="mt-10 text-center text-xs text-ink-muted">
+          More reviews on{" "}
+          <a
+            href="https://www.facebook.com/fastfamilyautoglass"
+            target="_blank"
+            rel="noopener"
+            className="font-semibold text-ink underline decoration-amber decoration-2 underline-offset-4"
+          >
+            Facebook
+          </a>
+          .
+        </p>
       </div>
     </section>
   );
