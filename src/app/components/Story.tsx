@@ -3,10 +3,10 @@ import { BUSINESS } from "../config";
 
 export default function Story() {
   return (
-    <section id="story" className="relative overflow-hidden bg-ink py-20 text-white sm:py-28">
+    <section id="story" className="relative overflow-hidden bg-brand-ink py-20 text-white sm:py-28">
       <div className="absolute inset-0 bg-grid opacity-40" />
-      <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand/20 blur-3xl" />
-      <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-amber/10 blur-3xl" />
+      <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand/30 blur-3xl" />
+      <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-amber/15 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid items-center gap-14 lg:grid-cols-12">
