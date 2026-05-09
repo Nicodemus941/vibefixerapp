@@ -8,6 +8,7 @@ import TeamStrip from "./components/TeamStrip";
 import Gallery from "./components/Gallery";
 import Testimonials from "./components/Testimonials";
 import Insurance from "./components/Insurance";
+import InsuranceCheck from "./components/InsuranceCheck";
 import OfferStack from "./components/OfferStack";
 import FAQ from "./components/FAQ";
 import FinalCTA from "./components/FinalCTA";
@@ -26,6 +27,7 @@ export default function Home() {
       <Reveal><TeamStrip /></Reveal>
       <Reveal><Gallery /></Reveal>
       <Reveal><OfferStack /></Reveal>
+      <Reveal><InsuranceCheck /></Reveal>
       <Reveal><Insurance /></Reveal>
       <Reveal><Testimonials /></Reveal>
       <Reveal><FAQ /></Reveal>
