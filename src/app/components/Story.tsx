@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { BUSINESS } from "../config";
+import Counter from "./Counter";
 
 export default function Story() {
   return (
@@ -33,10 +34,17 @@ export default function Story() {
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {[
-                ["Years in trade", `${BUSINESS.yearsExperience}+`],
-                ["Service area", "North Port + nearby"],
-                ["Owner-on-the-job", "Every visit"],
-              ].map(([k, v]) => (
+                {
+                  k: "Years in trade",
+                  v: (
+                    <>
+                      <Counter to={BUSINESS.yearsExperience} />+
+                    </>
+                  ),
+                },
+                { k: "Service area", v: "North Port + nearby" },
+                { k: "Owner-on-the-job", v: "Every visit" },
+              ].map(({ k, v }) => (
                 <div
                   key={k}
                   className="rounded-xl border border-white/10 bg-white/[0.04] p-4"

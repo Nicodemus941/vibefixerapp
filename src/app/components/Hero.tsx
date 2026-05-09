@@ -1,5 +1,8 @@
 import { BUSINESS } from "../config";
 import Header from "./Header";
+import Counter from "./Counter";
+import Stagger from "./Stagger";
+import Parallax from "./Parallax";
 
 function StarRow() {
   return (
@@ -33,7 +36,7 @@ export default function Hero() {
 
       <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-32 sm:px-8 sm:pb-28 sm:pt-36 lg:pb-36 lg:pt-44">
         <div className="grid gap-14 lg:grid-cols-12 lg:gap-10">
-          <div className="lg:col-span-7">
+          <Stagger className="lg:col-span-7" stepMs={130} durationMs={550}>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
               <span className="h-1.5 w-1.5 rounded-full bg-amber animate-pulse" />
               Mobile · {BUSINESS.city}
@@ -85,7 +88,9 @@ export default function Hero() {
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2.5 rounded-full bg-white/8 px-3 py-1.5">
                 <StarRow />
-                <span className="text-xs font-medium text-white/85">5.0 from real customers</span>
+                <span className="text-xs font-medium text-white/85">
+                  <Counter to={5} decimals={1} className="font-bold text-white" /> from real customers
+                </span>
               </div>
               <TrustChip
                 icon={
@@ -112,10 +117,10 @@ export default function Hero() {
                 label={`${BUSINESS.yearsExperience}+ yrs · family-owned`}
               />
             </div>
-          </div>
+          </Stagger>
 
           {/* Hero card — solid (no glassmorphism), high contrast */}
-          <div className="lg:col-span-5">
+          <Parallax className="lg:col-span-5" speed={0.06}>
             <div className="relative rounded-3xl border-2 border-amber/40 bg-white p-1.5 shadow-pop">
               <div className="rounded-[20px] bg-bone p-6">
                 <div className="flex items-center justify-between">
@@ -177,7 +182,7 @@ export default function Hero() {
                 </div>
               </div>
             </div>
-          </div>
+          </Parallax>
         </div>
       </div>
 
