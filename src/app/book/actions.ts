@@ -87,6 +87,7 @@ export async function submitBooking(
     ip: h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? undefined,
     userAgent: h.get("user-agent") ?? undefined,
     slotStart: `${slot.date}T${String(Math.floor(slot.startMinutes / 60)).padStart(2, "0")}:${String(slot.startMinutes % 60).padStart(2, "0")}`,
+    slotEnd: `${slot.date}T${String(Math.floor(slot.endMinutes / 60)).padStart(2, "0")}:${String(slot.endMinutes % 60).padStart(2, "0")}`,
     slotRangeLabel: slot.rangeLabel,
     slotDayLabel,
   };

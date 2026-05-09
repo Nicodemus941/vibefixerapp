@@ -161,6 +161,82 @@ async function twilioSend(to: string, body: string): Promise<SendResult> {
   return { ok: res.ok, status: res.status };
 }
 
+// Twilio scheduled SMS — fires at sendAt without us holding state.
+// Requires a Messaging Service SID (not a plain From number); SendAt must
+// be 15 min – 35 days in the future per Twilio's API rules.
+async function twilioSchedule(
+  to: string,
+  body: string,
+  sendAt: Date,
+): Promise<SendResult> {
+  const sid = process.env.TWILIO_ACCOUNT_SID;
+  const token = process.env.TWILIO_AUTH_TOKEN;
+  const msgService = process.env.TWILIO_MESSAGING_SERVICE_SID;
+  if (!sid || !token || !msgService) {
+    return {
+      ok: false,
+      skipped: true,
+      reason: "TWILIO_MESSAGING_SERVICE_SID not set (required for scheduled SMS)",
+    };
+  }
+  const e164 = toE164(to);
+  if (!e164) return { ok: false, skipped: true, reason: `invalid phone: ${to}` };
+
+  const now = Date.now();
+  const minSendAt = now + 16 * 60 * 1000; // 16 min — 1 min cushion past Twilio's 15
+  const maxSendAt = now + 35 * 24 * 60 * 60 * 1000;
+  if (sendAt.getTime() < minSendAt) {
+    return { ok: false, skipped: true, reason: "send-at < 15 min in future" };
+  }
+  if (sendAt.getTime() > maxSendAt) {
+    return { ok: false, skipped: true, reason: "send-at > 35 days in future" };
+  }
+
+  const auth = Buffer.from(`${sid}:${token}`).toString("base64");
+  const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      MessagingServiceSid: msgService,
+      To: e164,
+      Body: body,
+      SendAt: sendAt.toISOString(),
+      ScheduleType: "fixed",
+    }).toString(),
+  });
+  return { ok: res.ok, status: res.status };
+}
+
+// DST-aware: returns the UTC Date corresponding to a wall-clock time in
+// America/New_York on the given date.
+function nyWallClockToUtc(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+): Date {
+  // Compute NY's UTC offset on that date by formatting a sample noon-UTC.
+  const sample = new Date(Date.UTC(year, month - 1, day, 12, 0));
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    timeZoneName: "longOffset",
+  });
+  const parts = fmt.formatToParts(sample);
+  const offsetStr = parts.find((p) => p.type === "timeZoneName")?.value ?? "GMT-05:00";
+  const m = offsetStr.match(/GMT([+-])(\d{2}):(\d{2})/);
+  let offsetMin = -300;
+  if (m) {
+    const sign = m[1] === "+" ? 1 : -1;
+    offsetMin = sign * (Number(m[2]) * 60 + Number(m[3]));
+  }
+  // wall-clock NY = UTC + offset → UTC = wall-clock - offset
+  return new Date(Date.UTC(year, month - 1, day, hour, minute) - offsetMin * 60 * 1000);
+}
+
 async function sendEricSms(lead: Lead): Promise<SendResult> {
   const to = process.env.LEAD_SMS_TO;
   if (!to) return { ok: false, skipped: true, reason: "LEAD_SMS_TO not set" };
@@ -199,10 +275,18 @@ export async function notifyLead(lead: Lead) {
 // ---------- Booking notifications ----------
 
 export type Booking = Lead & {
-  slotStart: string;       // ISO timestamp of slot start
+  slotStart: string;       // wall-clock NY ISO of slot start, "YYYY-MM-DDTHH:MM"
+  slotEnd: string;         // wall-clock NY ISO of slot end,   "YYYY-MM-DDTHH:MM"
   slotRangeLabel: string;  // "10:30 AM – 12:00 PM"
   slotDayLabel: string;    // "Tomorrow · Tue, May 12"
 };
+
+// Parse a "YYYY-MM-DDTHH:MM" wall-clock string in America/New_York into a UTC Date.
+function nyWallClockStringToUtc(s: string): Date | null {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+  if (!m) return null;
+  return nyWallClockToUtc(+m[1], +m[2], +m[3], +m[4], +m[5]);
+}
 
 function bookingHtml(b: Booking) {
   const service = SERVICE_LABELS[b.service] ?? b.service;
@@ -302,16 +386,43 @@ async function sendCustomerBookingSms(b: Booking): Promise<SendResult> {
   return twilioSend(b.phone, body);
 }
 
+// Schedule a review-ask SMS for ~2 hours after the install slot ends.
+// Twilio holds the queue — no DB needed on our side. Customer gets a
+// friendly, low-pressure ask with a 1-tap Google review link.
+async function scheduleCustomerReviewAsk(b: Booking): Promise<SendResult> {
+  const end = nyWallClockStringToUtc(b.slotEnd);
+  if (!end) return { ok: false, skipped: true, reason: "invalid slotEnd" };
+
+  const delayHours = Number(process.env.REVIEW_ASK_HOURS_AFTER ?? 2);
+  const sendAt = new Date(end.getTime() + delayHours * 60 * 60 * 1000);
+  const reviewUrl =
+    process.env.GOOGLE_REVIEW_URL ??
+    `https://www.google.com/search?q=${encodeURIComponent(
+      `${BUSINESS.name} ${BUSINESS.city}`,
+    )}#lrd=`;
+
+  const firstName = b.name.split(/\s+/)[0] ?? b.name;
+  const body =
+    `Hi ${firstName} — Eric here from F.A.S.T. Family Autoglass. Hope your install went great! ` +
+    `If we earned it, would you mind dropping a quick Google review? Means the world to a small family business. ` +
+    `${reviewUrl}`;
+
+  return twilioSchedule(b.phone, body, sendAt);
+}
+
 export async function notifyBooking(booking: Booking) {
   const results = await Promise.allSettled([
     sendEricBookingEmail(booking),
     sendEricBookingSms(booking),
     sendCustomerBookingSms(booking),
+    scheduleCustomerReviewAsk(booking),
   ]);
   const summary = {
     email: results[0].status === "fulfilled" ? results[0].value : { ok: false, reason: String(results[0].reason) },
     ericSms: results[1].status === "fulfilled" ? results[1].value : { ok: false, reason: String(results[1].reason) },
     customerSms: results[2].status === "fulfilled" ? results[2].value : { ok: false, reason: String(results[2].reason) },
+    reviewAskScheduled:
+      results[3].status === "fulfilled" ? results[3].value : { ok: false, reason: String(results[3].reason) },
   };
   console.log("[F.A.S.T. booking]", JSON.stringify({ booking, summary }, null, 2));
   return summary;
