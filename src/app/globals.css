@@ -42,30 +42,32 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle radial spotlight used in dark sections */
+/* Brand-teal spotlight used in dark sections (hero, final CTA, footer) */
 .bg-spotlight {
   background:
-    radial-gradient(70% 60% at 80% 0%, rgba(245, 158, 11, 0.18) 0%, transparent 60%),
-    radial-gradient(60% 50% at 0% 100%, rgba(29, 78, 216, 0.18) 0%, transparent 55%),
-    linear-gradient(180deg, #0b1f3a 0%, #0a1832 100%);
+    radial-gradient(70% 60% at 80% 0%, rgba(63, 182, 182, 0.45) 0%, transparent 60%),
+    radial-gradient(60% 60% at 10% 100%, rgba(245, 158, 11, 0.18) 0%, transparent 55%),
+    linear-gradient(180deg, #1f8c8c 0%, #0e4747 100%);
 }
 
 .bg-grid {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 /* Tight headline tracking */
 .headline {
   letter-spacing: -0.02em;
-  line-height: 1.02;
+  line-height: 1.05;
 }
 
-/* Honest underline accent */
+/* Clean underline accent — actual underline, not a highlighter overlay */
 .underline-amber {
-  background-image: linear-gradient(transparent 62%, rgba(245, 158, 11, 0.55) 62%);
-  background-repeat: no-repeat;
-  padding: 0 0.1em;
+  text-decoration: underline;
+  text-decoration-color: var(--color-amber);
+  text-decoration-thickness: 4px;
+  text-underline-offset: 8px;
+  text-decoration-skip-ink: none;
 }
