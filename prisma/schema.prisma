@@ -29,10 +29,11 @@ model Project {
   status    ProjectStatus @default(SCRAPING)
   createdAt DateTime      @default(now())
 
-  scrape  Scrape?
-  audit   Audit?
-  consent ConsentRecord?
-  jobs    Job[]
+  scrape     Scrape?
+  audit      Audit?
+  consent    ConsentRecord?
+  jobs       Job[]
+  generation Generation?
 
   @@index([userId])
   @@index([status])
@@ -112,5 +113,38 @@ enum JobStatus {
   PENDING
   RUNNING
   SUCCEEDED
+  FAILED
+}
+
+// Phase 2: durable record of a rebuilt site generation.
+// Lives alongside Audit; one Generation per Project (latest).
+// Inngest function ID + step state is tracked by Inngest itself; this table
+// stores user-visible state (status, preview URL, repo URL, cost).
+model Generation {
+  id              String           @id @default(cuid())
+  projectId       String           @unique
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  siteSpec        Json
+  githubRepoUrl   String?
+  vercelProjectId String?
+  previewUrl      String?
+  status          GenerationStatus @default(QUEUED)
+  costCents       Int              @default(0)
+  modelVersion    String?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  error           String?
+  createdAt       DateTime         @default(now())
+
+  @@index([status])
+}
+
+enum GenerationStatus {
+  QUEUED
+  SPECCING
+  MATERIALIZING
+  PUSHING
+  DEPLOYING
+  READY
   FAILED
 }
