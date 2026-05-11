@@ -1,42 +1,150 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Rebuild Engine - Phase 1 schema
+// Connection is env-driven. See .env.example for required vars.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = "postgresql://postgres:Nick2024!@db.cypvdocztowesslhsoib.supabase.co:5432/postgres"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   name      String?
-  githubId  String   @unique
-  isPro     Boolean  @default(false)
-  createdAt DateTime @default(now())
-  feedbacks Feedback[]
+  createdAt DateTime  @default(now())
   projects  Project[]
 }
 
-model Feedback {
-  id        String   @id @default(uuid())
-  userId    String
-  issueId   String
-  message   String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+model Project {
+  id        String        @id @default(cuid())
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id])
+  url       String
+  slug      String        @unique
+  archetype String?
+  status    ProjectStatus @default(SCRAPING)
+  createdAt DateTime      @default(now())
+
+  scrape     Scrape?
+  audit      Audit?
+  consent    ConsentRecord?
+  jobs       Job[]
+  generation Generation?
+
+  @@index([userId])
+  @@index([status])
 }
 
-model Project {
-  id        String   @id @default(uuid())
-  userId    String
-  repoUrl   String
+enum ProjectStatus {
+  SCRAPING
+  CLASSIFYING
+  AUDITING
+  READY
+  FAILED
+}
+
+model Scrape {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  copy      Json
+  images    Json
+  colors    Json
+  fonts     Json
+  structure Json
+  source    String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+model Audit {
+  id              String   @id @default(cuid())
+  projectId       String   @unique
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scores          Json
+  overallScore    Float
+  findings        Json
+  recommendations Json
+  pdfUrl          String?
+  costCents       Int
+  modelVersion    String
+  createdAt       DateTime @default(now())
+}
+
+model ConsentRecord {
+  id         String   @id @default(cuid())
+  projectId  String   @unique
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url        String
+  ipAddress  String
+  userAgent  String
+  acceptedAt DateTime @default(now())
+}
+
+model Job {
+  id         String    @id @default(cuid())
+  projectId  String
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  kind       JobKind
+  status     JobStatus @default(PENDING)
+  error      String?
+  startedAt  DateTime?
+  finishedAt DateTime?
+  attempt    Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([projectId, kind])
+  @@index([status])
+}
+
+enum JobKind {
+  SCRAPE
+  CLASSIFY
+  AUDIT
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+// Phase 2: durable record of a rebuilt site generation.
+// Lives alongside Audit; one Generation per Project (latest).
+// Inngest function ID + step state is tracked by Inngest itself; this table
+// stores user-visible state (status, preview URL, repo URL, cost).
+model Generation {
+  id              String           @id @default(cuid())
+  projectId       String           @unique
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  siteSpec        Json
+  githubRepoUrl   String?
+  vercelProjectId String?
+  previewUrl      String?
+  status          GenerationStatus @default(QUEUED)
+  costCents       Int              @default(0)
+  modelVersion    String?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  error           String?
+  createdAt       DateTime         @default(now())
+
+  @@index([status])
+}
+
+enum GenerationStatus {
+  QUEUED
+  SPECCING
+  MATERIALIZING
+  PUSHING
+  DEPLOYING
+  READY
+  FAILED
 }
