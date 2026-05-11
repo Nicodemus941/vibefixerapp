@@ -1,20 +1,38 @@
+import Image from "next/image";
+import { IMG } from "../lib/images";
+
 export default function Doctors() {
   return (
-    <section id="doctors" className="relative py-20 sm:py-28">
+    <section
+      id="doctors"
+      className="relative overflow-hidden py-20 sm:py-28"
+    >
+      <Image
+        src={IMG.officeInterior}
+        alt=""
+        aria-hidden
+        fill
+        sizes="100vw"
+        className="absolute inset-0 -z-10 object-cover opacity-[0.08]"
+      />
+      <div
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-black via-black/95 to-black"
+        aria-hidden
+      />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="relative">
             <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-tr from-[var(--gold)]/30 via-transparent to-white/5 blur-2xl" />
-            <div className="relative grid grid-cols-2 gap-3 rounded-[2rem] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+            <div className="relative grid grid-cols-2 gap-3 rounded-[2rem] border border-white/10 bg-white/[0.03] p-4 sm:p-5 backdrop-blur">
               <DocCard
-                initials="MS"
+                src={IMG.drMonicaSilhouette}
                 name="Dr. Monica Sher"
                 role="Internal Medicine · Board-Certified"
-                school="American University of Integrative Sciences"
+                school="American Univ. of Integrative Sciences"
                 residency="Oak Hill Hospital · Chief Medical Resident"
               />
               <DocCard
-                initials="RS"
+                src={IMG.drRichardSilhouette}
                 name="Dr. Richard Sher"
                 role="Internal Medicine · Board-Certified"
                 school="Husband. Co-founder. Patient-first."
@@ -97,13 +115,13 @@ export default function Doctors() {
 }
 
 function DocCard({
-  initials,
+  src,
   name,
   role,
   school,
   residency,
 }: {
-  initials: string;
+  src: string;
   name: string;
   role: string;
   school: string;
@@ -111,13 +129,16 @@ function DocCard({
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.01]">
-      <div className="relative aspect-[4/5] bg-[radial-gradient(circle_at_50%_30%,rgba(212,175,55,0.18),transparent_60%)]">
-        <div className="absolute inset-0 grid place-items-center">
-          <div className="grid h-28 w-28 sm:h-32 sm:w-32 place-items-center rounded-full border border-[var(--gold)]/30 bg-black/40 text-3xl sm:text-4xl font-black text-[var(--gold)]">
-            {initials}
-          </div>
-        </div>
-        <span className="absolute bottom-3 left-3 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">
+      <div className="relative aspect-[4/5]">
+        <Image
+          src={src}
+          alt={`Portrait placeholder for ${name} — swap with real headshot`}
+          fill
+          sizes="(max-width: 768px) 50vw, 25vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/85" />
+        <span className="absolute bottom-3 left-3 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">
           MD · Board-Certified
         </span>
       </div>

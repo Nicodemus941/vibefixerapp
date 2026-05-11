@@ -1,6 +1,7 @@
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import SocialProof from "./components/SocialProof";
+import PressStrip from "./components/PressStrip";
 import Pain from "./components/Pain";
 import Services from "./components/Services";
 import HowItWorks from "./components/HowItWorks";
@@ -23,6 +24,7 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
+        <PressStrip />
         <SocialProof />
         <Pain />
         <Services />

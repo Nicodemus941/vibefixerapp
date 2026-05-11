@@ -85,9 +85,24 @@ const SERVICES = [
   },
 ];
 
+import Image from "next/image";
+import { IMG } from "../lib/images";
+
 export default function Services() {
   return (
-    <section id="services" className="relative py-20 sm:py-28">
+    <section id="services" className="relative overflow-hidden py-20 sm:py-28">
+      <Image
+        src={IMG.stethoscope}
+        alt=""
+        aria-hidden
+        fill
+        sizes="100vw"
+        className="absolute inset-0 -z-10 object-cover opacity-[0.06]"
+      />
+      <div
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-black via-[#0a0908] to-black"
+        aria-hidden
+      />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>

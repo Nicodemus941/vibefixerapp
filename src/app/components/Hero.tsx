@@ -1,15 +1,30 @@
+import Image from "next/image";
 import Link from "next/link";
+import { IMG } from "../lib/images";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-20 noise">
-      <div className="bg-grid absolute inset-0 opacity-60" aria-hidden />
+    <section className="relative overflow-hidden pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-20">
+      <Image
+        src={IMG.heroBackdrop}
+        alt=""
+        aria-hidden
+        fill
+        priority
+        sizes="100vw"
+        className="absolute inset-0 -z-10 object-cover opacity-[0.18]"
+      />
       <div
-        className="absolute -top-32 -left-32 h-[420px] w-[420px] rounded-full bg-[var(--gold)] opacity-[0.08] blur-3xl"
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-black via-black/85 to-[#0b0b0c]"
+        aria-hidden
+      />
+      <div className="bg-grid absolute inset-0 -z-10 opacity-40" aria-hidden />
+      <div
+        className="absolute -top-32 -left-32 -z-10 h-[420px] w-[420px] rounded-full bg-[var(--gold)] opacity-[0.08] blur-3xl"
         aria-hidden
       />
       <div
-        className="absolute -bottom-32 -right-20 h-[420px] w-[420px] rounded-full bg-[var(--gold)] opacity-[0.06] blur-3xl"
+        className="absolute -bottom-32 -right-20 -z-10 h-[420px] w-[420px] rounded-full bg-[var(--gold)] opacity-[0.06] blur-3xl"
         aria-hidden
       />
 
@@ -52,7 +67,7 @@ export default function Hero() {
               </Link>
               <a
                 href="tel:+14076637447"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-4 text-base font-bold uppercase tracking-wider text-white hover:border-[var(--gold)] hover:text-[var(--gold)] transition"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-4 text-base font-bold uppercase tracking-wider text-white hover:border-[var(--gold)] hover:text-[var(--gold)] transition backdrop-blur"
               >
                 Call (407) 663-7447
               </a>
@@ -68,56 +83,69 @@ export default function Hero() {
 
           <div className="relative">
             <div className="absolute -inset-3 rounded-3xl bg-gradient-to-tr from-[var(--gold)]/30 via-transparent to-white/5 blur-2xl" />
-            <div className="relative rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.07] to-white/[0.02] p-5 sm:p-7 backdrop-blur">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-                  Quick Triage · 30 sec
-                </span>
-                <span className="rounded-full bg-[var(--gold)]/15 px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--gold)]">
-                  Free
-                </span>
-              </div>
-              <p className="mt-3 text-xl font-bold leading-tight">
-                What brings you in today?
-              </p>
-              <p className="mt-1 text-sm text-white/70">
-                Tell us in one tap. A real human follows up within 5 minutes
-                during business hours.
-              </p>
-
-              <div className="mt-5 grid grid-cols-2 gap-2">
-                {[
-                  { e: "🩺", l: "New patient" },
-                  { e: "💊", l: "Refill / Rx" },
-                  { e: "⚡", l: "Hormones" },
-                  { e: "⚖️", l: "Weight loss" },
-                  { e: "🧬", l: "Executive physical" },
-                  { e: "💉", l: "Aesthetics" },
-                ].map((b) => (
-                  <a
-                    key={b.l}
-                    href="#book"
-                    className="group flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm font-semibold hover:border-[var(--gold)]/60 hover:bg-[var(--gold)]/[0.06] transition"
-                  >
-                    <span className="text-lg">{b.e}</span>
-                    <span>{b.l}</span>
-                    <span className="ml-auto text-white/40 group-hover:text-[var(--gold)]">
-                      →
-                    </span>
-                  </a>
-                ))}
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.07] to-white/[0.02] backdrop-blur">
+              <div className="relative h-44 sm:h-52 overflow-hidden">
+                <Image
+                  src={IMG.houseCall}
+                  alt="A board-certified physician arriving for a house call"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 40vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-[#0b0b0c]" />
+                <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs">
+                  <span className="rounded-full bg-black/70 px-2.5 py-1 font-bold uppercase tracking-widest text-[var(--gold)]">
+                    Quick Triage · 30 sec
+                  </span>
+                  <span className="rounded-full bg-[var(--gold)]/90 px-2.5 py-1 font-bold uppercase text-black">
+                    Free
+                  </span>
+                </div>
               </div>
 
-              <a
-                href="#book"
-                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white text-black py-3 text-sm font-bold hover:bg-[var(--gold-bright)] transition"
-              >
-                Start Free Consult →
-              </a>
+              <div className="p-5 sm:p-6">
+                <p className="text-xl font-bold leading-tight">
+                  What brings you in today?
+                </p>
+                <p className="mt-1 text-sm text-white/70">
+                  Tell us in one tap. A real human follows up within 5 minutes
+                  during business hours.
+                </p>
 
-              <div className="mt-4 flex items-center gap-3 text-[11px] text-white/55">
-                <Lock />
-                HIPAA-grade · Replies from a physician — never a bot.
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                  {[
+                    { e: "🩺", l: "New patient" },
+                    { e: "💊", l: "Refill / Rx" },
+                    { e: "⚡", l: "Hormones" },
+                    { e: "⚖️", l: "Weight loss" },
+                    { e: "🧬", l: "Executive physical" },
+                    { e: "💉", l: "Aesthetics" },
+                  ].map((b) => (
+                    <a
+                      key={b.l}
+                      href="#book"
+                      className="group flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm font-semibold hover:border-[var(--gold)]/60 hover:bg-[var(--gold)]/[0.06] transition"
+                    >
+                      <span className="text-lg">{b.e}</span>
+                      <span>{b.l}</span>
+                      <span className="ml-auto text-white/40 group-hover:text-[var(--gold)]">
+                        →
+                      </span>
+                    </a>
+                  ))}
+                </div>
+
+                <a
+                  href="#book"
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white text-black py-3 text-sm font-bold hover:bg-[var(--gold-bright)] transition"
+                >
+                  Start Free Consult →
+                </a>
+
+                <div className="mt-4 flex items-center gap-3 text-[11px] text-white/55">
+                  <Lock />
+                  HIPAA-grade · Replies from a physician — never a bot.
+                </div>
               </div>
             </div>
           </div>
