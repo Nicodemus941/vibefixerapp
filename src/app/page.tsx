@@ -32,7 +32,7 @@ function Hero() {
       </p>
       <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
         <a
-          href="#claim"
+          href="/login"
           className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3.5 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
         >
           Claim Your Spot — Free
@@ -284,7 +284,7 @@ function Pricing() {
                 ))}
               </ul>
               <a
-                href="#claim"
+                href="/login"
                 className={[
                   "mt-8 inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition-colors",
                   t.featured
@@ -345,16 +345,13 @@ function Faq() {
 
 function FinalCta() {
   return (
-    <section
-      id="claim"
-      className="px-6 py-24 text-center bg-neutral-50 border-t border-neutral-100"
-    >
+    <section className="px-6 py-24 text-center bg-neutral-50 border-t border-neutral-100">
       <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
         Built for founders who ship.
       </h2>
       <div className="mt-8">
         <a
-          href="#claim"
+          href="/login"
           className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-7 py-4 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
         >
           Claim Your Founder Spot — Free
