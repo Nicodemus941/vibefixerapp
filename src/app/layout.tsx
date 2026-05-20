@@ -15,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Code Vibe Fixer",
-  description: "Scan, explain, and fix your codebase with AI.",
+  title: "Loop — Stop networking. Start building.",
+  description:
+    "The first platform where every founder must give AND receive. AI matches your needs to another founder's services in under 24 hours.",
 };
 
 export default function RootLayout({
