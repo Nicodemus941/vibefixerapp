@@ -122,7 +122,7 @@ BEGIN
   WHERE last_need_posted_at < now() - INTERVAL '30 days'
     AND reciprocity_status = 'warned';
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public, pg_temp;
 
 -- Auto-update last_need_posted_at when a need is created
 CREATE OR REPLACE FUNCTION update_last_need_posted()
@@ -131,7 +131,7 @@ BEGIN
   UPDATE profiles SET last_need_posted_at = now() WHERE id = NEW.user_id;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public, pg_temp;
 
 CREATE TRIGGER trg_need_posted
 AFTER INSERT ON needs
@@ -143,6 +143,7 @@ ALTER TABLE offers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE needs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE engagements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reputation_events ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "profiles_read_all" ON profiles FOR SELECT USING (true);
 CREATE POLICY "profiles_update_own" ON profiles FOR UPDATE USING (auth.uid() = id);
@@ -158,3 +159,6 @@ CREATE POLICY "matches_read_participant" ON matches FOR SELECT
 
 CREATE POLICY "engagements_read_participant" ON engagements FOR SELECT
   USING (auth.uid() = seeker_id OR auth.uid() = provider_id);
+
+CREATE POLICY "reputation_events_read_own" ON reputation_events FOR SELECT
+  USING (auth.uid() = user_id);
