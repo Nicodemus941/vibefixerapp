@@ -30,10 +30,6 @@ export default async function HomePage() {
       <Hero />
 
       <section className="mx-auto max-w-7xl px-4 py-12">
-        <div className="-mt-20 mb-12">
-          <HomeSearch />
-        </div>
-
         <SectionHeader
           title="Today's best deals"
           subtitle="Sorted by deal score against market average — never by who paid the most."
@@ -73,7 +69,7 @@ async function loadSavedIds(
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#1a0710] via-[#3b0a14] to-[#7f1620] pb-32 pt-16 text-white">
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#1a0710] via-[#3b0a14] to-[#7f1620] pb-16 pt-12 text-white md:pb-20 md:pt-16">
       <div className="absolute inset-0 opacity-20 mix-blend-screen [background-image:radial-gradient(circle_at_20%_20%,#f59e0b_0,transparent_40%),radial-gradient(circle_at_80%_70%,#dc2626_0,transparent_40%)]" />
       <div className="relative mx-auto max-w-7xl px-4">
         <div className="flex items-center gap-2 text-sm font-medium opacity-90">
@@ -83,32 +79,44 @@ function Hero() {
             New • the calmer way to car shop
           </span>
         </div>
-        <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
-          Buy and sell cars
-          <br />
-          <span className="text-[var(--color-accent)]">without the noise.</span>
-        </h1>
-        <p className="mt-5 max-w-xl text-lg text-white/80">
-          A car marketplace without the dealer-ad blizzard. Verified sellers,
-          honest deal scores against market average, no buried filters, no
-          stale listings.
-        </p>
-        <div className="mt-7 flex flex-wrap gap-3">
-          <Link href="/search" className="ak-btn bg-white text-[var(--color-brand-ink)]">
-            Browse cars →
-          </Link>
-          <Link
-            href="/sell"
-            className="ak-btn border border-white/30 text-white hover:bg-white/10"
-          >
-            List your car free
-          </Link>
-        </div>
-        <div className="mt-10 grid max-w-2xl grid-cols-2 gap-6 text-sm md:grid-cols-4">
-          <Stat label="Avg deal vs market" value="−$1,840" />
-          <Stat label="Verified sellers" value="92%" />
-          <Stat label="Avg time to list" value="4 min" />
-          <Stat label="Listing fee" value="$0" />
+        <div className="mt-8 grid items-end gap-10 md:grid-cols-[1.3fr_1fr]">
+          <div>
+            <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
+              Buy and sell cars
+              <br />
+              <span className="text-[var(--color-accent)]">
+                without the noise.
+              </span>
+            </h1>
+            <p className="mt-5 max-w-xl text-lg text-white/80">
+              A car marketplace without the dealer-ad blizzard. Verified
+              sellers, honest deal scores against market average, no buried
+              filters, no stale listings.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href="/search"
+                className="ak-btn bg-white text-[var(--color-brand-ink)]"
+              >
+                Browse cars →
+              </Link>
+              <Link
+                href="/sell"
+                className="ak-btn border border-white/30 text-white hover:bg-white/10"
+              >
+                List your car free
+              </Link>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-6 text-sm md:grid-cols-4">
+              <Stat label="Avg deal vs market" value="−$1,840" />
+              <Stat label="Verified sellers" value="92%" />
+              <Stat label="Avg time to list" value="4 min" />
+              <Stat label="Listing fee" value="$0" />
+            </div>
+          </div>
+          <div className="md:pl-4">
+            <HomeSearch variant="stacked" />
+          </div>
         </div>
       </div>
     </section>
