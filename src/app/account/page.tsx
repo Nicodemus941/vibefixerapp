@@ -10,6 +10,11 @@ import { ListingStatus } from "@/lib/types";
 import { DashboardStats } from "@/components/dashboard-stats";
 import { VerifyBanner } from "@/components/verify-banner";
 import { ViewSparkline } from "@/components/view-sparkline";
+import {
+  BulkSelectionProvider,
+  BulkSelectCheckbox,
+  BulkActionsBar,
+} from "@/components/bulk-listings-toolbar";
 
 export const dynamic = "force-dynamic";
 
@@ -182,13 +187,18 @@ export default async function AccountPage() {
                   ctaHref="/sell"
                 />
               ) : (
-                <ul className="mt-4 space-y-3">
-                  {myListings.map((l) => (
-                    <li
-                      key={l.id}
-                      className="ak-card flex flex-col gap-3 p-3 md:flex-row md:items-center"
-                    >
-                      {l.photos?.[0] && (
+                <BulkSelectionProvider>
+                  {myListings.length > 1 && <BulkActionsBar />}
+                  <ul className="mt-4 space-y-3">
+                    {myListings.map((l) => (
+                      <li
+                        key={l.id}
+                        className="ak-card flex flex-col gap-3 p-3 md:flex-row md:items-center"
+                      >
+                        {myListings.length > 1 && (
+                          <BulkSelectCheckbox id={l.id} />
+                        )}
+                        {l.photos?.[0] && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={l.photos[0]}
@@ -234,8 +244,9 @@ export default async function AccountPage() {
                         status={l.status as ListingStatus}
                       />
                     </li>
-                  ))}
-                </ul>
+                    ))}
+                  </ul>
+                </BulkSelectionProvider>
               )}
             </section>
           )}

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 import { AvatarUploader } from "@/components/avatar-uploader";
+import { NotifPrefsForm, NotifPrefs } from "@/components/notif-prefs-form";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +16,20 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, is_verified, avatar_url")
+    .select(
+      "full_name, is_verified, avatar_url, notif_email_digest, notif_new_offer, notif_new_message, notif_price_drops, notif_saved_search_alerts",
+    )
     .eq("id", user.id)
     .maybeSingle();
+
+  const notifPrefs: NotifPrefs = {
+    notif_email_digest:
+      (profile?.notif_email_digest as NotifPrefs["notif_email_digest"]) ?? "weekly",
+    notif_new_offer: profile?.notif_new_offer ?? true,
+    notif_new_message: profile?.notif_new_message ?? true,
+    notif_price_drops: profile?.notif_price_drops ?? true,
+    notif_saved_search_alerts: profile?.notif_saved_search_alerts ?? true,
+  };
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -52,6 +64,16 @@ export default async function ProfilePage() {
           email={user.email ?? ""}
           emailVerified={!!profile?.is_verified}
         />
+      </div>
+
+      <div className="ak-card mt-6 p-6">
+        <h2 className="text-lg font-semibold">Notifications</h2>
+        <p className="mt-1 text-xs text-[var(--color-ink-muted)]">
+          Control which emails you receive from AK Rooster.
+        </p>
+        <div className="mt-4">
+          <NotifPrefsForm initial={notifPrefs} />
+        </div>
       </div>
     </div>
   );
