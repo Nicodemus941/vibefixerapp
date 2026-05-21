@@ -33,9 +33,7 @@ interface OfferRow {
 
 export default async function AccountPage() {
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/sign-in?next=/account");
 
   const [
@@ -72,14 +70,17 @@ export default async function AccountPage() {
       .order("created_at", { ascending: false }),
   ]);
 
-  const receivedOffers = mapOffers(received as OfferRow[] | null, "seller");
-  const sentOffers = mapOffers(sent as OfferRow[] | null, "buyer");
-
   const savedPreview = await loadSavedPreview(supabase, user.id);
   const savedCount = savedPreview.length;
 
   const messagePreview = await loadMessagePreview(supabase, user.id);
   const messageCount = messagePreview.length;
+
+  const listingIds = (myListings ?? []).map((l) => l.id);
+  const analytics = await loadListingAnalytics(supabase, listingIds);
+
+  const receivedOffers = mapOffers(received as OfferRow[] | null, "seller");
+  const sentOffers = mapOffers(sent as OfferRow[] | null, "buyer");
 
   const listingCount = myListings?.length ?? 0;
   const receivedOpenCount = receivedOffers.filter((o) => o.status === "pending").length;
@@ -169,6 +170,9 @@ export default async function AccountPage() {
                           {formatPrice(l.price)} • Listed{" "}
                           {relativeTime(l.created_at)}
                         </p>
+                        <ListingMetrics
+                          stats={analytics[l.id] ?? { saves: 0, conversations: 0, offers: 0 }}
+                        />
                       </div>
                       <MyListingActions
                         listingId={l.id}
@@ -325,18 +329,83 @@ export default async function AccountPage() {
                 )}
               />
               <div className="pt-2 text-xs">
-                <a
-                  href="mailto:help@akrooster.com?subject=Edit profile"
+                <Link
+                  href="/account/profile"
                   className="font-medium text-[var(--color-brand)] hover:underline"
                 >
                   Edit profile or change password →
-                </a>
+                </Link>
               </div>
             </div>
           </section>
         </aside>
       </div>
     </div>
+  );
+}
+
+async function loadListingAnalytics(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  listingIds: string[],
+): Promise<Record<string, { saves: number; conversations: number; offers: number }>> {
+  if (!listingIds.length) return {};
+  const [saves, convos, offers] = await Promise.all([
+    supabase
+      .from("saved_listings")
+      .select("listing_id")
+      .in("listing_id", listingIds),
+    supabase
+      .from("conversations")
+      .select("listing_id")
+      .in("listing_id", listingIds),
+    supabase
+      .from("offers")
+      .select("listing_id,status")
+      .in("listing_id", listingIds)
+      .eq("status", "pending"),
+  ]);
+  const out: Record<
+    string,
+    { saves: number; conversations: number; offers: number }
+  > = {};
+  for (const id of listingIds)
+    out[id] = { saves: 0, conversations: 0, offers: 0 };
+  for (const r of saves.data ?? []) {
+    const k = (r as { listing_id: string }).listing_id;
+    if (out[k]) out[k].saves++;
+  }
+  for (const r of convos.data ?? []) {
+    const k = (r as { listing_id: string }).listing_id;
+    if (out[k]) out[k].conversations++;
+  }
+  for (const r of offers.data ?? []) {
+    const k = (r as { listing_id: string }).listing_id;
+    if (out[k]) out[k].offers++;
+  }
+  return out;
+}
+
+function ListingMetrics({
+  stats,
+}: {
+  stats: { saves: number; conversations: number; offers: number };
+}) {
+  const { saves, conversations: convos, offers } = stats;
+  if (!saves && !convos && !offers) return null;
+  return (
+    <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[var(--color-ink-muted)]">
+      <span>
+        <b>{saves}</b> save{saves === 1 ? "" : "s"}
+      </span>
+      <span>•</span>
+      <span>
+        <b>{convos}</b> message{convos === 1 ? "" : "s"}
+      </span>
+      <span>•</span>
+      <span>
+        <b>{offers}</b> open offer{offers === 1 ? "" : "s"}
+      </span>
+    </p>
   );
 }
 

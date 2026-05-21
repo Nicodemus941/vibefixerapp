@@ -4,7 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-export function UserMenu({ email }: { email: string | null }) {
+export function UserMenu({
+  email,
+  notifCount = 0,
+}: {
+  email: string | null;
+  notifCount?: number;
+}) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -22,10 +28,19 @@ export function UserMenu({ email }: { email: string | null }) {
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-brand)] text-sm font-semibold text-white"
-        aria-label="Open user menu"
+        className="relative flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-brand)] text-sm font-semibold text-white"
+        aria-label={
+          notifCount > 0
+            ? `Open user menu, ${notifCount} new`
+            : "Open user menu"
+        }
       >
         {initials}
+        {notifCount > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-[var(--color-bad)] px-1 text-[10px] font-bold leading-none">
+            {notifCount > 9 ? "9+" : notifCount}
+          </span>
+        )}
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-56 rounded-lg border bg-white p-2 shadow-lg">
@@ -34,10 +49,15 @@ export function UserMenu({ email }: { email: string | null }) {
           </div>
           <Link
             href="/account"
-            className="block rounded px-3 py-2 text-sm hover:bg-[var(--color-bg)]"
+            className="flex items-center justify-between rounded px-3 py-2 text-sm hover:bg-[var(--color-bg)]"
             onClick={() => setOpen(false)}
           >
-            Account
+            <span>Account</span>
+            {notifCount > 0 && (
+              <span className="rounded-full bg-[var(--color-bad)] px-1.5 py-0.5 text-[10px] font-bold text-white">
+                {notifCount}
+              </span>
+            )}
           </Link>
           <Link
             href="/saved"

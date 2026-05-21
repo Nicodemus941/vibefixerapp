@@ -9,6 +9,16 @@ export async function SiteHeader() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  let notifCount = 0;
+  if (user) {
+    const { count } = await supabase
+      .from("offers")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", user.id)
+      .eq("status", "pending");
+    notifCount = count ?? 0;
+  }
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3">
@@ -39,7 +49,7 @@ export async function SiteHeader() {
           >
             List a car free
           </Link>
-          <UserMenu email={user?.email ?? null} />
+          <UserMenu email={user?.email ?? null} notifCount={notifCount} />
         </div>
       </div>
     </header>
