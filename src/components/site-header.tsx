@@ -11,20 +11,28 @@ export async function SiteHeader() {
   } = await supabase.auth.getUser();
 
   let notifCount = 0;
+  let avatarUrl: string | null = null;
   if (user) {
-    const [{ count: pendingOffers }, { data: convos }] = await Promise.all([
-      supabase
-        .from("offers")
-        .select("id", { count: "exact", head: true })
-        .eq("seller_id", user.id)
-        .eq("status", "pending"),
-      supabase
-        .from("conversations")
-        .select(
-          "id, buyer_id, seller_id, buyer_read_at, seller_read_at, messages(sender_id, created_at)",
-        )
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`),
-    ]);
+    const [{ count: pendingOffers }, { data: convos }, { data: profile }] =
+      await Promise.all([
+        supabase
+          .from("offers")
+          .select("id", { count: "exact", head: true })
+          .eq("seller_id", user.id)
+          .eq("status", "pending"),
+        supabase
+          .from("conversations")
+          .select(
+            "id, buyer_id, seller_id, buyer_read_at, seller_read_at, messages(sender_id, created_at)",
+          )
+          .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`),
+        supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("id", user.id)
+          .maybeSingle(),
+      ]);
+    avatarUrl = (profile as { avatar_url: string | null } | null)?.avatar_url ?? null;
     const unread = (convos ?? []).filter((c) =>
       isConvoUnread(
         c as {
@@ -70,7 +78,11 @@ export async function SiteHeader() {
           >
             List a car free
           </Link>
-          <UserMenu email={user?.email ?? null} notifCount={notifCount} />
+          <UserMenu
+            email={user?.email ?? null}
+            avatarUrl={avatarUrl}
+            notifCount={notifCount}
+          />
         </div>
       </div>
     </header>

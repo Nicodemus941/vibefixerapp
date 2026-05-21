@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ProfileEditForm } from "@/components/profile-edit-form";
+import { AvatarUploader } from "@/components/avatar-uploader";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, is_verified")
+    .select("full_name, is_verified, avatar_url")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -31,7 +32,21 @@ export default async function ProfilePage() {
         Update your display name, password, and verification.
       </p>
 
-      <div className="ak-card mt-6 p-6">
+      <div className="ak-card mt-6 space-y-8 p-6">
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-muted)]">
+            Profile photo
+          </label>
+          <div className="mt-3">
+            <AvatarUploader
+              initialUrl={profile?.avatar_url ?? null}
+              fallbackInitial={
+                (profile?.full_name?.[0] ?? user.email?.[0] ?? "U").toUpperCase()
+              }
+            />
+          </div>
+        </div>
+
         <ProfileEditForm
           initialName={profile?.full_name ?? ""}
           email={user.email ?? ""}

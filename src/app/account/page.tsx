@@ -43,7 +43,11 @@ export default async function AccountPage() {
     { data: sent },
     { data: savedSearches },
   ] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("full_name,is_verified,avatar_url,created_at")
+      .eq("id", user.id)
+      .maybeSingle(),
     supabase
       .from("listings")
       .select("id,title,price,status,created_at,photos")
@@ -322,7 +326,29 @@ export default async function AccountPage() {
 
           <section>
             <h2 className="text-lg font-semibold">Account</h2>
-            <div className="ak-card mt-3 space-y-2 p-4 text-sm">
+            <div className="ak-card mt-3 space-y-3 p-4 text-sm">
+              <div className="flex items-center gap-3 border-b pb-3">
+                {(profile as { avatar_url?: string | null } | null)?.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={(profile as { avatar_url: string }).avatar_url}
+                    alt=""
+                    className="h-12 w-12 rounded-full border object-cover"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-brand)] text-base font-semibold text-white">
+                    {(profile?.full_name?.[0] ?? user.email?.[0] ?? "U").toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">
+                    {profile?.full_name ?? "—"}
+                  </p>
+                  <p className="truncate text-xs text-[var(--color-ink-muted)]">
+                    {user.email ?? "—"}
+                  </p>
+                </div>
+              </div>
               <DetailRow label="Name" value={profile?.full_name ?? "—"} />
               <DetailRow label="Email" value={user.email ?? "—"} />
               <DetailRow

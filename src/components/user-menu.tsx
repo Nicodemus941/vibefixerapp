@@ -6,9 +6,11 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function UserMenu({
   email,
+  avatarUrl = null,
   notifCount = 0,
 }: {
   email: string | null;
+  avatarUrl?: string | null;
   notifCount?: number;
 }) {
   const [open, setOpen] = useState(false);
@@ -28,14 +30,23 @@ export function UserMenu({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-brand)] text-sm font-semibold text-white"
+        className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[var(--color-brand)] text-sm font-semibold text-white"
         aria-label={
           notifCount > 0
             ? `Open user menu, ${notifCount} new`
             : "Open user menu"
         }
       >
-        {initials}
+        {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={avatarUrl}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <span>{initials}</span>
+        )}
         {notifCount > 0 && (
           <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-[var(--color-bad)] px-1 text-[10px] font-bold leading-none">
             {notifCount > 9 ? "9+" : notifCount}
