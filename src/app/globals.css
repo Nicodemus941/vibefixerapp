@@ -1,26 +1,66 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: #faf8f5;
+  --color-surface: #ffffff;
+  --color-ink: #0f172a;
+  --color-ink-muted: #475569;
+  --color-line: #e8e2d8;
+  --color-brand: #b91c2c;
+  --color-brand-ink: #7f1620;
+  --color-brand-soft: #fdecec;
+  --color-accent: #f59e0b;
+  --color-good: #16a34a;
+  --color-good-soft: #dcfce7;
+  --color-warn: #f59e0b;
+  --color-warn-soft: #fef3c7;
+  --color-bad: #dc2626;
+  --color-bad-soft: #fee2e2;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --radius-card: 14px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+* {
+  border-color: var(--color-line);
+}
+
+.ak-input {
+  @apply w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand-soft)];
+  border-color: var(--color-line);
+}
+
+.ak-btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition;
+}
+
+.ak-btn-primary {
+  background: var(--color-brand);
+  color: white;
+}
+.ak-btn-primary:hover { background: var(--color-brand-ink); }
+
+.ak-btn-ghost {
+  background: transparent;
+  color: var(--color-ink);
+}
+.ak-btn-ghost:hover { background: var(--color-line); }
+
+.ak-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+}
+
+.ak-chip {
+  @apply inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium;
+  border-color: var(--color-line);
+  background: var(--color-surface);
 }

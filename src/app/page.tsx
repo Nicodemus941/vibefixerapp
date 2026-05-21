@@ -1,103 +1,298 @@
-import Image from "next/image";
+import Link from "next/link";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { Listing } from "@/lib/types";
+import { ListingCard } from "@/components/listing-card";
+import { HomeSearch } from "@/components/home-search";
+import { RoosterLogo } from "@/components/logo";
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const supabase = await createSupabaseServerClient();
+  const { data: featured } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("status", "active")
+    .order("deal_score", { ascending: false, nullsFirst: false })
+    .limit(8);
+
+  const { data: fresh } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(4);
+
+  const savedIds = await loadSavedIds(supabase);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div>
+      <Hero />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <div className="-mt-20 mb-12">
+          <HomeSearch />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <SectionHeader
+          title="Today's best deals"
+          subtitle="Sorted by deal score against market average — never by who paid the most."
+          href="/search?sort=best-deal"
+        />
+        <Grid listings={featured ?? []} savedIds={savedIds} />
+
+        <div className="mt-16" />
+        <SectionHeader
+          title="Just listed"
+          subtitle="Fresh in the last 24 hours. Every listing is sold-status synced."
+          href="/search?sort=newest"
+        />
+        <Grid listings={fresh ?? []} savedIds={savedIds} />
+
+        <WhySection />
+        <TrustSection />
+        <Cta />
+      </section>
     </div>
+  );
+}
+
+async function loadSavedIds(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return new Set<string>();
+  const { data } = await supabase
+    .from("saved_listings")
+    .select("listing_id")
+    .eq("user_id", user.id);
+  return new Set((data ?? []).map((r) => r.listing_id));
+}
+
+function Hero() {
+  return (
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#1a0710] via-[#3b0a14] to-[#7f1620] pb-32 pt-16 text-white">
+      <div className="absolute inset-0 opacity-20 mix-blend-screen [background-image:radial-gradient(circle_at_20%_20%,#f59e0b_0,transparent_40%),radial-gradient(circle_at_80%_70%,#dc2626_0,transparent_40%)]" />
+      <div className="relative mx-auto max-w-7xl px-4">
+        <div className="flex items-center gap-2 text-sm font-medium opacity-90">
+          <RoosterLogo className="h-6 w-6" />
+          <span>AK Rooster</span>
+          <span className="ml-3 rounded-full bg-white/10 px-2 py-0.5 text-xs">
+            New • the calmer way to car shop
+          </span>
+        </div>
+        <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
+          Buy and sell cars
+          <br />
+          <span className="text-[var(--color-accent)]">without the noise.</span>
+        </h1>
+        <p className="mt-5 max-w-xl text-lg text-white/80">
+          A car marketplace without the dealer-ad blizzard. Verified sellers,
+          honest deal scores against market average, no buried filters, no
+          stale listings.
+        </p>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <Link href="/search" className="ak-btn bg-white text-[var(--color-brand-ink)]">
+            Browse cars →
+          </Link>
+          <Link
+            href="/sell"
+            className="ak-btn border border-white/30 text-white hover:bg-white/10"
+          >
+            List your car free
+          </Link>
+        </div>
+        <div className="mt-10 grid max-w-2xl grid-cols-2 gap-6 text-sm md:grid-cols-4">
+          <Stat label="Avg deal vs market" value="−$1,840" />
+          <Stat label="Verified sellers" value="92%" />
+          <Stat label="Avg time to list" value="4 min" />
+          <Stat label="Listing fee" value="$0" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-xs uppercase tracking-wide text-white/60">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({
+  title,
+  subtitle,
+  href,
+}: {
+  title: string;
+  subtitle: string;
+  href: string;
+}) {
+  return (
+    <div className="mb-6 flex items-end justify-between gap-4">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+        <p className="text-sm text-[var(--color-ink-muted)]">{subtitle}</p>
+      </div>
+      <Link
+        href={href}
+        className="hidden text-sm font-semibold text-[var(--color-brand)] hover:underline md:inline"
+      >
+        See all →
+      </Link>
+    </div>
+  );
+}
+
+function Grid({
+  listings,
+  savedIds,
+}: {
+  listings: Listing[];
+  savedIds: Set<string>;
+}) {
+  if (!listings.length) {
+    return (
+      <div className="ak-card p-10 text-center text-sm text-[var(--color-ink-muted)]">
+        No listings yet. Be the first to{" "}
+        <Link href="/sell" className="font-semibold text-[var(--color-brand)]">
+          list a car
+        </Link>
+        .
+      </div>
+    );
+  }
+  return (
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {listings.map((l) => (
+        <ListingCard key={l.id} listing={l} saved={savedIds.has(l.id)} />
+      ))}
+    </div>
+  );
+}
+
+function WhySection() {
+  const items = [
+    {
+      title: "No dealer-ad clutter",
+      body: "Sponsored listings are clearly tagged and capped at one per page. Search results aren't auctions for attention.",
+    },
+    {
+      title: "Honest deal score",
+      body: "Every listing gets a score against market average — visible on the card, not hidden behind a paywall.",
+    },
+    {
+      title: "Visible filters",
+      body: "Private-seller toggle, body type, year, mileage, deal score — all in the sticky filter rail, no menus.",
+    },
+    {
+      title: "Fresh listings only",
+      body: "Listings auto-expire and sellers are nudged weekly to confirm. Sold cars disappear in 24 hours.",
+    },
+    {
+      title: "Scam-resistant messaging",
+      body: "In-app messaging blocks off-platform payment requests. Verified-buyer badges shown to sellers.",
+    },
+    {
+      title: "Quick list, free",
+      body: "Paste a VIN, we auto-fill year/make/model/trim/specs. Most sellers list in under 5 minutes — $0.",
+    },
+  ];
+  return (
+    <section id="why" className="mt-24">
+      <h2 className="text-3xl font-bold tracking-tight">
+        Built around the things buyers and sellers actually want.
+      </h2>
+      <p className="mt-2 max-w-2xl text-[var(--color-ink-muted)]">
+        We read every AutoTrader complaint we could find. Then we fixed them.
+      </p>
+      <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {items.map((i) => (
+          <div key={i.title} className="ak-card p-6">
+            <h3 className="text-base font-semibold">{i.title}</h3>
+            <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+              {i.body}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TrustSection() {
+  return (
+    <section id="trust" className="ak-card mt-16 grid gap-6 p-8 md:grid-cols-2">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">
+          Trust & safety, built in.
+        </h2>
+        <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+          AK Rooster verifies seller phone and email before listings go live.
+          Buyer DMs are screened for the common scam patterns sellers report on
+          other platforms (wire transfers, off-platform payment requests, fake
+          shipping companies).
+        </p>
+      </div>
+      <ul className="grid gap-3 text-sm">
+        <li className="flex gap-3">
+          <Check />
+          Phone + email verification on every listing
+        </li>
+        <li className="flex gap-3">
+          <Check />
+          Automatic VIN check — flagged if reported stolen or salvage
+        </li>
+        <li className="flex gap-3">
+          <Check />
+          Off-platform-payment language auto-blocked in DMs
+        </li>
+        <li className="flex gap-3">
+          <Check />
+          One-tap report — we act within 24 hours
+        </li>
+      </ul>
+    </section>
+  );
+}
+
+function Check() {
+  return (
+    <span className="mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-good-soft)] text-[var(--color-good)]">
+      ✓
+    </span>
+  );
+}
+
+function Cta() {
+  return (
+    <section className="mt-16 overflow-hidden rounded-2xl bg-[var(--color-brand)] p-8 text-white md:p-12">
+      <div className="grid gap-4 md:grid-cols-[2fr_1fr] md:items-center">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Selling? List in 4 minutes, free.
+          </h2>
+          <p className="mt-2 text-white/80">
+            Paste your VIN and we'll auto-fill the boring parts. No surprise
+            fees, no spotlight upsells.
+          </p>
+        </div>
+        <div className="flex md:justify-end">
+          <Link
+            href="/sell"
+            className="ak-btn bg-white text-[var(--color-brand-ink)]"
+          >
+            Start a free listing →
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
