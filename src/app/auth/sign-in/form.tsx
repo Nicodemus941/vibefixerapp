@@ -7,13 +7,13 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 export function SignInForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/";
+  const next = params.get("next") ?? "/account";
 
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(params.get("err"));
   const [busy, setBusy] = useState(false);
   const [check, setCheck] = useState(false);
 
@@ -38,7 +38,7 @@ export function SignInForm() {
         password,
         options: {
           data: { full_name: name },
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${next}`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
         },
       });
       if (error) setErr(error.message);
