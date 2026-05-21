@@ -71,6 +71,14 @@ function OfferRow({
   );
 
   async function act(action: "accept" | "decline" | "withdraw" | "counter") {
+    if (action === "accept") {
+      const ok = window.confirm(
+        `Accept ${formatPrice(offer.amount)} from ${offer.other_party_name}?\n\n` +
+          `This marks "${offer.listing_title}" as Sale Pending and notifies the ` +
+          `buyer. You can still mark it Sold or revert to Active from your dashboard.`,
+      );
+      if (!ok) return;
+    }
     setBusy(true);
     setErr(null);
     const supabase = createSupabaseBrowserClient();
@@ -116,6 +124,20 @@ function OfferRow({
   const isPending = offer.status === "pending";
   const isCountered = offer.status === "countered";
 
+  // Offers auto-expire 7 days after they're sent. We compute it client-side
+  // since we don't persist expires_at (no schema column for it yet).
+  const EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+  const expiresAt = new Date(offer.created_at).getTime() + EXPIRY_MS;
+  const msLeft = expiresAt - Date.now();
+  const expired = isPending && msLeft <= 0;
+  const expiringSoon = isPending && msLeft > 0 && msLeft < 2 * 24 * 60 * 60 * 1000;
+  const daysLeft = Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
+  const expiresLabel = expired
+    ? "Expired"
+    : daysLeft <= 1
+      ? "Expires today"
+      : `Expires in ${daysLeft}d`;
+
   return (
     <li className="ak-card p-4">
       <div className="flex items-start justify-between gap-3">
@@ -151,10 +173,21 @@ function OfferRow({
             </div>
           )}
           <StatusPill status={offer.status} />
+          {isPending && (
+            <p
+              className={`mt-1 text-[10px] font-semibold ${
+                expired || expiringSoon
+                  ? "text-[var(--color-bad)]"
+                  : "text-[var(--color-ink-muted)]"
+              }`}
+            >
+              {expiresLabel}
+            </p>
+          )}
         </div>
       </div>
 
-      {isPending && isSeller && (
+      {isPending && !expired && isSeller && (
         <div className="mt-3 flex flex-wrap gap-2 border-t pt-3">
           {counterMode ? (
             <>
@@ -208,7 +241,7 @@ function OfferRow({
         </div>
       )}
 
-      {isPending && !isSeller && (
+      {isPending && !expired && !isSeller && (
         <div className="mt-3 flex gap-2 border-t pt-3">
           <button
             onClick={() => act("withdraw")}
@@ -218,6 +251,13 @@ function OfferRow({
             Withdraw offer
           </button>
         </div>
+      )}
+
+      {expired && (
+        <p className="mt-3 border-t pt-3 text-xs text-[var(--color-ink-muted)]">
+          This offer has expired (offers automatically expire after 7 days).
+          {!isSeller && " You can resubmit a new offer from the listing."}
+        </p>
       )}
 
       {err && (

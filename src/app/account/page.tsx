@@ -74,7 +74,7 @@ export default async function AccountPage() {
   const savedCount = savedPreview.length;
 
   const messagePreview = await loadMessagePreview(supabase, user.id);
-  const messageCount = messagePreview.length;
+  const messageCount = messagePreview.filter((m) => m.unread).length;
 
   const listingIds = (myListings ?? []).map((l) => l.id);
   const analytics = await loadListingAnalytics(supabase, listingIds);
@@ -289,14 +289,23 @@ export default async function AccountPage() {
                 {messagePreview.slice(0, 4).map((m) => (
                   <li
                     key={m.id}
-                    className="ak-card p-3 text-xs"
+                    className={`ak-card p-3 text-xs ${
+                      m.unread ? "border-2 border-[var(--color-brand)]" : ""
+                    }`}
                   >
-                    <Link
-                      href={`/listings/${m.listing_id}`}
-                      className="font-semibold hover:underline"
-                    >
-                      {m.listing_title}
-                    </Link>
+                    <div className="flex items-center justify-between gap-2">
+                      <Link
+                        href={`/listings/${m.listing_id}`}
+                        className="font-semibold hover:underline"
+                      >
+                        {m.listing_title}
+                      </Link>
+                      {m.unread && (
+                        <span className="rounded-full bg-[var(--color-brand)] px-1.5 py-0.5 text-[9px] font-bold text-white">
+                          NEW
+                        </span>
+                      )}
+                    </div>
                     <p className="mt-0.5 text-[var(--color-ink-muted)]">
                       <b>{m.from}:</b> {m.body}
                     </p>
@@ -435,7 +444,7 @@ async function loadMessagePreview(
   const { data } = await supabase
     .from("conversations")
     .select(
-      "id, listing_id, buyer_id, seller_id, listings(title), messages(body,created_at,sender_id,flagged_scam)",
+      "id, listing_id, buyer_id, seller_id, buyer_read_at, seller_read_at, listings(title), messages(body,created_at,sender_id,flagged_scam)",
     )
     .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
     .order("created_at", { ascending: false })
@@ -451,8 +460,17 @@ async function loadMessagePreview(
       listing_id: string;
       buyer_id: string;
       seller_id: string;
+      buyer_read_at: string | null;
+      seller_read_at: string | null;
       listings: { title: string } | null;
     };
+    const myReadAt =
+      cast.buyer_id === userId ? cast.buyer_read_at : cast.seller_read_at;
+    const threshold = myReadAt ? new Date(myReadAt).getTime() : 0;
+    const unread =
+      last != null &&
+      last.sender_id !== userId &&
+      new Date(last.created_at).getTime() > threshold;
     return {
       id: cast.id,
       listing_id: cast.listing_id,
@@ -460,6 +478,7 @@ async function loadMessagePreview(
       body: last?.body ?? "—",
       from: last?.sender_id === userId ? "You" : "Other party",
       flagged: !!last?.flagged_scam,
+      unread,
     };
   });
 }

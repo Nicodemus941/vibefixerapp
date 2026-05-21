@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { relativeTime } from "@/lib/format";
+import { isConvoUnread } from "@/lib/unread";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,11 @@ interface Convo {
   buyer_id: string;
   seller_id: string;
   created_at: string;
+  buyer_read_at: string | null;
+  seller_read_at: string | null;
   listings: { id: string; title: string; photos: string[] } | null;
   messages:
-    | { body: string; created_at: string; flagged_scam: boolean }[]
+    | { body: string; created_at: string; flagged_scam: boolean; sender_id: string }[]
     | null;
 }
 
@@ -27,12 +30,42 @@ export default async function MessagesPage() {
   const { data: convos } = await supabase
     .from("conversations")
     .select(
-      "id, listing_id, buyer_id, seller_id, created_at, listings(id,title,photos), messages(body,created_at,flagged_scam)",
+      "id, listing_id, buyer_id, seller_id, created_at, buyer_read_at, seller_read_at, listings(id,title,photos), messages(body,created_at,flagged_scam,sender_id)",
     )
     .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
     .order("created_at", { ascending: false });
 
   const list = (convos as Convo[] | null) ?? [];
+
+  // Snapshot which conversations were unread BEFORE we mark them read,
+  // so we can show a "new" highlight on the inbox row.
+  const unreadIds = new Set(
+    list.filter((c) => isConvoUnread(c, c.messages ?? [], user.id)).map((c) => c.id),
+  );
+
+  // Mark all the user's conversations as read since they just opened the inbox.
+  // Separate updates per side so we don't clobber the other party's last-read.
+  const now = new Date().toISOString();
+  const asBuyer = list
+    .filter((c) => c.buyer_id === user.id)
+    .map((c) => c.id);
+  const asSeller = list
+    .filter((c) => c.seller_id === user.id)
+    .map((c) => c.id);
+  await Promise.all([
+    asBuyer.length
+      ? supabase
+          .from("conversations")
+          .update({ buyer_read_at: now })
+          .in("id", asBuyer)
+      : Promise.resolve(),
+    asSeller.length
+      ? supabase
+          .from("conversations")
+          .update({ seller_read_at: now })
+          .in("id", asSeller)
+      : Promise.resolve(),
+  ]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -58,8 +91,14 @@ export default async function MessagesPage() {
                   return a.created_at < b.created_at ? 1 : -1;
                 return a.body < b.body ? 1 : -1;
               })[0];
+            const unread = unreadIds.has(c.id);
             return (
-              <li key={c.id} className="ak-card p-4">
+              <li
+                key={c.id}
+                className={`ak-card p-4 ${
+                  unread ? "border-2 border-[var(--color-brand)]" : ""
+                }`}
+              >
                 <Link
                   href={`/listings/${c.listing_id}`}
                   className="flex items-start gap-3"

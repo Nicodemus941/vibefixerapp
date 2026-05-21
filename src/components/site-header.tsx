@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { RoosterLogo } from "@/components/logo";
 import { UserMenu } from "@/components/user-menu";
+import { isConvoUnread } from "@/lib/unread";
 
 export async function SiteHeader() {
   const supabase = await createSupabaseServerClient();
@@ -11,12 +12,32 @@ export async function SiteHeader() {
 
   let notifCount = 0;
   if (user) {
-    const { count } = await supabase
-      .from("offers")
-      .select("id", { count: "exact", head: true })
-      .eq("seller_id", user.id)
-      .eq("status", "pending");
-    notifCount = count ?? 0;
+    const [{ count: pendingOffers }, { data: convos }] = await Promise.all([
+      supabase
+        .from("offers")
+        .select("id", { count: "exact", head: true })
+        .eq("seller_id", user.id)
+        .eq("status", "pending"),
+      supabase
+        .from("conversations")
+        .select(
+          "id, buyer_id, seller_id, buyer_read_at, seller_read_at, messages(sender_id, created_at)",
+        )
+        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`),
+    ]);
+    const unread = (convos ?? []).filter((c) =>
+      isConvoUnread(
+        c as {
+          buyer_id: string;
+          seller_id: string;
+          buyer_read_at: string | null;
+          seller_read_at: string | null;
+        },
+        ((c as unknown as { messages: { sender_id: string; created_at: string }[] }).messages) ?? [],
+        user.id,
+      ),
+    ).length;
+    notifCount = (pendingOffers ?? 0) + unread;
   }
 
   return (
