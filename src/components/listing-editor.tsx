@@ -2,7 +2,14 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { BODY_TYPES, MAKES } from "@/lib/types";
+import { BODY_TYPES, Listing, MAKES } from "@/lib/types";
+import {
+  computeDealScore,
+  estimateMarket,
+  normalizeBody,
+  titleCase,
+} from "@/lib/listing-form";
+import { PhotoUploader } from "@/components/photo-uploader";
 
 type Decoded = {
   year?: string;
@@ -15,32 +22,32 @@ type Decoded = {
   transmission?: string;
 };
 
-export function SellForm() {
+export function ListingEditor({ initial }: { initial?: Listing | null }) {
   const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [vin, setVin] = useState("");
+  const editing = !!initial;
+  const [step, setStep] = useState(editing ? 1 : 0);
+  const [vin, setVin] = useState(initial?.vin ?? "");
   const [decoding, setDecoding] = useState(false);
   const [decoded, setDecoded] = useState<Decoded>({});
   const [form, setForm] = useState({
-    year: "",
-    make: "",
-    model: "",
-    trim: "",
-    body_type: "",
-    transmission: "",
-    drivetrain: "",
-    fuel_type: "",
-    mileage: "",
-    exterior_color: "",
-    interior_color: "",
-    condition: "Excellent",
-    price: "",
-    description: "",
-    location_city: "",
-    location_state: "",
-    zip: "",
-    photos: [] as string[],
-    photoInput: "",
+    year: String(initial?.year ?? ""),
+    make: initial?.make ?? "",
+    model: initial?.model ?? "",
+    trim: initial?.trim ?? "",
+    body_type: initial?.body_type ?? "",
+    transmission: initial?.transmission ?? "",
+    drivetrain: initial?.drivetrain ?? "",
+    fuel_type: initial?.fuel_type ?? "",
+    mileage: String(initial?.mileage ?? ""),
+    exterior_color: initial?.exterior_color ?? "",
+    interior_color: initial?.interior_color ?? "",
+    condition: initial?.condition ?? "Excellent",
+    price: String(initial?.price ?? ""),
+    description: initial?.description ?? "",
+    location_city: initial?.location_city ?? "",
+    location_state: initial?.location_state ?? "",
+    zip: initial?.zip ?? "",
+    photos: initial?.photos ?? [],
   });
   const [err, setErr] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -53,9 +60,13 @@ export function SellForm() {
     setErr(null);
     setDecoding(true);
     try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
       const r = await fetch(
         `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json`,
+        { signal: ctrl.signal },
       );
+      clearTimeout(timer);
       const j = await r.json();
       const map: Record<string, string> = {};
       for (const row of j.Results ?? []) {
@@ -75,8 +86,8 @@ export function SellForm() {
       setForm((f) => ({
         ...f,
         year: d.year ?? f.year,
-        make: titleCase(d.make ?? f.make),
-        model: titleCase(d.model ?? f.model),
+        make: titleCase(d.make) || f.make,
+        model: titleCase(d.model) || f.model,
         trim: d.trim ?? f.trim,
         body_type: normalizeBody(d.body) ?? f.body_type,
         drivetrain: d.drivetrain ?? f.drivetrain,
@@ -89,12 +100,6 @@ export function SellForm() {
       setStep(1);
     }
     setDecoding(false);
-  }
-
-  function addPhoto() {
-    const url = form.photoInput.trim();
-    if (!url) return;
-    setForm((f) => ({ ...f, photos: [...f.photos, url], photoInput: "" }));
   }
 
   async function submit() {
@@ -117,55 +122,76 @@ export function SellForm() {
     const title = `${year} ${form.make} ${form.model}${form.trim ? " " + form.trim : ""}`;
     const market = estimateMarket(year, mileage);
     const score = computeDealScore(price, market);
-    const { data, error } = await supabase
-      .from("listings")
-      .insert({
-        seller_id: u.user.id,
-        seller_type: "private",
-        title,
-        year,
-        make: form.make,
-        model: form.model,
-        trim: form.trim || null,
-        price,
-        mileage,
-        vin: vin || null,
-        body_type: form.body_type || null,
-        transmission: form.transmission || null,
-        drivetrain: form.drivetrain || null,
-        fuel_type: form.fuel_type || null,
-        exterior_color: form.exterior_color || null,
-        interior_color: form.interior_color || null,
-        condition: form.condition,
-        description: form.description || null,
-        features: [],
-        photos: form.photos,
-        location_city: form.location_city,
-        location_state: form.location_state.toUpperCase(),
-        zip: form.zip || null,
-        status: "active",
-        market_price_estimate: market,
-        deal_score: score,
-        is_verified_seller: false,
-        is_promoted: false,
-        last_verified_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-    setSubmitting(false);
-    if (error || !data) {
-      setErr(error?.message ?? "Couldn't create listing.");
-      return;
+
+    const payload = {
+      title,
+      year,
+      make: form.make,
+      model: form.model,
+      trim: form.trim || null,
+      price,
+      mileage,
+      vin: vin || null,
+      body_type: form.body_type || null,
+      transmission: form.transmission || null,
+      drivetrain: form.drivetrain || null,
+      fuel_type: form.fuel_type || null,
+      exterior_color: form.exterior_color || null,
+      interior_color: form.interior_color || null,
+      condition: form.condition,
+      description: form.description || null,
+      photos: form.photos,
+      location_city: form.location_city,
+      location_state: form.location_state.toUpperCase(),
+      zip: form.zip || null,
+      market_price_estimate: market,
+      deal_score: score,
+      last_verified_at: new Date().toISOString(),
+    };
+
+    let id: string | undefined;
+    if (editing && initial) {
+      const { error } = await supabase
+        .from("listings")
+        .update(payload)
+        .eq("id", initial.id);
+      if (error) {
+        setErr(error.message);
+        setSubmitting(false);
+        return;
+      }
+      id = initial.id;
+    } else {
+      const { data, error } = await supabase
+        .from("listings")
+        .insert({
+          ...payload,
+          seller_id: u.user.id,
+          seller_type: "private",
+          features: [],
+          status: "active",
+          is_verified_seller: false,
+          is_promoted: false,
+        })
+        .select()
+        .single();
+      setSubmitting(false);
+      if (error || !data) {
+        setErr(error?.message ?? "Couldn't create listing.");
+        return;
+      }
+      id = data.id;
     }
-    router.push(`/listings/${data.id}`);
+    setSubmitting(false);
+    router.push(`/listings/${id}`);
     router.refresh();
   }
 
   return (
     <div className="mt-8">
-      <Stepper step={step} />
+      {!editing && <Stepper step={step} />}
 
-      {step === 0 && (
+      {!editing && step === 0 && (
         <section className="ak-card space-y-4 p-6">
           <h2 className="text-lg font-semibold">Start with your VIN</h2>
           <p className="text-sm text-[var(--color-ink-muted)]">
@@ -198,9 +224,9 @@ export function SellForm() {
         </section>
       )}
 
-      {step === 1 && (
+      {step >= 1 && (
         <section className="ak-card space-y-4 p-6">
-          {decoded.year && (
+          {decoded.year && !editing && (
             <div className="rounded-md bg-[var(--color-good-soft)] p-3 text-sm text-[var(--color-good)]">
               ✓ Auto-filled from VIN. Tweak anything that's off.
             </div>
@@ -334,22 +360,7 @@ export function SellForm() {
               </select>
             </F>
           </div>
-          <div className="flex justify-between">
-            <button onClick={() => setStep(0)} className="ak-btn ak-btn-ghost">
-              ← Back
-            </button>
-            <button
-              onClick={() => setStep(2)}
-              className="ak-btn ak-btn-primary"
-            >
-              Next: pricing & photos →
-            </button>
-          </div>
-        </section>
-      )}
 
-      {step === 2 && (
-        <section className="ak-card space-y-4 p-6">
           <div className="grid grid-cols-2 gap-3">
             <F label="Asking price ($)">
               <input
@@ -391,9 +402,10 @@ export function SellForm() {
               />
             </F>
           </div>
+
           <F label="Description">
             <textarea
-              rows={4}
+              rows={5}
               className="ak-input"
               placeholder="What makes your car worth buying?"
               value={form.description}
@@ -402,52 +414,36 @@ export function SellForm() {
               }
             />
           </F>
-          <F label="Photo URLs (paste links one at a time)">
-            <div className="flex gap-2">
-              <input
-                className="ak-input flex-1"
-                placeholder="https://…"
-                value={form.photoInput}
-                onChange={(e) =>
-                  setForm({ ...form, photoInput: e.target.value })
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addPhoto();
-                  }
-                }}
-              />
-              <button onClick={addPhoto} className="ak-btn ak-btn-ghost border">
-                Add
-              </button>
-            </div>
-            {!!form.photos.length && (
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                {form.photos.map((p, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={i}
-                    src={p}
-                    alt=""
-                    className="aspect-[4/3] rounded-md object-cover"
-                  />
-                ))}
-              </div>
-            )}
+
+          <F label="Photos">
+            <PhotoUploader
+              photos={form.photos}
+              onChange={(next) => setForm({ ...form, photos: next })}
+            />
           </F>
 
           {err && <Err msg={err} />}
           <div className="flex justify-between">
-            <button onClick={() => setStep(1)} className="ak-btn ak-btn-ghost">
-              ← Back
-            </button>
+            {!editing && (
+              <button
+                onClick={() => setStep(0)}
+                className="ak-btn ak-btn-ghost"
+              >
+                ← Back
+              </button>
+            )}
             <button
               onClick={submit}
               disabled={submitting}
-              className="ak-btn ak-btn-primary disabled:opacity-50"
+              className="ak-btn ak-btn-primary ml-auto disabled:opacity-50"
             >
-              {submitting ? "Publishing…" : "Publish listing →"}
+              {submitting
+                ? editing
+                  ? "Saving…"
+                  : "Publishing…"
+                : editing
+                  ? "Save changes"
+                  : "Publish listing →"}
             </button>
           </div>
         </section>
@@ -457,7 +453,7 @@ export function SellForm() {
 }
 
 function Stepper({ step }: { step: number }) {
-  const steps = ["VIN", "Vehicle", "Price & photos"];
+  const steps = ["VIN", "Vehicle details", "Photos & publish"];
   return (
     <ol className="mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-muted)]">
       {steps.map((s, i) => (
@@ -502,41 +498,4 @@ function Err({ msg }: { msg: string }) {
       {msg}
     </div>
   );
-}
-
-function titleCase(s: string | undefined) {
-  if (!s) return s ?? "";
-  return s
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function normalizeBody(s: string | undefined) {
-  if (!s) return s;
-  const l = s.toLowerCase();
-  if (l.includes("suv") || l.includes("sport utility")) return "SUV";
-  if (l.includes("sedan")) return "Sedan";
-  if (l.includes("coupe")) return "Coupe";
-  if (l.includes("truck") || l.includes("pickup")) return "Truck";
-  if (l.includes("convertible") || l.includes("roadster"))
-    return "Convertible";
-  if (l.includes("hatchback")) return "Hatchback";
-  if (l.includes("wagon")) return "Wagon";
-  if (l.includes("van") || l.includes("minivan")) return "Van";
-  return s;
-}
-
-function estimateMarket(year: number, mileage: number) {
-  const age = Math.max(new Date().getFullYear() - year, 0);
-  const base = 32000;
-  const ageHit = Math.min(age, 20) * 1300;
-  const mileageHit = Math.min(mileage / 1000, 250) * 55;
-  return Math.max(1500, Math.round(base - ageHit - mileageHit));
-}
-
-function computeDealScore(price: number, market: number) {
-  if (!market) return null;
-  const diff = (market - price) / market;
-  const score = Math.round(70 + diff * 100);
-  return Math.max(0, Math.min(100, score));
 }

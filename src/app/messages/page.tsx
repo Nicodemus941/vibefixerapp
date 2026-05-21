@@ -49,9 +49,15 @@ export default async function MessagesPage() {
       ) : (
         <ul className="mt-6 space-y-3">
           {list.map((c) => {
-            const last = c.messages?.sort((a, b) =>
-              a.created_at < b.created_at ? 1 : -1,
-            )[0];
+            // Sort newest-first; stable secondary sort on body so simultaneous
+            // writes have a deterministic ordering instead of relying on insert order.
+            const last = c.messages
+              ?.slice()
+              .sort((a, b) => {
+                if (a.created_at !== b.created_at)
+                  return a.created_at < b.created_at ? 1 : -1;
+                return a.body < b.body ? 1 : -1;
+              })[0];
             return (
               <li key={c.id} className="ak-card p-4">
                 <Link

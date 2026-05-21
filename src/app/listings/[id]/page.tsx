@@ -6,6 +6,8 @@ import { DealBadge } from "@/components/deal-badge";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { ContactSeller } from "@/components/contact-seller";
 import { SaveButton } from "@/components/save-button";
+import { StatusBadge } from "@/components/status-badge";
+import { MakeOfferDialog } from "@/components/make-offer-dialog";
 import { Listing } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +54,9 @@ export default async function ListingPage({
     ? listing.price - listing.market_price_estimate
     : null;
 
+  const isOwner = !!user && user.id === listing.seller_id;
+  const isAvailable = listing.status === "active";
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="mb-4 flex items-center gap-2 text-sm text-[var(--color-ink-muted)]">
@@ -60,6 +65,10 @@ export default async function ListingPage({
         </Link>
       </div>
 
+      {listing.status !== "active" && (
+        <UnavailableBanner status={listing.status} />
+      )}
+
       <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
         <div>
           <PhotoGallery photos={listing.photos} alt={listing.title} />
@@ -67,6 +76,9 @@ export default async function ListingPage({
           <div className="mt-6 flex flex-wrap items-start justify-between gap-3">
             <div>
               <div className="flex flex-wrap items-center gap-2">
+                {listing.status !== "active" && (
+                  <StatusBadge status={listing.status} />
+                )}
                 {listing.is_verified_seller && (
                   <span className="ak-chip bg-[var(--color-good-soft)] text-[var(--color-good)] border-transparent">
                     ✓ Verified seller
@@ -172,12 +184,30 @@ export default async function ListingPage({
         </div>
 
         <aside className="space-y-4">
-          {listing.seller_id && (
-            <ContactSeller
-              listingId={listing.id}
-              sellerId={listing.seller_id}
-            />
-          )}
+          {isOwner ? (
+            <div className="ak-card space-y-2 p-5">
+              <h3 className="text-base font-semibold">This is your listing</h3>
+              <p className="text-xs text-[var(--color-ink-muted)]">
+                Manage status, edit details, or check offers in{" "}
+                <Link href="/account" className="font-semibold underline">
+                  your account
+                </Link>
+                .
+              </p>
+            </div>
+          ) : isAvailable && listing.seller_id ? (
+            <>
+              <MakeOfferDialog
+                listingId={listing.id}
+                sellerId={listing.seller_id}
+                listingPrice={listing.price}
+              />
+              <ContactSeller
+                listingId={listing.id}
+                sellerId={listing.seller_id}
+              />
+            </>
+          ) : null}
           <div className="ak-card p-5 text-sm">
             <h4 className="font-semibold">Why AK Rooster is safer</h4>
             <ul className="mt-2 space-y-2 text-xs text-[var(--color-ink-muted)]">
@@ -188,6 +218,36 @@ export default async function ListingPage({
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function UnavailableBanner({
+  status,
+}: {
+  status: "pending" | "sold" | "expired";
+}) {
+  const config = {
+    sold: {
+      title: "This car has been sold.",
+      body: "The seller marked it sold on AK Rooster. Check out similar listings below.",
+      tone: "bg-gray-900 text-white",
+    },
+    pending: {
+      title: "Sale pending.",
+      body: "The seller has accepted an offer and is finalizing the sale. Save the listing in case it falls through.",
+      tone: "bg-[var(--color-warn-soft)] text-[var(--color-warn)]",
+    },
+    expired: {
+      title: "This listing has expired.",
+      body: "The seller hasn't refreshed in 30 days. Try the similar listings below.",
+      tone: "bg-gray-200 text-gray-700",
+    },
+  }[status];
+  return (
+    <div className={`ak-card mb-6 p-5 ${config.tone}`}>
+      <h2 className="text-lg font-bold">{config.title}</h2>
+      <p className="text-sm opacity-90">{config.body}</p>
     </div>
   );
 }

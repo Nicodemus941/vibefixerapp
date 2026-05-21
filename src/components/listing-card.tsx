@@ -3,6 +3,7 @@ import { Listing } from "@/lib/types";
 import { formatMileage, formatPrice, relativeTime } from "@/lib/format";
 import { DealBadge } from "@/components/deal-badge";
 import { SaveButton } from "@/components/save-button";
+import { ListingStatusOverlay } from "@/components/status-badge";
 
 export function ListingCard({
   listing,
@@ -49,6 +50,7 @@ export function ListingCard({
         <div className="absolute right-3 top-3">
           <SaveButton listingId={listing.id} initialSaved={saved} />
         </div>
+        <ListingStatusOverlay status={listing.status} />
       </div>
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">

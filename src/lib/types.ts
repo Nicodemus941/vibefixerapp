@@ -1,5 +1,12 @@
 export type ListingStatus = "active" | "pending" | "sold" | "expired";
 export type SellerType = "private" | "dealer";
+export type OfferStatus =
+  | "pending"
+  | "accepted"
+  | "declined"
+  | "withdrawn"
+  | "countered"
+  | "expired";
 
 export interface Listing {
   id: string;
@@ -37,27 +44,18 @@ export interface Listing {
   sold_at: string | null;
 }
 
-export interface SearchParams {
-  q?: string;
-  make?: string;
-  model?: string;
-  body?: string;
-  yearMin?: number;
-  yearMax?: number;
-  priceMin?: number;
-  priceMax?: number;
-  mileageMax?: number;
-  sellerType?: SellerType | "any";
-  state?: string;
-  zip?: string;
-  sort?:
-    | "best-deal"
-    | "newest"
-    | "price-asc"
-    | "price-desc"
-    | "mileage-asc"
-    | "year-desc";
-  page?: number;
+export interface Offer {
+  id: string;
+  listing_id: string;
+  buyer_id: string;
+  seller_id: string;
+  amount: number;
+  message: string | null;
+  status: OfferStatus;
+  counter_amount: number | null;
+  parent_offer_id: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export const BODY_TYPES = [
@@ -94,3 +92,19 @@ export const MAKES = [
   "Volvo",
   "Acura",
 ] as const;
+
+export const STATUS_LABEL: Record<ListingStatus, string> = {
+  active: "Active",
+  pending: "Sale pending",
+  sold: "Sold",
+  expired: "Expired",
+};
+
+export const OFFER_LABEL: Record<OfferStatus, string> = {
+  pending: "Pending",
+  accepted: "Accepted",
+  declined: "Declined",
+  withdrawn: "Withdrawn",
+  countered: "Countered",
+  expired: "Expired",
+};

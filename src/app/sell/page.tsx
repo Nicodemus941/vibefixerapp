@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { SellForm } from "./form";
+import { ListingEditor } from "@/components/listing-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export default async function SellPage() {
         Paste a VIN and we auto-fill year, make, model, trim, body and
         drivetrain. Most listings go live in under 5 minutes — for free.
       </p>
-      <SellForm />
+      <ListingEditor />
     </div>
   );
 }
