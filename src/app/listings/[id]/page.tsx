@@ -31,6 +31,15 @@ export default async function ListingPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Log a view (don't count the seller's own visits — those would inflate
+  // their analytics with self-traffic).
+  if (!user || user.id !== listing.seller_id) {
+    await supabase
+      .from("listing_views")
+      .insert({ listing_id: id, viewer_id: user?.id ?? null });
+  }
+
   let saved = false;
   if (user) {
     const { data } = await supabase

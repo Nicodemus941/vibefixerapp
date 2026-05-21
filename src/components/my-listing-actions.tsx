@@ -27,6 +27,45 @@ export function MyListingActions({
     const update: Record<string, unknown> = { status: next };
     if (next === "sold") update.sold_at = new Date().toISOString();
     if (next === "active") update.sold_at = null;
+
+    // When flipping to sold, record a sale row from the most recent accepted
+    // offer (if any) so the dashboard can show transaction history.
+    if (next === "sold") {
+      const [listingRes, offerRes] = await Promise.all([
+        supabase
+          .from("listings")
+          .select("price, seller_id")
+          .eq("id", listingId)
+          .maybeSingle(),
+        supabase
+          .from("offers")
+          .select("id, buyer_id, amount")
+          .eq("listing_id", listingId)
+          .eq("status", "accepted")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      const listing = listingRes.data as { price: number; seller_id: string } | null;
+      const accepted = offerRes.data as { id: string; buyer_id: string; amount: number } | null;
+      if (listing) {
+        await supabase
+          .from("sales")
+          .upsert(
+            {
+              listing_id: listingId,
+              seller_id: listing.seller_id,
+              buyer_id: accepted?.buyer_id ?? null,
+              offer_id: accepted?.id ?? null,
+              sale_price: accepted?.amount ?? listing.price,
+              list_price: listing.price,
+              sold_at: new Date().toISOString(),
+            },
+            { onConflict: "listing_id" },
+          );
+      }
+    }
+
     const { error } = await supabase
       .from("listings")
       .update(update)

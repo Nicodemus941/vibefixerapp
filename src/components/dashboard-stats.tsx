@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { formatPrice } from "@/lib/format";
 
 interface Stat {
   label: string;
   value: number;
   href: string;
   emphasize?: boolean;
+  formatAsPrice?: boolean;
 }
 
 export function DashboardStats({ stats }: { stats: Stat[] }) {
@@ -27,7 +29,7 @@ export function DashboardStats({ stats }: { stats: Stat[] }) {
                 : ""
             }`}
           >
-            {s.value}
+            {s.formatAsPrice ? formatPrice(s.value) : s.value}
           </div>
           <div className="text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
             {s.label}

@@ -9,8 +9,19 @@ import { SavedSearchesList, SavedSearch } from "@/components/saved-searches-list
 import { ListingStatus } from "@/lib/types";
 import { DashboardStats } from "@/components/dashboard-stats";
 import { VerifyBanner } from "@/components/verify-banner";
+import { ViewSparkline } from "@/components/view-sparkline";
 
 export const dynamic = "force-dynamic";
+
+interface SaleRow {
+  id: string;
+  listing_id: string;
+  sale_price: number;
+  list_price: number;
+  sold_at: string;
+  buyer: { full_name: string | null } | null;
+  listings: { title: string; photos: string[] | null } | null;
+}
 
 interface OfferRow {
   id: string;
@@ -83,6 +94,22 @@ export default async function AccountPage() {
   const listingIds = (myListings ?? []).map((l) => l.id);
   const analytics = await loadListingAnalytics(supabase, listingIds);
 
+  const [{ data: salesRows }, viewsByListing] = await Promise.all([
+    supabase
+      .from("sales")
+      .select(
+        "id, listing_id, sale_price, list_price, sold_at, buyer:profiles!sales_buyer_id_fkey(full_name), listings(title, photos)",
+      )
+      .eq("seller_id", user.id)
+      .order("sold_at", { ascending: false }),
+    loadViewsByDay(supabase, listingIds, 14),
+  ]);
+  const sales = (salesRows ?? []) as unknown as SaleRow[];
+  const totalEarned = sales.reduce(
+    (sum, s) => sum + Number(s.sale_price ?? 0),
+    0,
+  );
+
   const receivedOffers = mapOffers(received as OfferRow[] | null, "seller");
   const sentOffers = mapOffers(sent as OfferRow[] | null, "buyer");
 
@@ -120,12 +147,21 @@ export default async function AccountPage() {
 
       <div className="mt-6">
         <DashboardStats
-          stats={[
-            { label: "Active listings", value: listingCount, href: "#listings" },
-            { label: "Open offers", value: isSeller ? receivedOpenCount : sentOpenCount, href: isSeller ? "#offers-received" : "#offers-sent", emphasize: true },
-            { label: "Unread messages", value: messageCount, href: "/messages", emphasize: true },
-            { label: "Saved cars", value: savedCount, href: "/saved" },
-          ]}
+          stats={
+            sales.length > 0
+              ? [
+                  { label: "Active listings", value: listingCount, href: "#listings" },
+                  { label: "Open offers", value: isSeller ? receivedOpenCount : sentOpenCount, href: isSeller ? "#offers-received" : "#offers-sent", emphasize: true },
+                  { label: "Unread messages", value: messageCount, href: "/messages", emphasize: true },
+                  { label: `Total earned`, value: Math.round(totalEarned), href: "#sold", formatAsPrice: true },
+                ]
+              : [
+                  { label: "Active listings", value: listingCount, href: "#listings" },
+                  { label: "Open offers", value: isSeller ? receivedOpenCount : sentOpenCount, href: isSeller ? "#offers-received" : "#offers-sent", emphasize: true },
+                  { label: "Unread messages", value: messageCount, href: "/messages", emphasize: true },
+                  { label: "Saved cars", value: savedCount, href: "/saved" },
+                ]
+          }
         />
       </div>
 
@@ -178,6 +214,21 @@ export default async function AccountPage() {
                           stats={analytics[l.id] ?? { saves: 0, conversations: 0, offers: 0 }}
                         />
                       </div>
+                      <div className="hidden flex-col items-end gap-1 md:flex">
+                        <span className="text-[10px] uppercase tracking-wide text-[var(--color-ink-muted)]">
+                          Views (14d)
+                        </span>
+                        <ViewSparkline
+                          days={viewsByListing[l.id] ?? new Array(14).fill(0)}
+                        />
+                        <span className="text-xs font-semibold">
+                          {(viewsByListing[l.id] ?? []).reduce(
+                            (a, b) => a + b,
+                            0,
+                          )}{" "}
+                          views
+                        </span>
+                      </div>
                       <MyListingActions
                         listingId={l.id}
                         status={l.status as ListingStatus}
@@ -203,6 +254,71 @@ export default async function AccountPage() {
                   role="seller"
                 />
               </div>
+            </section>
+          )}
+
+          {sales.length > 0 && (
+            <section id="sold">
+              <h2 className="text-lg font-semibold">Sold history</h2>
+              <p className="text-xs text-[var(--color-ink-muted)]">
+                Completed sales. Total earned:{" "}
+                <span className="font-semibold text-[var(--color-ink)]">
+                  {formatPrice(totalEarned)}
+                </span>
+                .
+              </p>
+              <ul className="mt-3 space-y-3">
+                {sales.map((s) => {
+                  const photo = s.listings?.photos?.[0];
+                  const diff = Number(s.sale_price) - Number(s.list_price);
+                  const diffPct = s.list_price
+                    ? Math.round((diff / Number(s.list_price)) * 100)
+                    : 0;
+                  return (
+                    <li
+                      key={s.id}
+                      className="ak-card flex flex-col gap-3 p-3 md:flex-row md:items-center"
+                    >
+                      {photo && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={photo}
+                          alt=""
+                          className="h-16 w-24 flex-none rounded-md object-cover"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          href={`/listings/${s.listing_id}`}
+                          className="text-sm font-semibold hover:underline"
+                        >
+                          {s.listings?.title ?? "Listing"}
+                        </Link>
+                        <p className="text-xs text-[var(--color-ink-muted)]">
+                          Sold to {s.buyer?.full_name ?? "—"} •{" "}
+                          {relativeTime(s.sold_at)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold tracking-tight">
+                          {formatPrice(Number(s.sale_price))}
+                        </div>
+                        <div
+                          className={`text-[11px] ${
+                            diff >= 0
+                              ? "text-[var(--color-good)]"
+                              : "text-[var(--color-ink-muted)]"
+                          }`}
+                        >
+                          {diff >= 0 ? "+" : ""}
+                          {formatPrice(diff)} ({diff >= 0 ? "+" : ""}
+                          {diffPct}%) vs list
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             </section>
           )}
 
@@ -377,6 +493,32 @@ export default async function AccountPage() {
       </div>
     </div>
   );
+}
+
+async function loadViewsByDay(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  listingIds: string[],
+  days: number,
+): Promise<Record<string, number[]>> {
+  if (!listingIds.length) return {};
+  const { data } = await supabase.rpc("listing_views_by_day", {
+    p_listing_ids: listingIds,
+    p_days: days,
+  });
+  const rows = (data ?? []) as { listing_id: string; day: string; views: number }[];
+  const out: Record<string, number[]> = {};
+  const startMs = Date.now() - (days - 1) * 24 * 60 * 60 * 1000;
+  const baselineDay = new Date(startMs).toISOString().slice(0, 10);
+  for (const id of listingIds) out[id] = new Array(days).fill(0);
+  for (const r of rows) {
+    const bucket = Math.floor(
+      (new Date(r.day).getTime() - new Date(baselineDay).getTime()) /
+        (24 * 60 * 60 * 1000),
+    );
+    if (bucket >= 0 && bucket < days && out[r.listing_id])
+      out[r.listing_id][bucket] = r.views;
+  }
+  return out;
 }
 
 async function loadListingAnalytics(
