@@ -8,6 +8,7 @@ import { ContactSeller } from "@/components/contact-seller";
 import { SaveButton } from "@/components/save-button";
 import { StatusBadge } from "@/components/status-badge";
 import { MakeOfferDialog } from "@/components/make-offer-dialog";
+import { ReportListingLink } from "@/components/report-listing-link";
 import { Listing } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -69,29 +70,28 @@ export default async function ListingPage({
         <UnavailableBanner status={listing.status} />
       )}
 
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {listing.status !== "active" && (
+          <StatusBadge status={listing.status} />
+        )}
+        {listing.is_verified_seller && (
+          <span className="ak-chip bg-[var(--color-good-soft)] text-[var(--color-good)] border-transparent">
+            ✓ Verified seller
+          </span>
+        )}
+        <span className="ak-chip">
+          {listing.seller_type === "private" ? "Private seller" : "Dealer"}
+        </span>
+        <DealBadge score={listing.deal_score} />
+      </div>
+
       <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
         <div>
           <PhotoGallery photos={listing.photos} alt={listing.title} />
 
           <div className="mt-6 flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                {listing.status !== "active" && (
-                  <StatusBadge status={listing.status} />
-                )}
-                {listing.is_verified_seller && (
-                  <span className="ak-chip bg-[var(--color-good-soft)] text-[var(--color-good)] border-transparent">
-                    ✓ Verified seller
-                  </span>
-                )}
-                <span className="ak-chip">
-                  {listing.seller_type === "private"
-                    ? "Private seller"
-                    : "Dealer"}
-                </span>
-                <DealBadge score={listing.deal_score} />
-              </div>
-              <h1 className="mt-3 text-3xl font-bold tracking-tight">
+              <h1 className="text-3xl font-bold tracking-tight">
                 {listing.title}
               </h1>
               <p className="text-sm text-[var(--color-ink-muted)]">
@@ -183,7 +183,7 @@ export default async function ListingPage({
           )}
         </div>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           {isOwner ? (
             <div className="ak-card space-y-2 p-5">
               <h3 className="text-base font-semibold">This is your listing</h3>
@@ -215,6 +215,9 @@ export default async function ListingPage({
               <li>• Off-platform payment requests are blocked</li>
               <li>• Sold cars auto-disappear in 24 hrs</li>
             </ul>
+          </div>
+          <div className="px-1 text-center">
+            <ReportListingLink listingId={listing.id} />
           </div>
         </aside>
       </div>

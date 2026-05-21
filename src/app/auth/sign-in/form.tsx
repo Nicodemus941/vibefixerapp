@@ -106,7 +106,20 @@ export function SignInForm() {
           onChange={(e) => setEmail(e.target.value)}
         />
       </Field>
-      <Field label="Password">
+      <div>
+        <div className="mb-1 flex items-baseline justify-between">
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-muted)]">
+            Password
+          </label>
+          {mode === "in" && (
+            <Link
+              href="/auth/forgot"
+              className="text-xs font-medium text-[var(--color-brand)] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          )}
+        </div>
         <input
           className="ak-input"
           type="password"
@@ -115,7 +128,7 @@ export function SignInForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-      </Field>
+      </div>
 
       {err && (
         <div className="rounded-md bg-[var(--color-bad-soft)] p-2 text-xs text-[var(--color-bad)]">

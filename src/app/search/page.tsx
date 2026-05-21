@@ -3,6 +3,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ListingFilters } from "@/components/listing-filters";
 import { ListingCard } from "@/components/listing-card";
 import { SortSelect } from "@/components/sort-select";
+import { QuickFilters } from "@/components/quick-filters";
+import { ActiveFilterChips } from "@/components/active-filter-chips";
+import { SaveSearchButton } from "@/components/save-search-button";
 import { Listing } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -62,15 +65,29 @@ export default async function SearchPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6 flex items-end justify-between gap-3">
+      <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Browse cars</h1>
           <p className="text-sm text-[var(--color-ink-muted)]">
             {listings?.length ?? 0} results • Sponsored listings are tagged, never disguised.
           </p>
         </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Suspense>
+            <SaveSearchButton />
+          </Suspense>
+          <Suspense>
+            <SortSelect />
+          </Suspense>
+        </div>
+      </div>
+
+      <div className="mb-4 space-y-3">
         <Suspense>
-          <SortSelect />
+          <QuickFilters />
+        </Suspense>
+        <Suspense>
+          <ActiveFilterChips />
         </Suspense>
       </div>
 

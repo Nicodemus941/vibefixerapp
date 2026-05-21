@@ -5,6 +5,7 @@ import { formatPrice, relativeTime } from "@/lib/format";
 import { MyListingActions } from "@/components/my-listing-actions";
 import { StatusBadge } from "@/components/status-badge";
 import { OffersInbox, InboxOffer } from "@/components/offers-inbox";
+import { SavedSearchesList, SavedSearch } from "@/components/saved-searches-list";
 import { ListingStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -35,29 +36,39 @@ export default async function AccountPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/sign-in?next=/account");
 
-  const [{ data: profile }, { data: myListings }, { data: received }, { data: sent }] =
-    await Promise.all([
-      supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-      supabase
-        .from("listings")
-        .select("id,title,price,status,created_at,photos")
-        .eq("seller_id", user.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("offers")
-        .select(
-          "id,listing_id,buyer_id,seller_id,amount,message,status,counter_amount,created_at, listings(title,price,status), buyer:profiles!offers_buyer_id_fkey(full_name)",
-        )
-        .eq("seller_id", user.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("offers")
-        .select(
-          "id,listing_id,buyer_id,seller_id,amount,message,status,counter_amount,created_at, listings(title,price,status), seller:profiles!offers_seller_id_fkey(full_name)",
-        )
-        .eq("buyer_id", user.id)
-        .order("created_at", { ascending: false }),
-    ]);
+  const [
+    { data: profile },
+    { data: myListings },
+    { data: received },
+    { data: sent },
+    { data: savedSearches },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+    supabase
+      .from("listings")
+      .select("id,title,price,status,created_at,photos")
+      .eq("seller_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("offers")
+      .select(
+        "id,listing_id,buyer_id,seller_id,amount,message,status,counter_amount,created_at, listings(title,price,status), buyer:profiles!offers_buyer_id_fkey(full_name)",
+      )
+      .eq("seller_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("offers")
+      .select(
+        "id,listing_id,buyer_id,seller_id,amount,message,status,counter_amount,created_at, listings(title,price,status), seller:profiles!offers_seller_id_fkey(full_name)",
+      )
+      .eq("buyer_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("saved_searches")
+      .select("id,name,query,alerts_enabled,created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   const receivedOffers = mapOffers(received as OfferRow[] | null, "seller");
   const sentOffers = mapOffers(sent as OfferRow[] | null, "buyer");
@@ -155,6 +166,18 @@ export default async function AccountPage() {
             offers={sentOffers}
             currentUserId={user.id}
             role="buyer"
+          />
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-lg font-semibold">Saved searches</h2>
+        <p className="text-xs text-[var(--color-ink-muted)]">
+          Get an email whenever a new listing matches.
+        </p>
+        <div className="mt-3">
+          <SavedSearchesList
+            searches={(savedSearches as SavedSearch[] | null) ?? []}
           />
         </div>
       </section>
