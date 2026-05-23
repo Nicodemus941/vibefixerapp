@@ -17,11 +17,11 @@ export function ReportListingLink({ listingId }: { listingId: string }) {
           <div className="ak-card w-full max-w-md space-y-3 bg-white p-6">
             <h3 className="text-lg font-bold">Report this listing</h3>
             <p className="text-sm text-[var(--color-ink-muted)]">
-              Help keep AK Rooster safe. Send a quick note to our trust team
+              Help keep Car World USA safe. Send a quick note to our trust team
               and they'll review within 24 hours.
             </p>
             <a
-              href={`mailto:trust@akrooster.com?subject=Report listing ${listingId}&body=Reason:%0A%0A`}
+              href={`mailto:trust@carworldusa.com?subject=Report listing ${listingId}&body=Reason:%0A%0A`}
               className="ak-btn ak-btn-primary w-full"
             >
               Open email to trust team

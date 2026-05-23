@@ -218,7 +218,7 @@ export default async function ListingPage({
             </>
           ) : null}
           <div className="ak-card p-5 text-sm">
-            <h4 className="font-semibold">Why AK Rooster is safer</h4>
+            <h4 className="font-semibold">Why Car World USA is safer</h4>
             <ul className="mt-2 space-y-2 text-xs text-[var(--color-ink-muted)]">
               <li>• Seller phone & email verified</li>
               <li>• Off-platform payment requests are blocked</li>
@@ -242,7 +242,7 @@ function UnavailableBanner({
   const config = {
     sold: {
       title: "This car has been sold.",
-      body: "The seller marked it sold on AK Rooster. Check out similar listings below.",
+      body: "The seller marked it sold on Car World USA. Check out similar listings below.",
       tone: "bg-gray-900 text-white",
     },
     pending: {

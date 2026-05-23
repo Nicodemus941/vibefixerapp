@@ -91,7 +91,7 @@ export function ContactSeller({
     <div className="ak-card space-y-3 p-5">
       <h3 className="text-base font-semibold">Message the seller</h3>
       <p className="text-xs text-[var(--color-ink-muted)]">
-        Replies stay in AK Rooster — we block off-platform payment requests so
+        Replies stay in Car World USA — we block off-platform payment requests so
         you don't get scammed.
       </p>
       <textarea

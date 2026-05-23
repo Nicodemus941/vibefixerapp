@@ -12,7 +12,7 @@ export function VerifyBanner({ verified }: { verified: boolean }) {
         </p>
       </div>
       <a
-        href="mailto:trust@akrooster.com?subject=Verify my account"
+        href="mailto:trust@carworldusa.com?subject=Verify my account"
         className="ak-btn ak-btn-primary whitespace-nowrap"
       >
         Start verification →

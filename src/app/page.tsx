@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Listing } from "@/lib/types";
 import { ListingCard } from "@/components/listing-card";
 import { HomeSearch } from "@/components/home-search";
-import { RoosterLogo } from "@/components/logo";
+import { CarWorldLogo } from "@/components/logo";
 
 export const revalidate = 60;
 
@@ -73,8 +73,8 @@ function Hero() {
       <div className="absolute inset-0 opacity-20 mix-blend-screen [background-image:radial-gradient(circle_at_20%_20%,#f59e0b_0,transparent_40%),radial-gradient(circle_at_80%_70%,#dc2626_0,transparent_40%)]" />
       <div className="relative mx-auto max-w-7xl px-4">
         <div className="flex items-center gap-2 text-sm font-medium opacity-90">
-          <RoosterLogo className="h-6 w-6" />
-          <span>AK Rooster</span>
+          <CarWorldLogo className="h-6 w-6" />
+          <span>Car World USA</span>
           <span className="ml-3 rounded-full bg-white/10 px-2 py-0.5 text-xs">
             New • the calmer way to car shop
           </span>
@@ -243,7 +243,7 @@ function TrustSection() {
           Trust & safety, built in.
         </h2>
         <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
-          AK Rooster verifies seller phone and email before listings go live.
+          Car World USA verifies seller phone and email before listings go live.
           Buyer DMs are screened for the common scam patterns sellers report on
           other platforms (wire transfers, off-platform payment requests, fake
           shipping companies).

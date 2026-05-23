@@ -69,7 +69,7 @@ export default async function ProfilePage() {
       <div className="ak-card mt-6 p-6">
         <h2 className="text-lg font-semibold">Notifications</h2>
         <p className="mt-1 text-xs text-[var(--color-ink-muted)]">
-          Control which emails you receive from AK Rooster.
+          Control which emails you receive from Car World USA.
         </p>
         <div className="mt-4">
           <NotifPrefsForm initial={notifPrefs} />

@@ -124,10 +124,10 @@ export function ProfileEditForm({
         <p className="mt-2 text-xs text-[var(--color-ink-muted)]">
           To change your email, contact{" "}
           <a
-            href="mailto:help@akrooster.com"
+            href="mailto:help@carworldusa.com"
             className="text-[var(--color-brand)] hover:underline"
           >
-            help@akrooster.com
+            help@carworldusa.com
           </a>
           .
         </p>

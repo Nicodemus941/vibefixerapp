@@ -16,16 +16,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AK Rooster — Buy & sell cars without the noise",
+  title: "Car World USA — Buy & sell cars without the noise",
   description:
     "A modern car marketplace built around verified sellers, clean search, and transparent deal pricing. Cleaner than AutoTrader.",
-  metadataBase: new URL("https://akrooster.com"),
+  metadataBase: new URL("https://carworldusa.com"),
   openGraph: {
-    title: "AK Rooster",
+    title: "Car World USA",
     description:
       "A modern car marketplace built around verified sellers, clean search, and transparent deal pricing.",
-    url: "https://akrooster.com",
-    siteName: "AK Rooster",
+    url: "https://carworldusa.com",
+    siteName: "Car World USA",
   },
 };
 

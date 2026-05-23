@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { RoosterLogo } from "@/components/logo";
+import { CarWorldLogo } from "@/components/logo";
 
 export function SiteFooter() {
   return (
@@ -7,8 +7,8 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2">
-            <RoosterLogo className="h-8 w-8" />
-            <span className="font-bold">AK Rooster</span>
+            <CarWorldLogo className="h-8 w-8" />
+            <span className="font-bold">Car World USA</span>
           </div>
           <p className="mt-3 text-sm text-[var(--color-ink-muted)]">
             Buy and sell cars without the noise. Verified sellers, clear deals,
@@ -28,7 +28,7 @@ export function SiteFooter() {
           title="Sell"
           links={[
             ["List a car", "/sell"],
-            ["Why AK Rooster", "/#why"],
+            ["Why Car World USA", "/#why"],
             ["Seller dashboard", "/account"],
           ]}
         />
@@ -37,13 +37,13 @@ export function SiteFooter() {
           links={[
             ["About", "/#why"],
             ["Trust & safety", "/#trust"],
-            ["Contact", "mailto:hello@akrooster.com"],
+            ["Contact", "mailto:hello@carworldusa.com"],
           ]}
         />
       </div>
       <div className="border-t">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 text-xs text-[var(--color-ink-muted)]">
-          <span>© {new Date().getFullYear()} AK Rooster</span>
+          <span>© {new Date().getFullYear()} Car World USA</span>
           <span>Made for buyers and sellers who hate ad clutter.</span>
         </div>
       </div>

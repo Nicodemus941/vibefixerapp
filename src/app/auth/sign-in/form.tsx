@@ -149,7 +149,7 @@ export function SignInForm() {
       </button>
 
       <p className="text-center text-xs text-[var(--color-ink-muted)]">
-        By continuing you agree to AK Rooster's terms. We never sell your data.{" "}
+        By continuing you agree to Car World USA's terms. We never sell your data.{" "}
         <Link href="/" className="underline">
           Back home
         </Link>

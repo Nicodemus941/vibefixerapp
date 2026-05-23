@@ -1,4 +1,4 @@
-export function RoosterLogo({ className = "" }: { className?: string }) {
+export function CarWorldLogo({ className = "" }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 40 40"
@@ -7,18 +7,20 @@ export function RoosterLogo({ className = "" }: { className?: string }) {
       aria-hidden
     >
       <defs>
-        <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#dc2626" />
-          <stop offset="100%" stopColor="#7f1620" />
+        <linearGradient id="cwg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#1d4ed8" />
+          <stop offset="55%" stopColor="#1e3a8a" />
+          <stop offset="100%" stopColor="#b91c1c" />
         </linearGradient>
       </defs>
-      <circle cx="20" cy="20" r="19" fill="url(#rg)" />
+      <circle cx="20" cy="20" r="19" fill="url(#cwg)" />
       <path
-        d="M11 22c0-5 4-9 9-9 1.6 0 3 .3 4.3 1l3.7-3 .6 4.5c1 1.4 1.4 3 1.4 4.6 0 1.7-.5 3.2-1.4 4.5l1.4 3-3.6-.7c-1.3 1-2.8 1.5-4.4 1.5-1.8 0-3.5-.6-4.8-1.7l-3.6.7 1.5-3.4C11.4 25 11 23.6 11 22z"
+        d="M9 22.5l2-4.5c.4-.9 1.3-1.5 2.3-1.5h13.4c1 0 1.9.6 2.3 1.5l2 4.5v3.5c0 .3-.2.5-.5.5h-2c-.3 0-.5-.2-.5-.5V25H12v1.5c0 .3-.2.5-.5.5h-2c-.3 0-.5-.2-.5-.5z"
         fill="#fff"
       />
-      <circle cx="22" cy="20" r="1.4" fill="#7f1620" />
-      <path d="M27 18l3-1-2 2.5 2 1-3 .5z" fill="#f59e0b" />
+      <circle cx="14" cy="25.5" r="1.6" fill="#1e3a8a" />
+      <circle cx="26" cy="25.5" r="1.6" fill="#b91c1c" />
+      <path d="M19 11.5l.7 1.5 1.6.2-1.2 1.1.3 1.6L19 15l-1.4.9.3-1.6-1.2-1.1 1.6-.2z" fill="#fff" />
     </svg>
   );
 }
