@@ -15,6 +15,7 @@ import {
   BulkSelectCheckbox,
   BulkActionsBar,
 } from "@/components/bulk-listings-toolbar";
+import { RealtimeRefresher } from "@/components/realtime-refresher";
 
 export const dynamic = "force-dynamic";
 
@@ -127,6 +128,7 @@ export default async function AccountPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
+      <RealtimeRefresher userId={user.id} />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
