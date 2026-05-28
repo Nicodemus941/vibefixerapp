@@ -148,13 +148,56 @@ export async function fetchJobMatches(limit = 30): Promise<JobMatch[]> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return [];
-  const { data, error } = await supabase.rpc("match_jobs_for_user", {
-    viewer_id: user.id,
-    limit_count: limit,
+
+  // Authenticated viewer: rank by similarity to their needs embedding.
+  if (user) {
+    const { data, error } = await supabase.rpc("match_jobs_for_user", {
+      viewer_id: user.id,
+      limit_count: limit,
+    });
+    if (error) return [];
+    return (data ?? []) as JobMatch[];
+  }
+
+  // Anonymous visitor: open jobs by recency, no personalization.
+  const { data } = await supabase
+    .from("job_listings")
+    .select(
+      `id, poster_id, organization_id, title, description, employment_type, remote_policy,
+       location, compensation_min, compensation_max, compensation_period, currency,
+       application_url, application_email, created_at,
+       organizations:organization_id(slug, name, logo_url)`,
+    )
+    .eq("status", "open")
+    .or("expires_at.is.null,expires_at.gt.now()")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []).map((row) => {
+    const org = row.organizations as unknown as
+      | { slug: string; name: string; logo_url: string | null }
+      | null;
+    return {
+      id: row.id,
+      poster_id: row.poster_id,
+      organization_id: row.organization_id,
+      organization_slug: org?.slug ?? null,
+      organization_name: org?.name ?? null,
+      organization_logo_url: org?.logo_url ?? null,
+      title: row.title,
+      description: row.description,
+      employment_type: row.employment_type,
+      remote_policy: row.remote_policy,
+      location: row.location,
+      compensation_min: row.compensation_min,
+      compensation_max: row.compensation_max,
+      compensation_period: row.compensation_period,
+      currency: row.currency,
+      application_url: row.application_url,
+      application_email: row.application_email,
+      created_at: row.created_at as string,
+      similarity: null,
+    };
   });
-  if (error) return [];
-  return (data ?? []) as JobMatch[];
 }
 
 export async function fetchJobListing(id: string): Promise<JobDetail | null> {

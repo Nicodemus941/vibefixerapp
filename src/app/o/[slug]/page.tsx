@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Briefcase, Building2, ExternalLink, MapPin, Network, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/Avatar";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
+import { PublicHeader } from "@/components/PublicHeader";
 import { fetchOrganizationBySlug } from "@/app/organizations/actions";
 import { viewerConnectionsAtOrg } from "@/app/follows/actions";
 
@@ -50,26 +51,29 @@ export default async function OrganizationPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect(`/login?next=/o/${slug}`);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, role")
-    .eq("id", user.id)
-    .maybeSingle();
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("display_name, role")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
 
   const org = await fetchOrganizationBySlug(slug);
   if (!org) notFound();
 
   // Viewer can "post a job" if they currently work here.
-  const { data: ownPos } = await supabase
-    .from("positions")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("organization_id", org.id)
-    .eq("is_current", true)
-    .limit(1)
-    .maybeSingle();
+  const { data: ownPos } = user
+    ? await supabase
+        .from("positions")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("organization_id", org.id)
+        .eq("is_current", true)
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
   const canPostJob = Boolean(ownPos);
 
   // Open jobs at this org + how many of your connections work here
@@ -100,10 +104,14 @@ export default async function OrganizationPage({
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-      <FeedHeader
-        displayName={profile?.display_name ?? "founder"}
-        role={profile?.role ?? "user"}
-      />
+      {user ? (
+        <FeedHeader
+          displayName={profile?.display_name ?? "founder"}
+          role={profile?.role ?? "user"}
+        />
+      ) : (
+        <PublicHeader nextPath={`/o/${slug}`} />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
@@ -175,12 +183,16 @@ export default async function OrganizationPage({
                 : `${org.member_count} founders work here`}
             </h2>
             <Link
-              href={`/account?add=position&org_id=${org.id}&org_name=${encodeURIComponent(org.name)}`}
+              href={
+                user
+                  ? `/account?add=position&org_id=${org.id}&org_name=${encodeURIComponent(org.name)}`
+                  : `/login?next=/o/${slug}`
+              }
               className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110"
             >
               <Briefcase className="h-3 w-3" />
-              <span className="hidden sm:inline">I work here</span>
-              <span className="sm:hidden">Add role</span>
+              <span className="hidden sm:inline">{user ? "I work here" : "Sign in to add"}</span>
+              <span className="sm:hidden">{user ? "Add role" : "Sign in"}</span>
             </Link>
           </div>
 
@@ -227,7 +239,35 @@ export default async function OrganizationPage({
             </div>
           )}
 
-          {org.current_members.length === 0 ? (
+          {!user ? (
+            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center">
+              <Users className="h-6 w-6 mx-auto text-[var(--fg-subtle)] mb-2" />
+              <p className="text-sm text-[var(--fg-muted)]">
+                {org.member_count > 0 ? (
+                  <>
+                    <Link
+                      href={`/login?next=/o/${slug}`}
+                      className="text-[var(--accent)] hover:underline"
+                    >
+                      Sign in
+                    </Link>{" "}
+                    to see who works here.
+                  </>
+                ) : (
+                  <>
+                    No one on Loop has tagged this company yet.{" "}
+                    <Link
+                      href={`/login?next=/o/${slug}`}
+                      className="text-[var(--accent)] hover:underline"
+                    >
+                      Sign in
+                    </Link>{" "}
+                    to be the first.
+                  </>
+                )}
+              </p>
+            </div>
+          ) : org.current_members.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center">
               <p className="text-sm text-[var(--fg-muted)]">
                 Be the first to list your role here.

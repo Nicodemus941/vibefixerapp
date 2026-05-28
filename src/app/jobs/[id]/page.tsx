@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ArrowLeft, Briefcase, Building2, ExternalLink, Mail, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
+import { PublicHeader } from "@/components/PublicHeader";
 import { fetchJobListing } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -71,17 +72,18 @@ export default async function JobDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect(`/login?next=/jobs/${id}`);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, role")
-    .eq("id", user.id)
-    .maybeSingle();
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("display_name, role")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
 
   const job = await fetchJobListing(id);
   if (!job) notFound();
-  const isOwn = job.poster_id === user.id;
+  const isOwn = user ? job.poster_id === user.id : false;
 
   const jobPostingLd = {
     "@context": "https://schema.org",
@@ -135,10 +137,14 @@ export default async function JobDetailPage({
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-      <FeedHeader
-        displayName={profile?.display_name ?? "founder"}
-        role={profile?.role ?? "user"}
-      />
+      {user ? (
+        <FeedHeader
+          displayName={profile?.display_name ?? "founder"}
+          role={profile?.role ?? "user"}
+        />
+      ) : (
+        <PublicHeader nextPath={`/jobs/${id}`} />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jobPostingLd) }}
@@ -208,25 +214,36 @@ export default async function JobDetailPage({
 
           {job.status === "open" && (
             <div className="mt-6 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
-              {job.application_url && (
-                <a
-                  href={job.application_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              {user ? (
+                <>
+                  {job.application_url && (
+                    <a
+                      href={job.application_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:brightness-110"
+                    >
+                      Apply
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                  {job.application_email && (
+                    <a
+                      href={`mailto:${job.application_email}?subject=Application for ${encodeURIComponent(job.title)}`}
+                      className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-4 py-2 text-sm text-[var(--fg)] hover:bg-white/[0.05]"
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      Email
+                    </a>
+                  )}
+                </>
+              ) : (
+                <Link
+                  href={`/login?next=/jobs/${id}`}
                   className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:brightness-110"
                 >
-                  Apply
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              )}
-              {job.application_email && (
-                <a
-                  href={`mailto:${job.application_email}?subject=Application for ${encodeURIComponent(job.title)}`}
-                  className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-4 py-2 text-sm text-[var(--fg)] hover:bg-white/[0.05]"
-                >
-                  <Mail className="h-3.5 w-3.5" />
-                  Email
-                </a>
+                  Sign in to apply
+                </Link>
               )}
             </div>
           )}

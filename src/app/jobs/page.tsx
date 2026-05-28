@@ -1,11 +1,17 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Briefcase, Building2, MapPin, Plus, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
+import { PublicHeader } from "@/components/PublicHeader";
 import { fetchJobMatches } from "./actions";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Founder jobs · Loop",
+  description:
+    "Roles posted by founders, for founders. Browse open positions across SaaS, fintech, growth marketing, design, and engineering on Loop.",
+};
 
 const TYPE_LABELS: Record<string, string> = {
   full_time: "Full-time",
@@ -26,23 +32,28 @@ export default async function JobsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/jobs");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, role")
-    .eq("id", user.id)
-    .maybeSingle();
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("display_name, role")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
 
   const matches = await fetchJobMatches(40);
   const personalized = matches.some((m) => m.similarity != null);
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-      <FeedHeader
-        displayName={profile?.display_name ?? "founder"}
-        role={profile?.role ?? "user"}
-      />
+      {user ? (
+        <FeedHeader
+          displayName={profile?.display_name ?? "founder"}
+          role={profile?.role ?? "user"}
+        />
+      ) : (
+        <PublicHeader nextPath="/jobs" />
+      )}
       <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div>
@@ -53,11 +64,13 @@ export default async function JobsPage() {
             <p className="font-mono text-xs text-[var(--fg-subtle)] mt-1">
               {personalized
                 ? "Ranked by similarity to what you said you need."
-                : "Newest job postings across Loop."}
+                : user
+                ? "Newest job postings across Loop."
+                : "Roles posted by founders, for founders."}
             </p>
           </div>
           <Link
-            href="/jobs/new"
+            href={user ? "/jobs/new" : "/login?next=/jobs/new"}
             className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-xs font-medium text-[var(--bg)] hover:brightness-110"
           >
             <Plus className="h-3.5 w-3.5" />
