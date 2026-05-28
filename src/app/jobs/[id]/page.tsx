@@ -5,6 +5,7 @@ import { ArrowLeft, Briefcase, Building2, ExternalLink, Mail, MapPin } from "luc
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PublicHeader } from "@/components/PublicHeader";
+import { ShareButton } from "@/components/ShareButton";
 import { fetchJobListing } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -214,6 +215,11 @@ export default async function JobDetailPage({
 
           {job.status === "open" && (
             <div className="mt-6 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
+              <ShareButton
+                url={`/jobs/${job.id}`}
+                title={`${job.title}${job.organization_name ? ` at ${job.organization_name}` : ""}`}
+                text={job.description.slice(0, 200)}
+              />
               {user ? (
                 <>
                   {job.application_url && (

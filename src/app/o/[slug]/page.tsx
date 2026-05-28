@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/Avatar";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PublicHeader } from "@/components/PublicHeader";
+import { ShareButton } from "@/components/ShareButton";
 import { fetchOrganizationBySlug } from "@/app/organizations/actions";
 import { viewerConnectionsAtOrg } from "@/app/follows/actions";
 
@@ -170,6 +171,14 @@ export default async function OrganizationPage({
               {org.description}
             </p>
           )}
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
+            <ShareButton
+              url={`/o/${org.slug}`}
+              title={org.name}
+              text={org.description ?? `${org.member_count} founders on Loop work at ${org.name}.`}
+              variant="ghost"
+            />
+          </div>
         </header>
 
         <section>
