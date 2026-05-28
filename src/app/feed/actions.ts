@@ -169,6 +169,105 @@ export async function toggleReaction(input: {
   return {};
 }
 
+export type CommentRow = {
+  id: string;
+  post_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+  author_display_name: string;
+};
+
+export type CommentSummary = {
+  count: number;
+  recent: CommentRow[];
+};
+
+export type CommentSummaryMap = Record<string, CommentSummary>;
+
+export async function fetchCommentSummaries(
+  postIds: string[],
+): Promise<CommentSummaryMap> {
+  const out: CommentSummaryMap = {};
+  for (const id of postIds) out[id] = { count: 0, recent: [] };
+  if (postIds.length === 0) return out;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return out;
+
+  // One pass to count and collect last 2 per post. (For MVP scale we just
+  // pull all comments for the visible posts and bucket in app — posts table
+  // caps at ~30 per feed page.)
+  const { data: comments } = await supabase
+    .from("post_comments")
+    .select("id, post_id, user_id, body, created_at")
+    .in("post_id", postIds)
+    .order("created_at", { ascending: false });
+
+  const authorIds = Array.from(
+    new Set((comments ?? []).map((c) => c.user_id)),
+  );
+  const { data: authors } =
+    authorIds.length > 0
+      ? await supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", authorIds)
+      : { data: [] };
+  const authorMap = new Map(
+    (authors ?? []).map((a) => [a.id, a.display_name]),
+  );
+
+  for (const c of comments ?? []) {
+    const bucket = out[c.post_id];
+    if (!bucket) continue;
+    bucket.count += 1;
+    if (bucket.recent.length < 2) {
+      bucket.recent.push({
+        id: c.id,
+        post_id: c.post_id,
+        user_id: c.user_id,
+        body: c.body,
+        created_at: c.created_at as string,
+        author_display_name: authorMap.get(c.user_id) ?? "Unknown",
+      });
+    }
+  }
+  // Show most recent at bottom (so it reads chronologically in the UI).
+  for (const id of postIds) {
+    out[id].recent.reverse();
+  }
+  return out;
+}
+
+export async function createComment(input: {
+  postId: string;
+  body: string;
+}): Promise<{ error?: string }> {
+  const body = input.body.trim();
+  if (!body) return { error: "Write something." };
+  if (body.length > 1000) return { error: "Comments are limited to 1000 chars." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "not signed in" };
+
+  const { error } = await supabase.from("post_comments").insert({
+    post_id: input.postId,
+    user_id: user.id,
+    body,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/feed");
+  return {};
+}
+
 export async function fetchTrendingTags(): Promise<
   Array<{ tag: string; count: number }>
 > {
