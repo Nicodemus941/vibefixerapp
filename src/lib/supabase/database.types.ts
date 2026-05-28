@@ -833,6 +833,39 @@ export type Database = {
         Args: Record<string, never>;
         Returns: number;
       };
+      leaderboard_top_closers: {
+        Args: { since_days?: number; limit_count?: number };
+        Returns: Array<{
+          user_id: string;
+          display_name: string;
+          company_name: string | null;
+          avatar_url: string | null;
+          deals_shipped: number;
+          total_amount: number;
+        }>;
+      };
+      leaderboard_top_earners: {
+        Args: { since_days?: number; limit_count?: number };
+        Returns: Array<{
+          user_id: string;
+          display_name: string;
+          company_name: string | null;
+          avatar_url: string | null;
+          earned: number;
+          deals: number;
+        }>;
+      };
+      leaderboard_top_rated: {
+        Args: { limit_count?: number };
+        Returns: Array<{
+          user_id: string;
+          display_name: string;
+          company_name: string | null;
+          avatar_url: string | null;
+          reputation_score: number;
+          review_count: number;
+        }>;
+      };
       search_loop: {
         Args: { q: string; limit_per?: number };
         Returns: Array<{
