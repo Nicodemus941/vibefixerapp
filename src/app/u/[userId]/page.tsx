@@ -8,6 +8,7 @@ import { fetchReactionState, fetchCommentSummaries } from "@/app/feed/actions";
 import { startDmAndRedirect } from "@/app/inbox/actions";
 import { fetchReviewsForUser } from "@/app/reviews/actions";
 import { ReviewList, Stars } from "@/app/reviews/_components/ReviewList";
+import { Avatar } from "@/components/Avatar";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,7 @@ export default async function ProfilePage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, display_name, company_name, company_url, bio, industry, revenue_band, role, reputation_score, created_at",
+      "id, display_name, company_name, company_url, bio, industry, revenue_band, role, reputation_score, avatar_url, created_at",
     )
     .eq("id", userId)
     .maybeSingle();
@@ -113,9 +114,11 @@ export default async function ProfilePage({
         {/* Header */}
         <header className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
           <div className="flex items-start gap-4">
-            <div className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-2xl font-mono text-[var(--fg-muted)]">
-              {(profile.display_name?.[0] ?? "?").toUpperCase()}
-            </div>
+            <Avatar
+              name={profile.display_name}
+              url={profile.avatar_url}
+              size="xl"
+            />
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-baseline gap-2">
                 <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">
@@ -290,6 +293,7 @@ export default async function ProfilePage({
                     author_display_name: profile.display_name,
                     author_company_name: profile.company_name,
                     author_industry: profile.industry,
+                    author_avatar_url: profile.avatar_url,
                   }}
                 />
               ))}

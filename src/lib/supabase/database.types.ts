@@ -521,6 +521,7 @@ export type Database = {
       };
       profiles: {
         Row: {
+          avatar_url: string | null;
           bio: string | null;
           company_name: string | null;
           company_url: string | null;
@@ -529,6 +530,7 @@ export type Database = {
           id: string;
           industry: string | null;
           last_need_posted_at: string | null;
+          notification_prefs: Json;
           onboarding_complete: boolean | null;
           reciprocity_status: string | null;
           reputation_score: number | null;
@@ -538,6 +540,7 @@ export type Database = {
           updated_at: string | null;
         };
         Insert: {
+          avatar_url?: string | null;
           bio?: string | null;
           company_name?: string | null;
           company_url?: string | null;
@@ -546,6 +549,7 @@ export type Database = {
           id: string;
           industry?: string | null;
           last_need_posted_at?: string | null;
+          notification_prefs?: Json;
           onboarding_complete?: boolean | null;
           reciprocity_status?: string | null;
           reputation_score?: number | null;
@@ -555,6 +559,7 @@ export type Database = {
           updated_at?: string | null;
         };
         Update: {
+          avatar_url?: string | null;
           bio?: string | null;
           company_name?: string | null;
           company_url?: string | null;
@@ -563,6 +568,7 @@ export type Database = {
           id?: string;
           industry?: string | null;
           last_need_posted_at?: string | null;
+          notification_prefs?: Json;
           onboarding_complete?: boolean | null;
           reciprocity_status?: string | null;
           reputation_score?: number | null;
@@ -689,6 +695,7 @@ export type Database = {
           author_display_name: string;
           author_company_name: string | null;
           author_industry: string | null;
+          author_avatar_url: string | null;
         }>;
       };
       trending_hashtags: {
