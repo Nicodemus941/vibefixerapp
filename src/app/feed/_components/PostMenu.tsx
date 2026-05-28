@@ -84,7 +84,7 @@ export function PostMenu({
           setError(null);
         }}
         aria-label="Post menu"
-        className="press-shrink inline-flex items-center justify-center h-7 w-7 rounded-full text-[var(--fg-subtle)] hover:bg-white/[0.04] hover:text-[var(--fg)]"
+        className="press-shrink inline-flex items-center justify-center h-9 w-9 -mr-1.5 rounded-full text-[var(--fg-subtle)] hover:bg-white/[0.04] hover:text-[var(--fg)]"
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>

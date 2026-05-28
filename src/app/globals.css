@@ -98,6 +98,25 @@ html, body {
     transform: scale(0.97);
   }
 
+  /* Mobile-safe sticky bottom — respects iOS home indicator. */
+  .safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  /* Prevent iOS focus-zoom on text inputs (auto-zooms below 16px). */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+  @media (min-width: 640px) {
+    input,
+    textarea,
+    select {
+      font-size: inherit;
+    }
+  }
+
   /* Accent glow ring */
   .glow-ring {
     box-shadow:

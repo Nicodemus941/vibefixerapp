@@ -65,7 +65,7 @@ export function ProfileModerationMenu({
           setError(null);
         }}
         aria-label="More"
-        className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+        className="press-shrink inline-flex items-center justify-center h-10 w-10 rounded-full border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>

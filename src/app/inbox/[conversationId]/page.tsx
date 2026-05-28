@@ -151,8 +151,8 @@ export default async function ThreadPage({
         />
       </main>
 
-      <div className="sticky bottom-0 border-t border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur-md">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-3">
+      <div className="sticky bottom-0 border-t border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur-md safe-bottom">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-3">
           <MessageComposer
             conversationId={conversationId}
             initialDraft={initialDraft}

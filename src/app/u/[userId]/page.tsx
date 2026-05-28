@@ -124,7 +124,7 @@ export default async function ProfilePage({
       <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Header */}
         <header className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
             <Avatar
               name={profile.display_name}
               url={profile.avatar_url}
@@ -147,7 +147,7 @@ export default async function ProfilePage({
                 )}
               </div>
               {(profile.company_name || profile.industry) && (
-                <p className="mt-1 text-sm text-[var(--fg-muted)] truncate">
+                <p className="mt-1 text-sm text-[var(--fg-muted)] break-words">
                   {profile.company_name}
                   {profile.company_name && profile.industry && " · "}
                   {profile.industry}
@@ -167,7 +167,7 @@ export default async function ProfilePage({
                   href={profile.company_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 inline-block text-xs font-mono text-[var(--accent)] hover:underline truncate"
+                  className="mt-1 inline-block text-xs font-mono text-[var(--accent)] hover:underline break-all"
                 >
                   {profile.company_url.replace(/^https?:\/\//, "")}
                 </a>
