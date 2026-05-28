@@ -11,6 +11,8 @@ import { ReviewList, Stars } from "@/app/reviews/_components/ReviewList";
 import { Avatar } from "@/components/Avatar";
 import { fetchUserPositions } from "@/app/organizations/actions";
 import { fetchCertifications, fetchEducation } from "@/app/resume/actions";
+import { fetchFollowState, fetchSocialCounts } from "@/app/follows/actions";
+import { FollowButton } from "./_components/FollowButton";
 import { ProfileModerationMenu } from "./_components/ProfileModerationMenu";
 
 export const dynamic = "force-dynamic";
@@ -90,15 +92,25 @@ export default async function ProfilePage({
   ]);
 
   const postIds = (posts ?? []).map((p) => p.id);
-  const [reactionState, commentSummaries, reviews, positions, education, certifications] =
-    await Promise.all([
-      fetchReactionState(postIds),
-      fetchCommentSummaries(postIds),
-      fetchReviewsForUser(profile.id, 20),
-      fetchUserPositions(profile.id),
-      fetchEducation(profile.id),
-      fetchCertifications(profile.id),
-    ]);
+  const [
+    reactionState,
+    commentSummaries,
+    reviews,
+    positions,
+    education,
+    certifications,
+    socialCounts,
+    followState,
+  ] = await Promise.all([
+    fetchReactionState(postIds),
+    fetchCommentSummaries(postIds),
+    fetchReviewsForUser(profile.id, 20),
+    fetchUserPositions(profile.id),
+    fetchEducation(profile.id),
+    fetchCertifications(profile.id),
+    fetchSocialCounts(profile.id),
+    fetchFollowState(profile.id),
+  ]);
 
   const { data: blockRow } = !isOwn
     ? await supabase
@@ -115,9 +127,9 @@ export default async function ProfilePage({
       : 0;
 
   const stats = [
-    { label: "Posts", value: posts?.length ?? 0 },
-    { label: "Reviews", value: reviews.length },
-    { label: "Offers", value: offers?.length ?? 0 },
+    { label: "Followers", value: socialCounts.followers },
+    { label: "Following", value: socialCounts.following },
+    { label: "Connections", value: socialCounts.connections },
     { label: "Deals shipped", value: dealCount ?? 0 },
   ];
 
@@ -180,7 +192,14 @@ export default async function ProfilePage({
               )}
             </div>
             {!isOwn && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                {!isBlocked && (
+                  <FollowButton
+                    targetUserId={profile.id}
+                    initiallyFollowing={followState.isFollowing}
+                    followsYou={followState.followsYou}
+                  />
+                )}
                 {!isBlocked && (
                   <form action={startDmAndRedirect.bind(null, profile.id, "profile")}>
                     <button

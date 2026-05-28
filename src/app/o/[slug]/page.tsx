@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { Briefcase, Building2, ExternalLink, MapPin, Users } from "lucide-react";
+import { Briefcase, Building2, ExternalLink, MapPin, Network, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/Avatar";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { fetchOrganizationBySlug } from "@/app/organizations/actions";
+import { viewerConnectionsAtOrg } from "@/app/follows/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -40,14 +41,17 @@ export default async function OrganizationPage({
     .maybeSingle();
   const canPostJob = Boolean(ownPos);
 
-  // Open jobs at this org
-  const { data: orgJobs } = await supabase
-    .from("job_listings")
-    .select("id, title, employment_type, remote_policy, location")
-    .eq("organization_id", org.id)
-    .eq("status", "open")
-    .order("created_at", { ascending: false })
-    .limit(10);
+  // Open jobs at this org + how many of your connections work here
+  const [{ data: orgJobs }, connectionCount] = await Promise.all([
+    supabase
+      .from("job_listings")
+      .select("id, title, employment_type, remote_policy, location")
+      .eq("organization_id", org.id)
+      .eq("status", "open")
+      .order("created_at", { ascending: false })
+      .limit(10),
+    viewerConnectionsAtOrg(org.id),
+  ]);
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
@@ -130,6 +134,16 @@ export default async function OrganizationPage({
               <span className="sm:hidden">Add role</span>
             </Link>
           </div>
+
+          {connectionCount > 0 && (
+            <div className="mb-3 rounded-xl border border-sky-400/30 bg-sky-400/[0.05] px-3 py-2 inline-flex items-center gap-2">
+              <Network className="h-3.5 w-3.5 text-sky-300" />
+              <p className="text-xs text-sky-100">
+                <span className="font-mono tabular-nums">{connectionCount}</span>{" "}
+                of your connection{connectionCount === 1 ? "" : "s"} work{connectionCount === 1 ? "s" : ""} here.
+              </p>
+            </div>
+          )}
 
           {canPostJob && (
             <div className="mb-3">
