@@ -486,6 +486,31 @@ export type Database = {
         Args: { other_user_id: string; conv_origin?: string };
         Returns: string;
       };
+      run_daily_matcher: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      pending_matches_for: {
+        Args: { viewer_id: string };
+        Returns: Array<{
+          id: string;
+          role: "seeker" | "provider";
+          match_score: number;
+          created_at: string;
+          counterparty_id: string;
+          counterparty_name: string;
+          counterparty_company: string | null;
+          counterparty_industry: string | null;
+          need_id: string;
+          need_title: string;
+          need_urgency: string | null;
+          offer_id: string;
+          offer_title: string;
+          offer_category: string;
+          seeker_status: string | null;
+          provider_status: string | null;
+        }>;
+      };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

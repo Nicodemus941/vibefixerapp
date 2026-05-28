@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Inbox, LogOut } from "lucide-react";
+import { Inbox, LogOut, Sparkles } from "lucide-react";
 import { signOut } from "../../auth/actions";
 
 export function FeedHeader({
@@ -19,6 +19,14 @@ export function FeedHeader({
           <span className="font-semibold tracking-tight">Loop</span>
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/matches"
+            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+            aria-label="Matches"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Matches</span>
+          </Link>
           <Link
             href="/inbox"
             className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
