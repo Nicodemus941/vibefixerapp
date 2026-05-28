@@ -80,9 +80,15 @@ export function ProfileStep({
           required
           className="mt-1.5"
         >
-          <option value="">Select a revenue band</option>
+          <option value="" className="bg-[var(--surface-2)] text-[var(--fg-subtle)]">
+            Select a revenue band
+          </option>
           {REVENUE_BANDS.map((b) => (
-            <option key={b.value} value={b.value}>
+            <option
+              key={b.value}
+              value={b.value}
+              className="bg-[var(--surface-2)] text-[var(--fg)]"
+            >
               {b.label}
             </option>
           ))}

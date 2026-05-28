@@ -39,24 +39,24 @@ export function OffersStep({
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-[var(--fg-muted)]">
         Add 1–3 things you can deliver for another founder. Be specific —
         matches are run against this text.
       </p>
       {value.map((offer, i) => (
         <div
           key={i}
-          className="rounded-2xl border border-neutral-200 bg-white p-5 space-y-4"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-5 space-y-4"
         >
           <div className="flex items-center justify-between">
-            <div className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+            <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
               Offer {i + 1}
             </div>
             {value.length > 1 && (
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="text-neutral-400 hover:text-red-600"
+                className="text-[var(--fg-subtle)] hover:text-[var(--danger)] transition-colors"
                 aria-label={`Remove offer ${i + 1}`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -135,7 +135,11 @@ export function OffersStep({
               className="mt-1.5"
             >
               {PRICING_MODELS.map((m) => (
-                <option key={m.value} value={m.value}>
+                <option
+                  key={m.value}
+                  value={m.value}
+                  className="bg-[var(--surface-2)] text-[var(--fg)]"
+                >
                   {m.label}
                 </option>
               ))}
