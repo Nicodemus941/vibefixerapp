@@ -66,6 +66,84 @@ export type Database = {
         };
         Relationships: [];
       };
+      documents: {
+        Row: {
+          body_text: string;
+          conversation_id: string;
+          counterparty_id: string;
+          created_at: string | null;
+          creator_id: string;
+          fields: Json | null;
+          file_url: string | null;
+          id: string;
+          kind: string;
+          parent_document_id: string | null;
+          signed_at: string | null;
+          status: string;
+          title: string;
+          voided_at: string | null;
+        };
+        Insert: {
+          body_text: string;
+          conversation_id: string;
+          counterparty_id: string;
+          created_at?: string | null;
+          creator_id: string;
+          fields?: Json | null;
+          file_url?: string | null;
+          id?: string;
+          kind: string;
+          parent_document_id?: string | null;
+          signed_at?: string | null;
+          status?: string;
+          title: string;
+          voided_at?: string | null;
+        };
+        Update: {
+          body_text?: string;
+          conversation_id?: string;
+          counterparty_id?: string;
+          created_at?: string | null;
+          creator_id?: string;
+          fields?: Json | null;
+          file_url?: string | null;
+          id?: string;
+          kind?: string;
+          parent_document_id?: string | null;
+          signed_at?: string | null;
+          status?: string;
+          title?: string;
+          voided_at?: string | null;
+        };
+        Relationships: [];
+      };
+      document_signatures: {
+        Row: {
+          document_id: string;
+          id: string;
+          signed_at: string | null;
+          signed_name: string;
+          user_agent: string | null;
+          user_id: string;
+        };
+        Insert: {
+          document_id: string;
+          id?: string;
+          signed_at?: string | null;
+          signed_name: string;
+          user_agent?: string | null;
+          user_id: string;
+        };
+        Update: {
+          document_id?: string;
+          id?: string;
+          signed_at?: string | null;
+          signed_name?: string;
+          user_agent?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       engagements: {
         Row: {
           amount: number;
@@ -354,6 +432,7 @@ export type Database = {
           payload: Json | null;
           read_at: string | null;
           related_conversation_id: string | null;
+          related_document_id: string | null;
           related_match_id: string | null;
           related_post_id: string | null;
           user_id: string;
@@ -366,6 +445,7 @@ export type Database = {
           payload?: Json | null;
           read_at?: string | null;
           related_conversation_id?: string | null;
+          related_document_id?: string | null;
           related_match_id?: string | null;
           related_post_id?: string | null;
           user_id: string;
@@ -378,6 +458,7 @@ export type Database = {
           payload?: Json | null;
           read_at?: string | null;
           related_conversation_id?: string | null;
+          related_document_id?: string | null;
           related_match_id?: string | null;
           related_post_id?: string | null;
           user_id?: string;
