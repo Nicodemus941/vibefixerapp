@@ -240,6 +240,99 @@ export type Database = {
         };
         Relationships: [];
       };
+      advertisements: {
+        Row: {
+          body: string;
+          budget_spent_cents: number;
+          budget_total_cents: number;
+          clicks: number;
+          cost_per_impression_cents: number;
+          created_at: string | null;
+          creative_url: string | null;
+          cta_label: string;
+          ends_at: string | null;
+          headline: string;
+          id: string;
+          impressions: number;
+          organization_id: string | null;
+          sponsor_id: string;
+          starts_at: string | null;
+          status: string;
+          target_industries: string[] | null;
+          target_revenue_bands: string[] | null;
+          target_url: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          body: string;
+          budget_spent_cents?: number;
+          budget_total_cents: number;
+          clicks?: number;
+          cost_per_impression_cents?: number;
+          created_at?: string | null;
+          creative_url?: string | null;
+          cta_label?: string;
+          ends_at?: string | null;
+          headline: string;
+          id?: string;
+          impressions?: number;
+          organization_id?: string | null;
+          sponsor_id: string;
+          starts_at?: string | null;
+          status?: string;
+          target_industries?: string[] | null;
+          target_revenue_bands?: string[] | null;
+          target_url: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          body?: string;
+          budget_spent_cents?: number;
+          budget_total_cents?: number;
+          clicks?: number;
+          cost_per_impression_cents?: number;
+          created_at?: string | null;
+          creative_url?: string | null;
+          cta_label?: string;
+          ends_at?: string | null;
+          headline?: string;
+          id?: string;
+          impressions?: number;
+          organization_id?: string | null;
+          sponsor_id?: string;
+          starts_at?: string | null;
+          status?: string;
+          target_industries?: string[] | null;
+          target_revenue_bands?: string[] | null;
+          target_url?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      ad_events: {
+        Row: {
+          ad_id: string;
+          created_at: string | null;
+          event_type: string;
+          id: string;
+          viewer_id: string | null;
+        };
+        Insert: {
+          ad_id: string;
+          created_at?: string | null;
+          event_type: string;
+          id?: string;
+          viewer_id?: string | null;
+        };
+        Update: {
+          ad_id?: string;
+          created_at?: string | null;
+          event_type?: string;
+          id?: string;
+          viewer_id?: string | null;
+        };
+        Relationships: [];
+      };
       blocks: {
         Row: {
           blocked_id: string;
@@ -1152,6 +1245,22 @@ export type Database = {
           avatar_url: string | null;
           reputation_score: number;
           review_count: number;
+        }>;
+      };
+      pick_ad_for_viewer: {
+        Args: { viewer_id: string };
+        Returns: Array<{
+          id: string;
+          sponsor_id: string;
+          organization_id: string | null;
+          organization_slug: string | null;
+          organization_name: string | null;
+          organization_logo_url: string | null;
+          headline: string;
+          body: string;
+          creative_url: string | null;
+          cta_label: string;
+          target_url: string;
         }>;
       };
       match_jobs_for_user: {

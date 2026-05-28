@@ -13,6 +13,7 @@ import { PostCard } from "./_components/PostCard";
 import { FeedHeader } from "./_components/FeedHeader";
 import { ReciprocityBanner } from "./_components/ReciprocityBanner";
 import { LiveFeedBanner } from "./_components/LiveFeedBanner";
+import { SponsoredCard } from "./_components/SponsoredCard";
 
 type SearchParams = Promise<{ tag?: string | string[]; view?: string | string[] }>;
 
@@ -187,15 +188,20 @@ export default async function FeedPage({
             </p>
           )}
           {!feedError && posts.length === 0 && <EmptyState tag={tag} />}
-          {posts.map((p) => (
-            <PostCard
-              key={p.id}
-              post={p}
-              viewerId={user.id}
-              viewerRole={role}
-              reactionState={reactionState[p.id]}
-              commentSummary={commentSummaries[p.id]}
-            />
+          {posts.map((p, idx) => (
+            <div key={p.id}>
+              <PostCard
+                post={p}
+                viewerId={user.id}
+                viewerRole={role}
+                reactionState={reactionState[p.id]}
+                commentSummary={commentSummaries[p.id]}
+              />
+              {/* Inject one sponsored slot ~5 posts in, when feed is dense
+                  enough to make ads feel native. SponsoredCard renders
+                  null if there's no eligible ad. */}
+              {idx === 4 && <div className="mt-4"><SponsoredCard /></div>}
+            </div>
           ))}
         </section>
       </main>

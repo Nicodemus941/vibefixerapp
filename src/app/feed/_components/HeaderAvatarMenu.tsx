@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Briefcase, Flag, Gavel, LogOut, Settings, Trophy, User as UserIcon, Users } from "lucide-react";
+import { Briefcase, Flag, Gavel, LogOut, Megaphone, Settings, Trophy, User as UserIcon, Users } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import { signOut } from "../../auth/actions";
 
@@ -87,6 +87,9 @@ export function HeaderAvatarMenu({
           </MenuLink>
           <MenuLink href="/jobs" icon={<Briefcase className="h-4 w-4" />} onSelect={() => setOpen(false)}>
             Jobs
+          </MenuLink>
+          <MenuLink href="/ads" icon={<Megaphone className="h-4 w-4" />} onSelect={() => setOpen(false)}>
+            Ads
           </MenuLink>
           <MenuLink href="/account" icon={<Settings className="h-4 w-4" />} onSelect={() => setOpen(false)}>
             Settings
