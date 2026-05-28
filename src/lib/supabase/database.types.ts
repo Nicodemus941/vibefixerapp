@@ -553,6 +553,24 @@ export type Database = {
         Args: Record<string, never>;
         Returns: number;
       };
+      search_loop: {
+        Args: { q: string; limit_per?: number };
+        Returns: Array<{
+          kind: "post" | "person";
+          rank: number;
+          post_id: string | null;
+          post_body: string | null;
+          post_hashtags: string[] | null;
+          post_kind: string | null;
+          post_created_at: string | null;
+          post_user_id: string | null;
+          person_id: string | null;
+          person_display_name: string | null;
+          person_company_name: string | null;
+          person_industry: string | null;
+          person_role: string | null;
+        }>;
+      };
       pending_matches_for: {
         Args: { viewer_id: string };
         Returns: Array<{
