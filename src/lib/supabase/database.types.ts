@@ -12,6 +12,60 @@ export type Database = {
   };
   public: {
     Tables: {
+      blocks: {
+        Row: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at: string | null;
+        };
+        Insert: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at?: string | null;
+        };
+        Update: {
+          blocked_id?: string;
+          blocker_id?: string;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
+      reports: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          reason: string;
+          reporter_id: string;
+          reviewed_at: string | null;
+          reviewer_id: string | null;
+          status: string;
+          target_id: string;
+          target_kind: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          reason: string;
+          reporter_id: string;
+          reviewed_at?: string | null;
+          reviewer_id?: string | null;
+          status?: string;
+          target_id: string;
+          target_kind: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          reason?: string;
+          reporter_id?: string;
+          reviewed_at?: string | null;
+          reviewer_id?: string | null;
+          status?: string;
+          target_id?: string;
+          target_kind?: string;
+        };
+        Relationships: [];
+      };
       cold_dm_quota: {
         Row: {
           limit_count: number;

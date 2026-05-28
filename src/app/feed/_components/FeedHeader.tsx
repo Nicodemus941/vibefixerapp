@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gavel, Inbox, LogOut, Search, Settings, Sparkles, Trophy, Users } from "lucide-react";
+import { Flag, Gavel, Inbox, LogOut, Search, Settings, Sparkles, Trophy, Users } from "lucide-react";
 import { signOut } from "../../auth/actions";
 import { fetchUnreadCount } from "../../notifications/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -84,6 +84,15 @@ export async function FeedHeader({
               className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full border border-amber-400/40 bg-amber-400/[0.06] text-amber-400 hover:bg-amber-400/[0.12] transition-colors"
             >
               <Gavel className="h-3.5 w-3.5" />
+            </Link>
+          )}
+          {isOwner && (
+            <Link
+              href="/admin/reports"
+              aria-label="Admin reports"
+              className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full border border-amber-400/40 bg-amber-400/[0.06] text-amber-400 hover:bg-amber-400/[0.12] transition-colors"
+            >
+              <Flag className="h-3.5 w-3.5" />
             </Link>
           )}
           {isOwner && (

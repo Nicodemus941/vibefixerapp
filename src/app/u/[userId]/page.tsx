@@ -9,6 +9,7 @@ import { startDmAndRedirect } from "@/app/inbox/actions";
 import { fetchReviewsForUser } from "@/app/reviews/actions";
 import { ReviewList, Stars } from "@/app/reviews/_components/ReviewList";
 import { Avatar } from "@/components/Avatar";
+import { ProfileModerationMenu } from "./_components/ProfileModerationMenu";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +93,16 @@ export default async function ProfilePage({
     fetchCommentSummaries(postIds),
     fetchReviewsForUser(profile.id, 20),
   ]);
+
+  const { data: blockRow } = !isOwn
+    ? await supabase
+        .from("blocks")
+        .select("blocker_id")
+        .eq("blocker_id", user.id)
+        .eq("blocked_id", profile.id)
+        .maybeSingle()
+    : { data: null };
+  const isBlocked = Boolean(blockRow);
   const avgRating =
     reviews.length > 0
       ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
@@ -163,15 +174,23 @@ export default async function ProfilePage({
               )}
             </div>
             {!isOwn && (
-              <form action={startDmAndRedirect.bind(null, profile.id, "profile")}>
-                <button
-                  type="submit"
-                  className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
-                >
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  Message
-                </button>
-              </form>
+              <div className="flex items-center gap-2">
+                {!isBlocked && (
+                  <form action={startDmAndRedirect.bind(null, profile.id, "profile")}>
+                    <button
+                      type="submit"
+                      className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Message
+                    </button>
+                  </form>
+                )}
+                <ProfileModerationMenu
+                  targetId={profile.id}
+                  initiallyBlocked={isBlocked}
+                />
+              </div>
             )}
           </div>
 
