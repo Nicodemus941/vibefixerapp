@@ -15,6 +15,7 @@ import {
   markDelivered,
   refundEngagement,
 } from "../engagement-actions";
+import { ReviewForm } from "@/app/reviews/_components/ReviewForm";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -43,11 +44,15 @@ export function DealPanel({
   otherUserId,
   viewerId,
   initial,
+  counterpartyName,
+  pendingReviewEngagementIds,
 }: {
   conversationId: string;
   otherUserId: string;
   viewerId: string;
   initial: Engagement[];
+  counterpartyName: string;
+  pendingReviewEngagementIds: string[];
 }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -231,6 +236,18 @@ export function DealPanel({
                     </button>
                   </div>
                 )}
+                {e.escrow_status === "released" &&
+                  pendingReviewEngagementIds.includes(e.id) && (
+                    <div className="mt-3 border-t border-[var(--border)] pt-3">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--accent)] mb-2">
+                        Leave a review
+                      </p>
+                      <ReviewForm
+                        engagementId={e.id}
+                        counterpartyName={counterpartyName}
+                      />
+                    </div>
+                  )}
               </li>
             );
           })}

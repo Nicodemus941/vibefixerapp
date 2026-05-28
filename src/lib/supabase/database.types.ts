@@ -573,6 +573,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      reviews: {
+        Row: {
+          body: string;
+          created_at: string | null;
+          engagement_id: string;
+          id: string;
+          rating: number;
+          reviewee_id: string;
+          reviewer_id: string;
+          reviewer_role: string;
+        };
+        Insert: {
+          body: string;
+          created_at?: string | null;
+          engagement_id: string;
+          id?: string;
+          rating: number;
+          reviewee_id: string;
+          reviewer_id: string;
+          reviewer_role: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string | null;
+          engagement_id?: string;
+          id?: string;
+          rating?: number;
+          reviewee_id?: string;
+          reviewer_id?: string;
+          reviewer_role?: string;
+        };
+        Relationships: [];
+      };
       reputation_events: {
         Row: {
           created_at: string | null;

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchThread } from "../actions";
 import { fetchEngagementsBetween } from "../engagement-actions";
 import { fetchDocumentsForConversation } from "@/app/documents/actions";
+import { fetchPendingReviews } from "@/app/reviews/actions";
 import { FeedHeader } from "../../feed/_components/FeedHeader";
 import { MessageComposer } from "../_components/MessageComposer";
 import { ThreadStream } from "../_components/ThreadStream";
@@ -32,12 +33,16 @@ export default async function ThreadPage({
     .maybeSingle();
 
   const { header, messages, error } = await fetchThread(conversationId);
-  const [engagements, documents] = header
+  const [engagements, documents, pendingReviews] = header
     ? await Promise.all([
         fetchEngagementsBetween(header.counterparty_id),
         fetchDocumentsForConversation(conversationId),
+        fetchPendingReviews(),
       ])
-    : [[], []];
+    : [[], [], []];
+  const pendingReviewIds = pendingReviews
+    .filter((p) => p.counterparty_id === header?.counterparty_id)
+    .map((p) => p.engagement_id);
 
   if (error || !header) {
     return (
@@ -109,6 +114,8 @@ export default async function ThreadPage({
           otherUserId={header.counterparty_id}
           viewerId={user.id}
           initial={engagements}
+          counterpartyName={header.counterparty_name}
+          pendingReviewEngagementIds={pendingReviewIds}
         />
         <ThreadStream
           conversationId={conversationId}
