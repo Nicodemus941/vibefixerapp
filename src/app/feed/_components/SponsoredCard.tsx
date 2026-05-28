@@ -10,10 +10,21 @@ export async function SponsoredCard() {
   if (!ad) return null;
 
   return (
-    <article className="rounded-2xl border border-violet-400/30 bg-violet-400/[0.04] p-5 relative">
-      <span className="absolute top-3 right-4 font-mono text-[9px] uppercase tracking-wider text-violet-300/80">
-        Sponsored
-      </span>
+    <article className="rounded-2xl border border-violet-400/30 bg-violet-400/[0.04] p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="font-mono text-[9px] uppercase tracking-wider text-violet-300/80 inline-flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
+          Sponsored
+        </span>
+        {ad.organization_slug && (
+          <Link
+            href={`/o/${ad.organization_slug}`}
+            className="font-mono text-[10px] text-violet-300/80 hover:text-violet-200 truncate"
+          >
+            {ad.organization_name}
+          </Link>
+        )}
+      </div>
       <header className="flex items-start gap-3">
         <div className="h-10 w-10 shrink-0 rounded-xl bg-[var(--surface-3)] flex items-center justify-center text-[var(--fg-muted)] overflow-hidden">
           {ad.organization_logo_url ? (
@@ -23,18 +34,8 @@ export async function SponsoredCard() {
             <Building2 className="h-4 w-4" />
           )}
         </div>
-        <div className="flex-1 min-w-0 pr-16 sm:pr-20">
+        <div className="flex-1 min-w-0">
           <p className="font-medium text-[var(--fg)] break-words">{ad.headline}</p>
-          {ad.organization_slug ? (
-            <Link
-              href={`/o/${ad.organization_slug}`}
-              className="text-xs text-[var(--fg-muted)] hover:underline underline-offset-2"
-            >
-              {ad.organization_name}
-            </Link>
-          ) : (
-            <span className="text-xs text-[var(--fg-subtle)] italic">Sponsored post</span>
-          )}
         </div>
       </header>
       {ad.creative_url && (

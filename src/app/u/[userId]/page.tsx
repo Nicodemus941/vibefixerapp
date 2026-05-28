@@ -192,7 +192,7 @@ export default async function ProfilePage({
               )}
             </div>
             {!isOwn && (
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
                 {!isBlocked && (
                   <FollowButton
                     targetUserId={profile.id}

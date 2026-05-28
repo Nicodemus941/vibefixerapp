@@ -77,10 +77,10 @@ export function Composer({ displayName }: { displayName: string }) {
         <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>
       )}
 
-      <div className="mt-3 flex items-center justify-between border-t border-[var(--border)] pt-3">
+      <div className="mt-3 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-3">
         <span
           className={[
-            "font-mono text-xs tabular-nums",
+            "font-mono text-xs tabular-nums shrink-0",
             remaining < 40 ? "text-[var(--danger)]" : "text-[var(--fg-subtle)]",
           ].join(" ")}
         >

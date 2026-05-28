@@ -134,7 +134,7 @@ export default async function NewOrganizationPage({
 
           <button
             type="submit"
-            className="press-shrink inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:brightness-110"
+            className="press-shrink inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-[var(--bg)] hover:brightness-110 w-full sm:w-auto"
           >
             Create company
           </button>

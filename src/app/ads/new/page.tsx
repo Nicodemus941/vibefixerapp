@@ -147,11 +147,11 @@ export default async function NewAdPage({
             <legend className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--fg-subtle)] mb-1.5">
               Target industries (optional — leave blank for all)
             </legend>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5 max-h-48 overflow-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-2">
               {INDUSTRIES.map((i) => (
-                <label key={i} className="inline-flex items-center gap-1.5 text-xs text-[var(--fg-muted)]">
-                  <input type="checkbox" name="target_industries" value={i} className="h-3.5 w-3.5" />
-                  {i}
+                <label key={i} className="inline-flex items-center gap-2 text-xs text-[var(--fg-muted)] cursor-pointer">
+                  <input type="checkbox" name="target_industries" value={i} className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{i}</span>
                 </label>
               ))}
             </div>
@@ -223,7 +223,7 @@ export default async function NewAdPage({
 
           <button
             type="submit"
-            className="press-shrink inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:brightness-110"
+            className="press-shrink inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-[var(--bg)] hover:brightness-110 w-full sm:w-auto"
           >
             Save draft
           </button>
