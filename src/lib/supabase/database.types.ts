@@ -300,6 +300,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      post_comments: {
+        Row: {
+          body: string;
+          created_at: string | null;
+          id: string;
+          post_id: string;
+          user_id: string;
+        };
+        Insert: {
+          body: string;
+          created_at?: string | null;
+          id?: string;
+          post_id: string;
+          user_id: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string | null;
+          id?: string;
+          post_id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       post_reactions: {
         Row: {
           created_at: string | null;

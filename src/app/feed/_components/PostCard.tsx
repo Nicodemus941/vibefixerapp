@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { MessageSquare } from "lucide-react";
+import { MessageCircle, MessageSquare } from "lucide-react";
 import { startDmAndRedirect } from "@/app/inbox/actions";
-import type { FeedPost, ReactionKind } from "../actions";
+import type { FeedPost, ReactionKind, CommentSummary } from "../actions";
 import { ReactionBar } from "./ReactionBar";
+import { CommentThread } from "./CommentThread";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -61,14 +62,17 @@ export function PostCard({
   post,
   viewerId,
   reactionState,
+  commentSummary,
 }: {
   post: FeedPost;
   viewerId: string;
   reactionState?: { fire: number; handshake: number; in: number; mine: ReactionKind[] };
+  commentSummary?: CommentSummary;
 }) {
   const k = kindLabel(post.kind);
   const isOwn = viewerId === post.user_id;
   const initial = reactionState ?? { fire: 0, handshake: 0, in: 0, mine: [] };
+  const comments = commentSummary ?? { count: 0, recent: [] };
   return (
     <article className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 hover:border-[var(--border-strong)] transition-colors">
       <header className="flex items-start gap-3">
@@ -110,7 +114,15 @@ export function PostCard({
         {renderBody(post.body)}
       </p>
       <footer className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-3">
-        <ReactionBar postId={post.id} initial={initial} />
+        <div className="flex items-center gap-1">
+          <ReactionBar postId={post.id} initial={initial} />
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.02] border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--fg-muted)]">
+            <MessageCircle className="h-3.5 w-3.5" />
+            {comments.count > 0 && (
+              <span className="font-mono tabular-nums">{comments.count}</span>
+            )}
+          </span>
+        </div>
         <div className="flex items-center gap-2 ml-auto">
           {post.similarity !== null && (
             <span
@@ -133,6 +145,12 @@ export function PostCard({
           )}
         </div>
       </footer>
+
+      <CommentThread
+        postId={post.id}
+        totalCount={comments.count}
+        recent={comments.recent}
+      />
     </article>
   );
 }

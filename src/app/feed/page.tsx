@@ -2,7 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { fetchFeed, fetchTrendingTags, fetchReactionState } from "./actions";
+import {
+  fetchFeed,
+  fetchTrendingTags,
+  fetchReactionState,
+  fetchCommentSummaries,
+} from "./actions";
 import { Composer } from "./_components/Composer";
 import { PostCard } from "./_components/PostCard";
 import { FeedHeader } from "./_components/FeedHeader";
@@ -44,7 +49,11 @@ export default async function FeedPage({
     fetchTrendingTags(),
   ]);
 
-  const reactionState = await fetchReactionState(posts.map((p) => p.id));
+  const postIds = posts.map((p) => p.id);
+  const [reactionState, commentSummaries] = await Promise.all([
+    fetchReactionState(postIds),
+    fetchCommentSummaries(postIds),
+  ]);
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
@@ -158,6 +167,7 @@ export default async function FeedPage({
               post={p}
               viewerId={user.id}
               reactionState={reactionState[p.id]}
+              commentSummary={commentSummaries[p.id]}
             />
           ))}
         </section>
