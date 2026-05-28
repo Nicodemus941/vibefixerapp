@@ -573,6 +573,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      review_media: {
+        Row: {
+          created_at: string | null;
+          height: number | null;
+          id: string;
+          kind: string;
+          position: number;
+          review_id: string;
+          uploader_id: string;
+          url: string;
+          width: number | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          height?: number | null;
+          id?: string;
+          kind: string;
+          position?: number;
+          review_id: string;
+          uploader_id: string;
+          url: string;
+          width?: number | null;
+        };
+        Update: {
+          created_at?: string | null;
+          height?: number | null;
+          id?: string;
+          kind?: string;
+          position?: number;
+          review_id?: string;
+          uploader_id?: string;
+          url?: string;
+          width?: number | null;
+        };
+        Relationships: [];
+      };
       reviews: {
         Row: {
           body: string;
