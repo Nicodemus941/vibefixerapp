@@ -16,6 +16,8 @@ import {
   refundEngagement,
 } from "../engagement-actions";
 import { ReviewForm } from "@/app/reviews/_components/ReviewForm";
+import { DisputeButton } from "./DisputeButton";
+import type { DisputeRow } from "@/app/disputes/actions";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -46,6 +48,7 @@ export function DealPanel({
   initial,
   counterpartyName,
   pendingReviewEngagementIds,
+  disputesByEngagementId,
 }: {
   conversationId: string;
   otherUserId: string;
@@ -53,6 +56,7 @@ export function DealPanel({
   initial: Engagement[];
   counterpartyName: string;
   pendingReviewEngagementIds: string[];
+  disputesByEngagementId: Record<string, DisputeRow | null>;
 }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -214,7 +218,7 @@ export function DealPanel({
                   </span>
                 </div>
                 {e.escrow_status === "held" && (
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
                     {iAmSeeker && (
                       <button
                         type="button"
@@ -234,7 +238,21 @@ export function DealPanel({
                     >
                       Refund
                     </button>
+                    <DisputeButton
+                      engagementId={e.id}
+                      conversationId={conversationId}
+                      existing={disputesByEngagementId[e.id] ?? null}
+                    />
                   </div>
+                )}
+                {(e.escrow_status === "disputed" ||
+                  (disputesByEngagementId[e.id] &&
+                    disputesByEngagementId[e.id]!.status !== "open")) && (
+                  <DisputeButton
+                    engagementId={e.id}
+                    conversationId={conversationId}
+                    existing={disputesByEngagementId[e.id] ?? null}
+                  />
                 )}
                 {e.escrow_status === "released" &&
                   pendingReviewEngagementIds.includes(e.id) && (
