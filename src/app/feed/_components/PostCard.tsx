@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { MessageSquare } from "lucide-react";
 import { startDmAndRedirect } from "@/app/inbox/actions";
-import type { FeedPost } from "../actions";
+import type { FeedPost, ReactionKind } from "../actions";
+import { ReactionBar } from "./ReactionBar";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -59,12 +60,15 @@ function renderBody(body: string) {
 export function PostCard({
   post,
   viewerId,
+  reactionState,
 }: {
   post: FeedPost;
   viewerId: string;
+  reactionState?: { fire: number; handshake: number; in: number; mine: ReactionKind[] };
 }) {
   const k = kindLabel(post.kind);
   const isOwn = viewerId === post.user_id;
+  const initial = reactionState ?? { fire: 0, handshake: 0, in: 0, mine: [] };
   return (
     <article className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 hover:border-[var(--border-strong)] transition-colors">
       <header className="flex items-start gap-3">
@@ -105,28 +109,29 @@ export function PostCard({
       <p className="mt-3 text-[var(--fg)] leading-relaxed whitespace-pre-wrap break-words">
         {renderBody(post.body)}
       </p>
-      <footer className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-3">
-        {post.similarity !== null ? (
-          <p
-            className="font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums"
-            title="Cosine similarity to the average of your need embeddings"
-          >
-            match {(post.similarity * 100).toFixed(0)}%
-          </p>
-        ) : (
-          <span />
-        )}
-        {!isOwn && (
-          <form action={startDmAndRedirect.bind(null, post.user_id, "post")}>
-            <button
-              type="submit"
-              className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+      <footer className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-3">
+        <ReactionBar postId={post.id} initial={initial} />
+        <div className="flex items-center gap-2 ml-auto">
+          {post.similarity !== null && (
+            <span
+              className="font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums"
+              title="Cosine similarity to the average of your need embeddings"
             >
-              <MessageSquare className="h-3.5 w-3.5" />
-              Message
-            </button>
-          </form>
-        )}
+              match {(post.similarity * 100).toFixed(0)}%
+            </span>
+          )}
+          {!isOwn && (
+            <form action={startDmAndRedirect.bind(null, post.user_id, "post")}>
+              <button
+                type="submit"
+                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                Message
+              </button>
+            </form>
+          )}
+        </div>
       </footer>
     </article>
   );
