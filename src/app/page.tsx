@@ -2,18 +2,87 @@ import { MotionMount } from "./_components/MotionMount";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--fg)]">
-      <MotionMount />
-      <Hero />
-      <Broken />
-      <HowItWorks />
-      <WhatYouGet />
-      <Guarantee />
-      <Pricing />
-      <Faq />
-      <FinalCta />
-      <Footer />
-    </main>
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-[var(--accent)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--bg)]"
+      >
+        Skip to content
+      </a>
+      <Nav />
+      <main
+        id="main-content"
+        className="relative min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--fg)]"
+      >
+        <MotionMount />
+        <Hero />
+        <Broken />
+        <HowItWorks />
+        <WhatYouGet />
+        <Guarantee />
+        <Pricing />
+        <Faq />
+        <FinalCta />
+        <Footer />
+      </main>
+    </>
+  );
+}
+
+/* ---------------- Nav ---------------- */
+
+function Nav() {
+  const links = [
+    { href: "#how", label: "How it works" },
+    { href: "#pricing", label: "Pricing" },
+    { href: "#faq", label: "FAQ" },
+  ];
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/70 backdrop-blur-md">
+      <nav
+        aria-label="Primary"
+        className="mx-auto max-w-6xl px-5 sm:px-6 h-14 sm:h-16 flex items-center justify-between"
+      >
+        <a
+          href="/"
+          aria-label="Loop home"
+          className="flex items-center gap-2.5 press-shrink"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/loop-mark.svg"
+            alt=""
+            width={28}
+            height={28}
+            className="h-7 w-7"
+          />
+          <span className="font-semibold tracking-tight text-[var(--fg)]">
+            Loop
+          </span>
+        </a>
+
+        <div className="flex items-center gap-1 sm:gap-2">
+          <ul className="hidden md:flex items-center gap-1 mr-2">
+            {links.map((l) => (
+              <li key={l.href}>
+                <a
+                  href={l.href}
+                  className="px-3 py-2 text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] rounded-full transition-colors"
+                >
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a
+            href="/login"
+            className="press-shrink inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
+          >
+            Sign in
+          </a>
+        </div>
+      </nav>
+    </header>
   );
 }
 
@@ -157,7 +226,7 @@ function HowItWorks() {
   return (
     <section
       id="how"
-      className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]"
+      className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)] scroll-mt-20"
     >
       <div data-reveal className="reveal max-w-6xl mx-auto">
         <div className="text-center mb-16">
@@ -341,7 +410,10 @@ function Pricing() {
     },
   ];
   return (
-    <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
+    <section
+      id="pricing"
+      className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)] scroll-mt-20"
+    >
       <div data-reveal className="reveal max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <p className="eyebrow mb-4">Pricing</p>
@@ -424,7 +496,10 @@ function Faq() {
     },
   ];
   return (
-    <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
+    <section
+      id="faq"
+      className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)] scroll-mt-20"
+    >
       <div data-reveal className="reveal max-w-3xl mx-auto">
         <div className="text-center mb-12">
           <p className="eyebrow mb-4">Questions</p>
