@@ -129,23 +129,36 @@ export default function OnboardingPage() {
           Back
         </Button>
 
-        {step < 3 ? (
-          <Button
-            onClick={() => setStep((s) => s + 1)}
-            disabled={!canAdvance() || pending}
+        <div className="flex items-center gap-2">
+          <a
+            href="/feed"
+            className="hidden sm:inline-flex items-center text-sm text-neutral-500 hover:text-neutral-700 px-3 py-2"
           >
-            Continue
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            onClick={handleSubmit}
-            disabled={!canAdvance() || pending}
-          >
-            {pending ? "Setting up…" : "Finish & enter Loop"}
-          </Button>
-        )}
+            Skip for now
+          </a>
+          {step < 3 ? (
+            <Button
+              onClick={() => setStep((s) => s + 1)}
+              disabled={!canAdvance() || pending}
+            >
+              Continue
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              disabled={!canAdvance() || pending}
+            >
+              {pending ? "Setting up…" : "Finish & enter Loop"}
+            </Button>
+          )}
+        </div>
       </div>
+      <p className="mt-3 sm:hidden text-center">
+        <a href="/feed" className="text-xs text-neutral-500 underline">
+          Skip for now
+        </a>
+      </p>
     </div>
   );
 }

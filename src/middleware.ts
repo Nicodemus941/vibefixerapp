@@ -55,26 +55,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Onboarding gate: force users into /onboarding until they finish.
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("onboarding_complete")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  const onboardingDone = profile?.onboarding_complete === true;
-  const onOnboarding = pathname.startsWith("/onboarding");
-
-  if (!onboardingDone && !onOnboarding) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/onboarding";
-    return NextResponse.redirect(url);
-  }
-
-  if (onboardingDone && onOnboarding) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/feed";
-    return NextResponse.redirect(url);
+  // Onboarding is now optional: users land directly on /feed and can choose
+  // to complete it for personalized matching. Only redirect already-finished
+  // users away from /onboarding (so they don't see it again).
+  if (pathname.startsWith("/onboarding")) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_complete")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.onboarding_complete === true) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/feed";
+      return NextResponse.redirect(url);
+    }
   }
 
   return response;
