@@ -74,22 +74,18 @@ export default async function FeedPage({
                   <span className="text-[var(--fg-subtle)] font-normal">Tag:</span>{" "}
                   <span className="text-[var(--accent)]">#{tag}</span>
                 </>
-              ) : view === "recent" ? (
-                <>Everyone on Loop.</>
-              ) : onboardingDone ? (
-                <>Matched to your needs.</>
               ) : (
-                <>Your feed.</>
+                <>Loop&apos;s pulse.</>
               )}
             </h1>
             <p className="font-mono text-xs text-[var(--fg-subtle)] mt-1">
               {tag
-                ? "Showing posts tagged this only."
+                ? "Needs, offers, and wins tagged this."
                 : view === "recent"
-                ? "Most recent posts from every founder, newest first."
+                ? "Everything founders are asking for, offering, and shipping. Newest first."
                 : onboardingDone
-                ? "Ranked by similarity to what you said you need."
-                : "Most recent posts."}
+                ? "Needs, offers, and wins matched to what you said you need."
+                : "Needs, offers, and wins from across Loop."}
             </p>
           </div>
           {tag && (
@@ -240,8 +236,8 @@ function EmptyState({ tag }: { tag: string | null }) {
     <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-8 text-center">
       <p className="text-[var(--fg-muted)]">
         {tag
-          ? `No posts tagged #${tag} yet.`
-          : "No posts yet. Be the first — share what you need or what you can deliver today."}
+          ? `No needs, offers, or wins tagged #${tag} yet.`
+          : "Quiet right now. Post a need, an offer, or a win to get things moving."}
       </p>
     </div>
   );
