@@ -29,6 +29,26 @@ export default async function OrganizationPage({
   const org = await fetchOrganizationBySlug(slug);
   if (!org) notFound();
 
+  // Viewer can "post a job" if they currently work here.
+  const { data: ownPos } = await supabase
+    .from("positions")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("organization_id", org.id)
+    .eq("is_current", true)
+    .limit(1)
+    .maybeSingle();
+  const canPostJob = Boolean(ownPos);
+
+  // Open jobs at this org
+  const { data: orgJobs } = await supabase
+    .from("job_listings")
+    .select("id, title, employment_type, remote_policy, location")
+    .eq("organization_id", org.id)
+    .eq("status", "open")
+    .order("created_at", { ascending: false })
+    .limit(10);
+
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <FeedHeader
@@ -110,6 +130,39 @@ export default async function OrganizationPage({
               <span className="sm:hidden">Add role</span>
             </Link>
           </div>
+
+          {canPostJob && (
+            <div className="mb-3">
+              <Link
+                href={`/jobs/new?org_id=${org.id}`}
+                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-mono text-[var(--accent)] hover:bg-[var(--accent)]/15"
+              >
+                <Briefcase className="h-3 w-3" />
+                Post a job at this company
+              </Link>
+            </div>
+          )}
+
+          {(orgJobs?.length ?? 0) > 0 && (
+            <div className="mb-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
+              <p className="eyebrow mb-2">Open roles</p>
+              <ul className="space-y-1.5">
+                {orgJobs!.map((j) => (
+                  <li key={j.id}>
+                    <Link
+                      href={`/jobs/${j.id}`}
+                      className="press-shrink flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 hover:bg-white/[0.04]"
+                    >
+                      <span className="text-sm text-[var(--fg)] truncate">{j.title}</span>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)] shrink-0">
+                        {j.remote_policy === "remote" ? "Remote" : j.location ?? j.remote_policy}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {org.current_members.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center">

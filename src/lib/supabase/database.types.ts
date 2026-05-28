@@ -87,6 +87,69 @@ export type Database = {
         };
         Relationships: [];
       };
+      job_listings: {
+        Row: {
+          application_email: string | null;
+          application_url: string | null;
+          compensation_max: number | null;
+          compensation_min: number | null;
+          compensation_period: string | null;
+          created_at: string | null;
+          currency: string;
+          description: string;
+          embedding: string | null;
+          employment_type: string;
+          expires_at: string | null;
+          id: string;
+          location: string | null;
+          organization_id: string | null;
+          poster_id: string;
+          remote_policy: string;
+          status: string;
+          title: string;
+        };
+        Insert: {
+          application_email?: string | null;
+          application_url?: string | null;
+          compensation_max?: number | null;
+          compensation_min?: number | null;
+          compensation_period?: string | null;
+          created_at?: string | null;
+          currency?: string;
+          description: string;
+          embedding?: string | null;
+          employment_type: string;
+          expires_at?: string | null;
+          id?: string;
+          location?: string | null;
+          organization_id?: string | null;
+          poster_id: string;
+          remote_policy: string;
+          status?: string;
+          title: string;
+        };
+        Update: {
+          application_email?: string | null;
+          application_url?: string | null;
+          compensation_max?: number | null;
+          compensation_min?: number | null;
+          compensation_period?: string | null;
+          created_at?: string | null;
+          currency?: string;
+          description?: string;
+          embedding?: string | null;
+          employment_type?: string;
+          expires_at?: string | null;
+          id?: string;
+          location?: string | null;
+          organization_id?: string | null;
+          poster_id?: string;
+          remote_policy?: string;
+          status?: string;
+          title?: string;
+        };
+        Relationships: [];
+      };
       organizations: {
         Row: {
           created_at: string | null;
@@ -1089,6 +1152,30 @@ export type Database = {
           avatar_url: string | null;
           reputation_score: number;
           review_count: number;
+        }>;
+      };
+      match_jobs_for_user: {
+        Args: { viewer_id: string; limit_count?: number };
+        Returns: Array<{
+          id: string;
+          poster_id: string;
+          organization_id: string | null;
+          organization_slug: string | null;
+          organization_name: string | null;
+          organization_logo_url: string | null;
+          title: string;
+          description: string;
+          employment_type: string;
+          remote_policy: string;
+          location: string | null;
+          compensation_min: number | null;
+          compensation_max: number | null;
+          compensation_period: string | null;
+          currency: string;
+          application_url: string | null;
+          application_email: string | null;
+          created_at: string;
+          similarity: number | null;
         }>;
       };
       search_organizations: {
