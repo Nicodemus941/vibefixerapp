@@ -66,6 +66,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      disputes: {
+        Row: {
+          created_at: string | null;
+          engagement_id: string;
+          id: string;
+          opener_id: string;
+          reason: string;
+          resolution_note: string | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          status: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          engagement_id: string;
+          id?: string;
+          opener_id: string;
+          reason: string;
+          resolution_note?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+        };
+        Update: {
+          created_at?: string | null;
+          engagement_id?: string;
+          id?: string;
+          opener_id?: string;
+          reason?: string;
+          resolution_note?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+        };
+        Relationships: [];
+      };
       documents: {
         Row: {
           body_text: string;

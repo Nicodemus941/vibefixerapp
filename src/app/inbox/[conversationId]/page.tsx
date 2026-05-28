@@ -6,6 +6,7 @@ import { fetchThread } from "../actions";
 import { fetchEngagementsBetween } from "../engagement-actions";
 import { fetchDocumentsForConversation } from "@/app/documents/actions";
 import { fetchPendingReviews } from "@/app/reviews/actions";
+import { fetchDisputeForEngagement, type DisputeRow } from "@/app/disputes/actions";
 import { FeedHeader } from "../../feed/_components/FeedHeader";
 import { MessageComposer } from "../_components/MessageComposer";
 import { ThreadStream } from "../_components/ThreadStream";
@@ -43,6 +44,15 @@ export default async function ThreadPage({
   const pendingReviewIds = pendingReviews
     .filter((p) => p.counterparty_id === header?.counterparty_id)
     .map((p) => p.engagement_id);
+  const disputesByEngagementId: Record<string, DisputeRow | null> = {};
+  if (engagements.length > 0) {
+    const disputeResults = await Promise.all(
+      engagements.map((e) => fetchDisputeForEngagement(e.id)),
+    );
+    engagements.forEach((e, i) => {
+      disputesByEngagementId[e.id] = disputeResults[i];
+    });
+  }
 
   if (error || !header) {
     return (
@@ -116,6 +126,7 @@ export default async function ThreadPage({
           initial={engagements}
           counterpartyName={header.counterparty_name}
           pendingReviewEngagementIds={pendingReviewIds}
+          disputesByEngagementId={disputesByEngagementId}
         />
         <ThreadStream
           conversationId={conversationId}

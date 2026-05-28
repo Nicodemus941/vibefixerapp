@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Inbox, LogOut, Search, Settings, Sparkles, Users } from "lucide-react";
+import { Gavel, Inbox, LogOut, Search, Settings, Sparkles, Users } from "lucide-react";
 import { signOut } from "../../auth/actions";
 import { fetchUnreadCount } from "../../notifications/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -70,6 +70,15 @@ export async function FeedHeader({
             <span className="hidden sm:inline">Inbox</span>
           </Link>
           {user && <NotificationBell userId={user.id} initialUnread={unread} />}
+          {isOwner && (
+            <Link
+              href="/admin/disputes"
+              aria-label="Admin disputes"
+              className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full border border-amber-400/40 bg-amber-400/[0.06] text-amber-400 hover:bg-amber-400/[0.12] transition-colors"
+            >
+              <Gavel className="h-3.5 w-3.5" />
+            </Link>
+          )}
           {isOwner && (
             <span className="hidden sm:inline-flex font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/40">
               Owner
