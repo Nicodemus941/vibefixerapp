@@ -144,13 +144,41 @@ function Hero() {
 
         <h1
           data-parallax="0.85"
-          className="reveal-child text-[clamp(2.75rem,8vw,6.5rem)] font-semibold tracking-[-0.04em] leading-[0.95]"
-          style={{ ["--stagger-delay" as string]: "80ms" }}
+          className="text-[clamp(2.75rem,8vw,6.5rem)] font-semibold tracking-[-0.04em] leading-[0.95]"
         >
-          Stop networking.
+          <span
+            className="reveal-child inline-block"
+            style={{ ["--stagger-delay" as string]: "60ms" }}
+          >
+            Stop
+          </span>{" "}
+          <span
+            className="reveal-child inline-block"
+            style={{ ["--stagger-delay" as string]: "130ms" }}
+          >
+            networking.
+          </span>
           <br />
           <span className="bg-gradient-to-r from-[var(--fg)] to-[var(--fg-muted)] bg-clip-text text-transparent">
-            Start building.
+            <span
+              className="reveal-child inline-block"
+              style={{ ["--stagger-delay" as string]: "210ms" }}
+            >
+              Start
+            </span>{" "}
+            <span
+              className="reveal-child inline-block"
+              style={{ ["--stagger-delay" as string]: "290ms" }}
+            >
+              building.
+            </span>
+          </span>
+          <span
+            className="reveal-child cursor-blink ml-1 text-[var(--accent)] align-baseline"
+            style={{ ["--stagger-delay" as string]: "380ms" }}
+            aria-hidden
+          >
+            ▌
           </span>
         </h1>
 
