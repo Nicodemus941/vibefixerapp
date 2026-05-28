@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Inbox, LogOut, Sparkles } from "lucide-react";
+import { Inbox, LogOut, Search, Sparkles } from "lucide-react";
 import { signOut } from "../../auth/actions";
 import { fetchUnreadCount } from "../../notifications/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +30,13 @@ export async function FeedHeader({
           <span className="font-semibold tracking-tight">Loop</span>
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/search"
+            className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+            aria-label="Search"
+          >
+            <Search className="h-3.5 w-3.5" />
+          </Link>
           <Link
             href="/matches"
             className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
