@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MessageCircle, MessageSquare } from "lucide-react";
 import { startDmAndRedirect } from "@/app/inbox/actions";
+import { Avatar } from "@/components/Avatar";
 import type { FeedPost, ReactionKind, CommentSummary } from "../actions";
 import { ReactionBar } from "./ReactionBar";
 import { CommentThread } from "./CommentThread";
@@ -76,9 +77,9 @@ export function PostCard({
   return (
     <article className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 hover:border-[var(--border-strong)] transition-colors">
       <header className="flex items-start gap-3">
-        <div className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-sm font-mono text-[var(--fg-muted)]">
-          {(post.author_display_name?.[0] ?? "?").toUpperCase()}
-        </div>
+        <Link href={`/u/${post.user_id}`} aria-label={`View ${post.author_display_name}`}>
+          <Avatar name={post.author_display_name} url={post.author_avatar_url} size="md" />
+        </Link>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <Link

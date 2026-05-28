@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Inbox, LogOut, Search, Sparkles } from "lucide-react";
+import { Inbox, LogOut, Search, Settings, Sparkles } from "lucide-react";
 import { signOut } from "../../auth/actions";
 import { fetchUnreadCount } from "../../notifications/actions";
 import { createClient } from "@/lib/supabase/server";
+import { Avatar } from "@/components/Avatar";
 import { NotificationBell } from "./NotificationBell";
 
 export async function FeedHeader({
@@ -14,11 +15,18 @@ export async function FeedHeader({
 }) {
   const isOwner = role === "owner";
 
-  // Fetch the user id once on the server so the bell can subscribe by id.
+  // Fetch the user id + avatar once on the server.
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const { data: viewerProfile } = user
+    ? await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
   const unread = user ? await fetchUnreadCount() : 0;
 
   return (
@@ -54,27 +62,36 @@ export async function FeedHeader({
             <span className="hidden sm:inline">Inbox</span>
           </Link>
           {user && <NotificationBell userId={user.id} initialUnread={unread} />}
-          <div className="hidden sm:flex items-center gap-2">
-            <Link
-              href={user ? `/u/${user.id}` : "/login"}
-              className="font-mono text-xs text-[var(--fg-subtle)] hover:text-[var(--fg)] transition-colors press-shrink"
-            >
-              {displayName}
-            </Link>
-            {isOwner && (
-              <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/40">
-                Owner
-              </span>
-            )}
-          </div>
+          {isOwner && (
+            <span className="hidden sm:inline-flex font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/40">
+              Owner
+            </span>
+          )}
+          <Link
+            href="/account"
+            aria-label="Settings"
+            className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+          >
+            <Settings className="h-3.5 w-3.5" />
+          </Link>
+          <Link
+            href={user ? `/u/${user.id}` : "/login"}
+            aria-label="My profile"
+            className="press-shrink"
+          >
+            <Avatar
+              name={displayName}
+              url={viewerProfile?.avatar_url ?? null}
+              size="sm"
+            />
+          </Link>
           <form action={signOut}>
             <button
               type="submit"
-              className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+              className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
               aria-label="Sign out"
             >
               <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sign out</span>
             </button>
           </form>
         </div>

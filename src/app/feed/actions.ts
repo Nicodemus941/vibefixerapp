@@ -20,6 +20,7 @@ export type FeedPost = {
   author_display_name: string;
   author_company_name: string | null;
   author_industry: string | null;
+  author_avatar_url: string | null;
 };
 
 export async function createPost(input: {
