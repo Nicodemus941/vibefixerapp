@@ -14,7 +14,7 @@ import { FeedHeader } from "./_components/FeedHeader";
 import { ReciprocityBanner } from "./_components/ReciprocityBanner";
 import { LiveFeedBanner } from "./_components/LiveFeedBanner";
 
-type SearchParams = Promise<{ tag?: string | string[] }>;
+type SearchParams = Promise<{ tag?: string | string[]; view?: string | string[] }>;
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +26,9 @@ export default async function FeedPage({
   const sp = await searchParams;
   const tag =
     typeof sp.tag === "string" ? sp.tag.toLowerCase().replace(/^#/, "") : null;
+  const viewParam = typeof sp.view === "string" ? sp.view : null;
+  const view: "personalized" | "recent" =
+    viewParam === "everyone" || viewParam === "recent" ? "recent" : "personalized";
 
   const supabase = await createClient();
   const {
@@ -46,7 +49,7 @@ export default async function FeedPage({
   const isSuspended = reciprocityStatus === "suspended";
 
   const [{ posts, error: feedError }, trending] = await Promise.all([
-    fetchFeed({ tag, limit: 30 }),
+    fetchFeed({ tag, limit: 30, view }),
     fetchTrendingTags(),
   ]);
 
@@ -70,6 +73,8 @@ export default async function FeedPage({
                   <span className="text-[var(--fg-subtle)] font-normal">Tag:</span>{" "}
                   <span className="text-[var(--accent)]">#{tag}</span>
                 </>
+              ) : view === "recent" ? (
+                <>Everyone on Loop.</>
               ) : onboardingDone ? (
                 <>Matched to your needs.</>
               ) : (
@@ -79,6 +84,8 @@ export default async function FeedPage({
             <p className="font-mono text-xs text-[var(--fg-subtle)] mt-1">
               {tag
                 ? "Showing posts tagged this only."
+                : view === "recent"
+                ? "Most recent posts from every founder, newest first."
                 : onboardingDone
                 ? "Ranked by similarity to what you said you need."
                 : "Most recent posts."}
@@ -93,6 +100,18 @@ export default async function FeedPage({
             </Link>
           )}
         </div>
+
+        {/* For-you / Everyone tab toggle */}
+        {!tag && (
+          <div
+            role="tablist"
+            aria-label="Feed view"
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-1)] p-1"
+          >
+            <FeedViewTab href="/feed" active={view === "personalized"} label="For you" />
+            <FeedViewTab href="/feed?view=everyone" active={view === "recent"} label="Everyone" />
+          </div>
+        )}
 
         {/* Reciprocity status — warned/suspended */}
         <ReciprocityBanner
@@ -181,6 +200,32 @@ export default async function FeedPage({
         </section>
       </main>
     </div>
+  );
+}
+
+function FeedViewTab({
+  href,
+  active,
+  label,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      role="tab"
+      aria-selected={active}
+      className={[
+        "press-shrink inline-flex items-center justify-center h-8 px-4 rounded-full text-xs font-medium transition-colors",
+        active
+          ? "bg-[var(--accent)] text-[var(--bg)]"
+          : "text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.04]",
+      ].join(" ")}
+    >
+      {label}
+    </Link>
   );
 }
 

@@ -857,7 +857,7 @@ export type Database = {
     Functions: {
       enforce_reciprocity: { Args: Record<string, never>; Returns: undefined };
       feed_for_user: {
-        Args: { viewer_id: string; tag_filter?: string | null; limit_count?: number };
+        Args: { viewer_id: string; tag_filter?: string | null; limit_count?: number; view_mode?: "personalized" | "recent" };
         Returns: Array<{
           id: string;
           user_id: string;

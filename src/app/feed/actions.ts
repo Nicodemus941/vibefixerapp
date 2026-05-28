@@ -137,6 +137,7 @@ export async function deletePost(postId: string): Promise<{ error?: string }> {
 export async function fetchFeed(opts: {
   tag?: string | null;
   limit?: number;
+  view?: "personalized" | "recent";
 }): Promise<{ posts: FeedPost[]; error?: string }> {
   const supabase = await createClient();
   const {
@@ -148,6 +149,7 @@ export async function fetchFeed(opts: {
     viewer_id: user.id,
     tag_filter: opts.tag ?? null,
     limit_count: opts.limit ?? 30,
+    view_mode: opts.view ?? "personalized",
   });
 
   if (error) return { posts: [], error: error.message };
