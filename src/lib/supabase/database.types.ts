@@ -248,7 +248,6 @@ export type Database = {
           provider_id: string;
           seeker_id: string;
           stripe_charge_id: string | null;
-          stripe_payment_intent: string | null;
           stripe_payment_intent_id: string | null;
           stripe_refund_id: string | null;
           stripe_transfer_id: string | null;
@@ -266,7 +265,6 @@ export type Database = {
           provider_id: string;
           seeker_id: string;
           stripe_charge_id?: string | null;
-          stripe_payment_intent?: string | null;
           stripe_payment_intent_id?: string | null;
           stripe_refund_id?: string | null;
           stripe_transfer_id?: string | null;
@@ -284,7 +282,6 @@ export type Database = {
           provider_id?: string;
           seeker_id?: string;
           stripe_charge_id?: string | null;
-          stripe_payment_intent?: string | null;
           stripe_payment_intent_id?: string | null;
           stripe_refund_id?: string | null;
           stripe_transfer_id?: string | null;
