@@ -99,7 +99,7 @@ export async function acceptMatch(matchId: string) {
 
   await logEvent("match_accepted", user.id, { match_id: matchId });
 
-  if (convId) redirect(`/inbox/${convId}`);
+  if (convId) redirect(`/inbox/${convId}?draft=${matchId}`);
   redirect("/inbox");
 }
 
