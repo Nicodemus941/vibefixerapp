@@ -1,6 +1,9 @@
+import { MotionMount } from "./_components/MotionMount";
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white text-neutral-900">
+    <main className="relative min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--fg)]">
+      <MotionMount />
       <Hero />
       <Broken />
       <HowItWorks />
@@ -14,39 +17,87 @@ export default function Home() {
   );
 }
 
+/* ---------------- Hero ---------------- */
+
 function Hero() {
   return (
-    <section className="px-6 pt-24 pb-20 sm:pt-32 sm:pb-28 max-w-5xl mx-auto text-center">
-      <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600 mb-8">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        Founding Cohort — 500 spots left
-      </div>
-      <h1 className="text-5xl sm:text-7xl font-semibold tracking-tight leading-[1.05]">
-        Stop networking.
-        <br />
-        <span className="text-neutral-500">Start building.</span>
-      </h1>
-      <p className="mt-6 text-lg sm:text-xl text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-        The first platform where every founder must give AND receive. AI matches
-        your needs to another founder&apos;s services in under 24 hours.
-      </p>
-      <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-        <a
-          href="/login"
-          className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3.5 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
+    <section className="relative isolate min-h-screen flex items-center overflow-hidden">
+      {/* Parallax mesh background — moves at 0.3x scroll */}
+      <div
+        data-parallax="0.3"
+        className="mesh-bg absolute inset-0 -z-10"
+        aria-hidden
+      />
+      {/* Subtle grain over mesh */}
+      <div className="grain absolute inset-0 -z-10" aria-hidden />
+      {/* Top + bottom vignette for legibility */}
+      <div
+        className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[var(--bg)] to-transparent -z-10"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[var(--bg)] to-transparent -z-10"
+        aria-hidden
+      />
+
+      <div
+        data-reveal
+        className="reveal mx-auto max-w-5xl px-6 text-center"
+      >
+        <div
+          data-parallax="0.85"
+          className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/[0.03] backdrop-blur-sm px-3 py-1 mb-8 reveal-child"
+          style={{ ["--stagger-delay" as string]: "0ms" }}
         >
-          Claim Your Spot — Free
-        </a>
-        <a
-          href="#how"
-          className="inline-flex items-center justify-center rounded-full border border-neutral-300 px-6 py-3.5 text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition-colors"
+          <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+          <span className="eyebrow !text-[var(--fg-muted)]">
+            Founding Cohort · 500 spots left
+          </span>
+        </div>
+
+        <h1
+          data-parallax="0.85"
+          className="reveal-child text-[clamp(2.75rem,8vw,6.5rem)] font-semibold tracking-[-0.04em] leading-[0.95]"
+          style={{ ["--stagger-delay" as string]: "80ms" }}
         >
-          See How It Works ↓
-        </a>
+          Stop networking.
+          <br />
+          <span className="bg-gradient-to-r from-[var(--fg)] to-[var(--fg-muted)] bg-clip-text text-transparent">
+            Start building.
+          </span>
+        </h1>
+
+        <p
+          className="reveal-child mt-8 text-lg sm:text-xl text-[var(--fg-muted)] max-w-2xl mx-auto leading-relaxed"
+          style={{ ["--stagger-delay" as string]: "160ms" }}
+        >
+          The first platform where every founder must give AND receive. AI
+          matches your needs to another founder&apos;s services in under 24 hours.
+        </p>
+
+        <div
+          className="reveal-child mt-12 flex flex-col sm:flex-row gap-3 justify-center"
+          style={{ ["--stagger-delay" as string]: "240ms" }}
+        >
+          <a
+            href="/login"
+            className="press-shrink glow-ring inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-7 py-4 text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter] duration-200"
+          >
+            Claim Your Spot — Free
+          </a>
+          <a
+            href="#how"
+            className="press-shrink inline-flex items-center justify-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-7 py-4 text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05] transition-colors"
+          >
+            See How It Works ↓
+          </a>
+        </div>
       </div>
     </section>
   );
 }
+
+/* ---------------- LinkedIn is broken ---------------- */
 
 function Broken() {
   const items = [
@@ -55,26 +106,28 @@ function Broken() {
     "To pay $99/mo to InMail people who'll never reply",
   ];
   return (
-    <section className="px-6 py-20 border-t border-neutral-100 bg-neutral-50">
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+    <section className="relative py-32 px-6 border-t border-[var(--border)]">
+      <div data-reveal className="reveal max-w-3xl mx-auto">
+        <p className="eyebrow mb-4">The problem</p>
+        <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] leading-[1.05]">
           LinkedIn is broken for founders.
         </h2>
-        <p className="mt-4 text-neutral-600">You don&apos;t need:</p>
-        <ul className="mt-6 space-y-3">
-          {items.map((t) => (
+        <p className="mt-6 text-[var(--fg-muted)]">You don&apos;t need:</p>
+        <ul className="mt-8 space-y-4">
+          {items.map((t, i) => (
             <li
               key={t}
-              className="flex items-start gap-3 text-neutral-700"
+              className="reveal-child flex items-start gap-4 font-mono text-[var(--fg)] text-base"
+              style={{ ["--stagger-delay" as string]: `${i * 80}ms` }}
             >
-              <span className="mt-1 text-red-500" aria-hidden>
+              <span className="text-[var(--danger)] mt-0.5" aria-hidden>
                 ✕
               </span>
-              <span>{t}</span>
+              <span className="line-through decoration-[var(--danger)]/60 decoration-2">{t}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-10 text-lg font-medium text-neutral-900">
+        <p className="mt-12 text-xl sm:text-2xl font-medium text-[var(--fg)] tracking-tight">
           You need: the right person, with the right skill, ready to start
           today.
         </p>
@@ -83,105 +136,138 @@ function Broken() {
   );
 }
 
+/* ---------------- How it works (bento) ---------------- */
+
 function HowItWorks() {
-  const steps = [
-    {
-      n: "1",
-      title: "List what you sell.",
-      body: "Web design? Cold email? Fractional CFO? Anything.",
-    },
-    {
-      n: "2",
-      title: "List what you need.",
-      body: "Required — no spectators allowed.",
-    },
-    {
-      n: "3",
-      title: "Wake up to 3 matches every morning.",
-      body: "Hire on the spot, or build the relationship first. Your call.",
-    },
-  ];
   return (
-    <section id="how" className="px-6 py-24 max-w-5xl mx-auto">
-      <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-center">
-        How Loop Works
-      </h2>
-      <div className="mt-12 grid gap-6 sm:grid-cols-3">
-        {steps.map((s) => (
-          <div
-            key={s.n}
-            className="rounded-2xl border border-neutral-200 p-6"
+    <section
+      id="how"
+      className="relative py-32 px-6 border-t border-[var(--border)]"
+    >
+      <div data-reveal className="reveal max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <p className="eyebrow mb-4">How Loop works</p>
+          <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
+            Three steps. No theater.
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-12 gap-4">
+          {/* Big tile — spans 7 cols on desktop, full on mobile */}
+          <BentoTile
+            n="01"
+            title="List what you sell."
+            body="Web design. Cold email. Fractional CFO. Anything you actually deliver."
+            className="col-span-12 lg:col-span-7 lg:row-span-2 min-h-[18rem] lg:min-h-[24rem]"
+            delay={0}
           >
-            <div className="h-9 w-9 rounded-full bg-neutral-900 text-white flex items-center justify-center text-sm font-medium">
-              {s.n}
+            <div className="absolute bottom-6 right-6 left-6 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 font-mono text-xs text-[var(--fg-muted)]">
+              <span className="text-[var(--accent)]">offer</span>:{" "}
+              fractional-cfo-saas-seed
+              <br />
+              <span className="text-[var(--accent)]">price</span>: $4k–$8k / mo
+              <br />
+              <span className="text-[var(--accent)]">status</span>: active
             </div>
-            <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
-            <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
-              {s.body}
-            </p>
-          </div>
-        ))}
+          </BentoTile>
+
+          {/* Two medium tiles right */}
+          <BentoTile
+            n="02"
+            title="List what you need."
+            body="Required. No spectators."
+            className="col-span-12 lg:col-span-5 min-h-[11rem] lg:min-h-[11.5rem]"
+            delay={120}
+          />
+          <BentoTile
+            n="03"
+            title="3 matches by morning."
+            body="Hire on the spot, or build the relationship first. Your call."
+            className="col-span-12 lg:col-span-5 min-h-[11rem] lg:min-h-[11.5rem]"
+            delay={240}
+          />
+        </div>
+
+        <p className="mt-12 text-center text-[var(--fg-subtle)]">
+          That&apos;s it. No feed. No likes. No theater.
+        </p>
       </div>
-      <p className="mt-10 text-center text-neutral-500">
-        That&apos;s it. No feed. No likes. No theater.
-      </p>
     </section>
   );
 }
 
+function BentoTile({
+  n,
+  title,
+  body,
+  className,
+  delay,
+  children,
+}: {
+  n: string;
+  title: string;
+  body: string;
+  className?: string;
+  delay: number;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`reveal-child relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] p-8 hover:border-[var(--border-strong)] transition-colors ${className ?? ""}`}
+      style={{ ["--stagger-delay" as string]: `${delay}ms` }}
+    >
+      <span className="eyebrow text-[var(--accent)]">{n}</span>
+      <h3 className="mt-3 text-2xl font-semibold tracking-tight">{title}</h3>
+      <p className="mt-2 text-[var(--fg-muted)] text-sm leading-relaxed max-w-sm">
+        {body}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+/* ---------------- What you get (free) ---------------- */
+
 function WhatYouGet() {
   const perks = [
-    {
-      title: "AI-matched introductions every 24 hours",
-      value: "$2,000/mo value",
-    },
-    {
-      title: "Founder-only network (verified revenue, no recruiters)",
-      value: "$500/mo value",
-    },
-    {
-      title: "Escrow-protected contracts (we hold funds until delivery)",
-      value: "$300/mo value",
-    },
-    {
-      title: "Auto-drafted warm intros (Claude writes the opener)",
-      value: "$200/mo value",
-    },
-    {
-      title: "Outcome-based reputation score (receipts, not endorsements)",
-      value: "priceless",
-    },
+    { title: "AI-matched introductions every 24 hours", value: "$2,000/mo" },
+    { title: "Founder-only network — verified revenue, no recruiters", value: "$500/mo" },
+    { title: "Escrow-protected contracts — funds held until delivery", value: "$300/mo" },
+    { title: "Auto-drafted warm intros — Claude writes the opener", value: "$200/mo" },
+    { title: "Outcome-based reputation score — receipts, not endorsements", value: "priceless" },
   ];
   return (
-    <section className="px-6 py-24 bg-neutral-900 text-white">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-          What You Get <span className="text-neutral-400">(Free)</span>
+    <section className="relative py-32 px-6 border-t border-[var(--border)]">
+      <div data-reveal className="reveal max-w-4xl mx-auto">
+        <p className="eyebrow mb-4">What you get</p>
+        <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
+          For free. While you reciprocate.
         </h2>
-        <ul className="mt-10 space-y-4">
-          {perks.map((p) => (
+        <ul className="mt-12 divide-y divide-[var(--border)] border-y border-[var(--border)]">
+          {perks.map((p, i) => (
             <li
               key={p.title}
-              className="flex items-start justify-between gap-6 border-b border-white/10 pb-4"
+              className="reveal-child flex items-start justify-between gap-6 py-5"
+              style={{ ["--stagger-delay" as string]: `${i * 60}ms` }}
             >
-              <div className="flex items-start gap-3">
-                <span className="mt-1 text-emerald-400" aria-hidden>
+              <div className="flex items-start gap-4">
+                <span className="text-[var(--accent)] mt-0.5" aria-hidden>
                   ✓
                 </span>
-                <span className="text-neutral-100">{p.title}</span>
+                <span className="text-[var(--fg)]">{p.title}</span>
               </div>
-              <span className="shrink-0 text-sm text-neutral-400 italic">
+              <span className="font-mono text-xs text-[var(--fg-subtle)] shrink-0 tabular-nums">
                 {p.value}
               </span>
             </li>
           ))}
         </ul>
-        <div className="mt-10 rounded-2xl bg-white/5 border border-white/10 p-6 text-center">
+        <div className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-8 text-center">
           <p className="text-lg">
             Total value:{" "}
-            <span className="font-semibold">$3,000+/month</span>. Your price:{" "}
-            <span className="font-semibold">$0</span> — as long as you
-            reciprocate.
+            <span className="font-semibold tabular-nums">$3,000+/mo</span>. Your
+            price: <span className="font-semibold text-[var(--accent)]">$0</span>
+            {" "}— as long as you reciprocate.
           </p>
         </div>
       </div>
@@ -189,20 +275,28 @@ function WhatYouGet() {
   );
 }
 
+/* ---------------- Guarantee ---------------- */
+
 function Guarantee() {
   return (
-    <section className="px-6 py-24 max-w-3xl mx-auto text-center">
-      <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600 mb-6">
-        The Founder&apos;s Guarantee
+    <section className="relative py-40 px-6 border-t border-[var(--border)]">
+      <div data-reveal className="reveal max-w-3xl mx-auto text-center">
+        <p className="eyebrow mb-6">The Founder&apos;s Guarantee</p>
+        <p className="text-3xl sm:text-5xl font-medium tracking-[-0.03em] leading-tight">
+          Get matched with 3 qualified founders in 7 days,{" "}
+          <span className="text-[var(--fg-muted)]">
+            or we refund every cent + give you a full year free.
+          </span>
+        </p>
+        <p className="mt-8 text-[var(--fg-subtle)]">
+          We can say that because the model works.
+        </p>
       </div>
-      <p className="text-2xl sm:text-3xl font-medium tracking-tight leading-snug">
-        Get matched with 3 qualified founders in 7 days, or we refund every
-        cent + give you a full year free.
-      </p>
-      <p className="mt-6 text-neutral-500">We can say that because the model works.</p>
     </section>
   );
 }
+
+/* ---------------- Pricing ---------------- */
 
 function Pricing() {
   const tiers = [
@@ -226,70 +320,61 @@ function Pricing() {
       name: "Vault",
       price: "$499",
       period: "/mo",
-      features: [
-        "Verified $1M+ revenue founders only",
-        "White-glove curation",
-      ],
+      features: ["Verified $1M+ revenue founders only", "White-glove curation"],
       cta: "Apply to Vault",
       featured: false,
     },
   ];
   return (
-    <section className="px-6 py-24 bg-neutral-50 border-y border-neutral-100">
-      <div className="max-w-5xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-center">
-          Pricing
-        </h2>
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          {tiers.map((t) => (
+    <section className="relative py-32 px-6 border-t border-[var(--border)]">
+      <div data-reveal className="reveal max-w-5xl mx-auto">
+        <div className="text-center mb-16">
+          <p className="eyebrow mb-4">Pricing</p>
+          <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
+            Pick a lane.
+          </h2>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {tiers.map((t, i) => (
             <div
               key={t.name}
               className={[
-                "rounded-2xl p-6 flex flex-col",
+                "reveal-child relative rounded-2xl p-7 flex flex-col transition-transform duration-300",
                 t.featured
-                  ? "bg-neutral-900 text-white border border-neutral-900 shadow-xl"
-                  : "bg-white border border-neutral-200",
+                  ? "border border-[var(--accent)]/40 bg-[var(--surface-2)] glow-ring scale-[1.02] sm:scale-[1.05]"
+                  : "border border-[var(--border)] bg-[var(--surface-1)] hover:border-[var(--border-strong)]",
               ].join(" ")}
+              style={{ ["--stagger-delay" as string]: `${i * 100}ms` }}
             >
+              {t.featured && (
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[var(--accent)] px-3 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wider text-[var(--bg)]">
+                  Most loved
+                </span>
+              )}
               <h3 className="text-lg font-semibold">{t.name}</h3>
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-semibold tracking-tight">
+                <span className="text-5xl font-semibold tracking-[-0.03em] tabular-nums">
                   {t.price}
                 </span>
-                <span
-                  className={t.featured ? "text-neutral-400" : "text-neutral-500"}
-                >
-                  {t.period}
-                </span>
+                <span className="text-[var(--fg-subtle)]">{t.period}</span>
               </div>
-              <ul className="mt-6 space-y-2 text-sm flex-1">
+              <ul className="mt-6 space-y-2.5 text-sm flex-1">
                 {t.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
-                    <span
-                      className={
-                        t.featured ? "text-emerald-400" : "text-emerald-600"
-                      }
-                      aria-hidden
-                    >
+                    <span className="text-[var(--accent)]" aria-hidden>
                       ✓
                     </span>
-                    <span
-                      className={
-                        t.featured ? "text-neutral-100" : "text-neutral-700"
-                      }
-                    >
-                      {f}
-                    </span>
+                    <span className="text-[var(--fg)]">{f}</span>
                   </li>
                 ))}
               </ul>
               <a
                 href="/login"
                 className={[
-                  "mt-8 inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition-colors",
+                  "press-shrink mt-8 inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition-colors",
                   t.featured
-                    ? "bg-white text-neutral-900 hover:bg-neutral-100"
-                    : "bg-neutral-900 text-white hover:bg-neutral-800",
+                    ? "bg-[var(--accent)] text-[var(--bg)] hover:brightness-110"
+                    : "border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg)] hover:bg-white/[0.05]",
                 ].join(" ")}
               >
                 {t.cta}
@@ -301,6 +386,8 @@ function Pricing() {
     </section>
   );
 }
+
+/* ---------------- FAQ ---------------- */
 
 function Faq() {
   const qa = [
@@ -322,52 +409,74 @@ function Faq() {
     },
   ];
   return (
-    <section className="px-6 py-24 max-w-3xl mx-auto">
-      <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-center">
-        FAQ
-      </h2>
-      <div className="mt-12 divide-y divide-neutral-200 border-y border-neutral-200">
-        {qa.map((item) => (
-          <details key={item.q} className="group py-5">
-            <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-medium text-neutral-900 list-none">
-              <span>{item.q}</span>
-              <span className="text-neutral-400 transition-transform group-open:rotate-45 text-xl leading-none">
-                +
-              </span>
-            </summary>
-            <p className="mt-3 text-neutral-600 leading-relaxed">{item.a}</p>
-          </details>
-        ))}
+    <section className="relative py-32 px-6 border-t border-[var(--border)]">
+      <div data-reveal className="reveal max-w-3xl mx-auto">
+        <div className="text-center mb-12">
+          <p className="eyebrow mb-4">Questions</p>
+          <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
+            FAQ
+          </h2>
+        </div>
+        <div className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
+          {qa.map((item) => (
+            <details key={item.q} className="group py-6">
+              <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-medium text-[var(--fg)] list-none">
+                <span>{item.q}</span>
+                <span className="text-[var(--fg-subtle)] transition-transform duration-300 group-open:rotate-45 text-2xl leading-none">
+                  +
+                </span>
+              </summary>
+              <p className="mt-3 text-[var(--fg-muted)] leading-relaxed">
+                {item.a}
+              </p>
+            </details>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
+
+/* ---------------- Final CTA (mirror hero) ---------------- */
 
 function FinalCta() {
   return (
-    <section className="px-6 py-24 text-center bg-neutral-50 border-t border-neutral-100">
-      <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-        Built for founders who ship.
-      </h2>
-      <div className="mt-8">
-        <a
-          href="/login"
-          className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-7 py-4 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
-        >
-          Claim Your Founder Spot — Free
-        </a>
+    <section className="relative isolate overflow-hidden py-40 px-6 border-t border-[var(--border)]">
+      <div className="mesh-bg absolute inset-0 -z-10 opacity-60" aria-hidden />
+      <div
+        className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[var(--bg)] to-transparent -z-10"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[var(--bg)] to-transparent -z-10"
+        aria-hidden
+      />
+      <div data-reveal className="reveal max-w-3xl mx-auto text-center">
+        <h2 className="text-4xl sm:text-6xl font-semibold tracking-[-0.04em]">
+          Built for founders who ship.
+        </h2>
+        <div className="mt-10">
+          <a
+            href="/login"
+            className="press-shrink glow-ring inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-8 py-5 text-base font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
+          >
+            Claim Your Founder Spot — Free
+          </a>
+        </div>
+        <p className="mt-8 eyebrow">Only 500 spots left in the Founding Cohort</p>
       </div>
-      <p className="mt-6 text-sm text-neutral-500">
-        Only 500 spots left in the Founding Cohort.
-      </p>
     </section>
   );
 }
 
+/* ---------------- Footer ---------------- */
+
 function Footer() {
   return (
-    <footer className="px-6 py-10 text-center text-xs text-neutral-500 border-t border-neutral-100">
-      © {new Date().getFullYear()} Loop. Reciprocity required.
+    <footer className="px-6 py-10 text-center border-t border-[var(--border)]">
+      <p className="eyebrow !text-[var(--fg-subtle)]">
+        © {new Date().getFullYear()} Loop · Reciprocity required
+      </p>
     </footer>
   );
 }

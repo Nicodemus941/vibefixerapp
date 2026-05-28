@@ -1,26 +1,176 @@
 @import "tailwindcss";
 
+/* ============================================
+   Loop — Dark futuristic theme tokens
+   ============================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces — layered darks */
+  --bg: #0a0a0a;
+  --surface-1: #111111;
+  --surface-2: #181818;
+  --surface-3: #1f1f1f;
+
+  /* Foregrounds */
+  --fg: #fafafa;
+  --fg-muted: #a1a1aa;     /* AA on --bg: 7.4:1 */
+  --fg-subtle: #71717a;    /* labels, eyebrows */
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  /* Accent — emerald continues from launch palette */
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.35);
+
+  /* Critical */
+  --danger: #f43f5e;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================
+   Motion primitives — scroll-linked parallax
+   ============================================ */
+
+@layer utilities {
+  /* Mono eyebrow label */
+  .eyebrow {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-subtle);
+  }
+
+  /* Reveal-on-enter (driven by IntersectionObserver in lib/motion.ts) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 500ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  .reveal[data-revealed="true"] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Stagger children — set --stagger-delay per child */
+  .reveal-child {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 500ms cubic-bezier(0.16, 1, 0.3, 1) var(--stagger-delay, 0ms),
+      transform 500ms cubic-bezier(0.16, 1, 0.3, 1) var(--stagger-delay, 0ms);
+  }
+  [data-revealed="true"] .reveal-child {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Pressed-state feedback (skill rule: scale-feedback) */
+  .press-shrink {
+    transition: transform 120ms ease-out;
+  }
+  .press-shrink:active {
+    transform: scale(0.97);
+  }
+
+  /* Accent glow ring */
+  .glow-ring {
+    box-shadow:
+      0 0 0 1px var(--border-strong),
+      0 0 40px -8px var(--accent-glow);
+  }
+
+  /* Animated gradient mesh background — for hero */
+  .mesh-bg {
+    background:
+      radial-gradient(60% 60% at 20% 30%, rgba(16, 185, 129, 0.18) 0%, transparent 60%),
+      radial-gradient(50% 50% at 80% 20%, rgba(56, 189, 248, 0.14) 0%, transparent 60%),
+      radial-gradient(70% 70% at 70% 80%, rgba(139, 92, 246, 0.16) 0%, transparent 60%),
+      var(--bg);
+    background-size: 200% 200%;
+    animation: mesh-drift 28s ease-in-out infinite alternate;
+  }
+
+  @keyframes mesh-drift {
+    0%   { background-position: 0% 0%, 100% 0%, 50% 100%; }
+    100% { background-position: 100% 50%, 0% 60%, 80% 0%; }
+  }
+
+  /* Slow pulse for status dots */
+  .pulse-dot {
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.6; transform: scale(0.9); }
+    50%      { opacity: 1;   transform: scale(1.1); }
+  }
+
+  /* Grain overlay — subtle film texture for premium feel */
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================
+   Reduced motion — disable parallax and reveals
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .reveal, .reveal-child {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .mesh-bg {
+    animation: none;
+  }
+  .pulse-dot {
+    animation: none;
+  }
+}
+
+/* Focus rings (skill rule: focus-states) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--accent);
+  color: var(--bg);
 }
