@@ -7,6 +7,8 @@ import { AvatarUploader } from "./_components/AvatarUploader";
 import { ProfileForm } from "./_components/ProfileForm";
 import { NotificationPrefsForm } from "./_components/NotificationPrefsForm";
 import { DangerZone } from "./_components/DangerZone";
+import { StripeConnectSection } from "./_components/StripeConnectSection";
+import { fetchStripeConnectStatus } from "../stripe/actions";
 import type { NotificationPrefs } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +44,8 @@ export default async function AccountPage() {
     ...DEFAULT_PREFS,
     ...((profile?.notification_prefs as Partial<NotificationPrefs> | null) ?? {}),
   };
+
+  const stripeStatus = await fetchStripeConnectStatus();
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
@@ -84,6 +88,10 @@ export default async function AccountPage() {
               /u/{user.id.slice(0, 8)}…
             </Link>
           </p>
+        </Section>
+
+        <Section title="Payments — Stripe Connect">
+          <StripeConnectSection status={stripeStatus} />
         </Section>
 
         <Section title="Notifications">
