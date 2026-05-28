@@ -4,10 +4,12 @@ import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { fetchThread } from "../actions";
 import { fetchEngagementsBetween } from "../engagement-actions";
+import { fetchDocumentsForConversation } from "@/app/documents/actions";
 import { FeedHeader } from "../../feed/_components/FeedHeader";
 import { MessageComposer } from "../_components/MessageComposer";
 import { ThreadStream } from "../_components/ThreadStream";
 import { DealPanel } from "../_components/DealPanel";
+import { DocumentsPanel } from "../_components/DocumentsPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +32,12 @@ export default async function ThreadPage({
     .maybeSingle();
 
   const { header, messages, error } = await fetchThread(conversationId);
-  const engagements = header
-    ? await fetchEngagementsBetween(header.counterparty_id)
-    : [];
+  const [engagements, documents] = header
+    ? await Promise.all([
+        fetchEngagementsBetween(header.counterparty_id),
+        fetchDocumentsForConversation(conversationId),
+      ])
+    : [[], []];
 
   if (error || !header) {
     return (
@@ -94,6 +99,11 @@ export default async function ThreadPage({
       </div>
 
       <main className="flex-1 mx-auto w-full max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-4">
+        <DocumentsPanel
+          conversationId={conversationId}
+          counterpartyId={header.counterparty_id}
+          initial={documents}
+        />
         <DealPanel
           conversationId={conversationId}
           otherUserId={header.counterparty_id}
