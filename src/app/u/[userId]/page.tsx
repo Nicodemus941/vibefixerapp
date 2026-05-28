@@ -6,6 +6,8 @@ import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PostCard } from "@/app/feed/_components/PostCard";
 import { fetchReactionState, fetchCommentSummaries } from "@/app/feed/actions";
 import { startDmAndRedirect } from "@/app/inbox/actions";
+import { fetchReviewsForUser } from "@/app/reviews/actions";
+import { ReviewList, Stars } from "@/app/reviews/_components/ReviewList";
 
 export const dynamic = "force-dynamic";
 
@@ -84,15 +86,20 @@ export default async function ProfilePage({
   ]);
 
   const postIds = (posts ?? []).map((p) => p.id);
-  const [reactionState, commentSummaries] = await Promise.all([
+  const [reactionState, commentSummaries, reviews] = await Promise.all([
     fetchReactionState(postIds),
     fetchCommentSummaries(postIds),
+    fetchReviewsForUser(profile.id, 20),
   ]);
+  const avgRating =
+    reviews.length > 0
+      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+      : 0;
 
   const stats = [
     { label: "Posts", value: posts?.length ?? 0 },
+    { label: "Reviews", value: reviews.length },
     { label: "Offers", value: offers?.length ?? 0 },
-    { label: "Open needs", value: needs?.length ?? 0 },
     { label: "Deals shipped", value: dealCount ?? 0 },
   ];
 
@@ -131,6 +138,15 @@ export default async function ProfilePage({
                   {profile.company_name && profile.industry && " · "}
                   {profile.industry}
                 </p>
+              )}
+              {reviews.length > 0 && (
+                <div className="mt-1.5 flex items-center gap-2">
+                  <Stars value={Math.round(avgRating)} />
+                  <span className="font-mono text-xs text-[var(--fg-muted)] tabular-nums">
+                    {avgRating.toFixed(1)} · {reviews.length} review
+                    {reviews.length === 1 ? "" : "s"}
+                  </span>
+                </div>
               )}
               {profile.company_url && (
                 <a
@@ -241,6 +257,14 @@ export default async function ProfilePage({
                 </li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {/* Reviews */}
+        {reviews.length > 0 && (
+          <section aria-label="Reviews" className="space-y-3">
+            <p className="eyebrow">Reviews</p>
+            <ReviewList reviews={reviews} />
           </section>
         )}
 
