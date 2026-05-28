@@ -19,7 +19,6 @@ export default function Home() {
         <Broken />
         <HowItWorks />
         <WhatYouGet />
-        <Guarantee />
         <Pricing />
         <Faq />
         <FinalCta />
@@ -385,27 +384,6 @@ function WhatYouGet() {
             {" "}— as long as you reciprocate.
           </p>
         </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- Guarantee ---------------- */
-
-function Guarantee() {
-  return (
-    <section className="relative py-24 sm:py-40 px-6 border-t border-[var(--border)]">
-      <div data-reveal className="reveal max-w-3xl mx-auto text-center">
-        <p className="eyebrow mb-6">The Founder&apos;s Guarantee</p>
-        <p className="text-3xl sm:text-5xl font-medium tracking-[-0.03em] leading-tight">
-          Get matched with 3 qualified founders in 7 days,{" "}
-          <span className="text-[var(--fg-muted)]">
-            or we refund every cent + give you a full year free.
-          </span>
-        </p>
-        <p className="mt-8 text-[var(--fg-subtle)]">
-          We can say that because the model works.
-        </p>
       </div>
     </section>
   );
