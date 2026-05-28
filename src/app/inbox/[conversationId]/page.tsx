@@ -3,9 +3,11 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { fetchThread } from "../actions";
+import { fetchEngagementsBetween } from "../engagement-actions";
 import { FeedHeader } from "../../feed/_components/FeedHeader";
 import { MessageComposer } from "../_components/MessageComposer";
 import { ThreadStream } from "../_components/ThreadStream";
+import { DealPanel } from "../_components/DealPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,9 @@ export default async function ThreadPage({
     .maybeSingle();
 
   const { header, messages, error } = await fetchThread(conversationId);
+  const engagements = header
+    ? await fetchEngagementsBetween(header.counterparty_id)
+    : [];
 
   if (error || !header) {
     return (
@@ -88,7 +93,13 @@ export default async function ThreadPage({
         </div>
       </div>
 
-      <main className="flex-1 mx-auto w-full max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-3">
+      <main className="flex-1 mx-auto w-full max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-4">
+        <DealPanel
+          conversationId={conversationId}
+          otherUserId={header.counterparty_id}
+          viewerId={user.id}
+          initial={engagements}
+        />
         <ThreadStream
           conversationId={conversationId}
           viewerId={user.id}

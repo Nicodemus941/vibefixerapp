@@ -549,6 +549,15 @@ export type Database = {
         Args: { other_user_id: string; conv_origin?: string };
         Returns: string;
       };
+      start_engagement_for_dm: {
+        Args: {
+          other_user_id: string;
+          amount: number;
+          delivery_due_at?: string | null;
+          as_provider?: boolean;
+        };
+        Returns: string;
+      };
       run_daily_matcher: {
         Args: Record<string, never>;
         Returns: number;
