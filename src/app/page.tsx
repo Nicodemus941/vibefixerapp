@@ -21,13 +21,28 @@ export default function Home() {
 
 function Hero() {
   return (
-    <section className="relative isolate min-h-screen flex items-center overflow-hidden">
+    <section className="relative isolate min-h-[100svh] flex items-center overflow-hidden pt-20 pb-24 sm:pt-24 sm:pb-32">
       {/* Parallax mesh background — moves at 0.3x scroll */}
       <div
         data-parallax="0.3"
         className="mesh-bg absolute inset-0 -z-10"
         aria-hidden
       />
+      {/* Animated constellation — moves at 0.5x scroll (between mesh and headline) */}
+      <div
+        data-parallax="0.5"
+        className="absolute inset-0 -z-10 opacity-70 hidden sm:block"
+        aria-hidden
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hero-constellation.svg"
+          alt=""
+          className="w-full h-full object-cover"
+          loading="eager"
+          fetchPriority="high"
+        />
+      </div>
       {/* Subtle grain over mesh */}
       <div className="grain absolute inset-0 -z-10" aria-hidden />
       {/* Top + bottom vignette for legibility */}
@@ -106,7 +121,7 @@ function Broken() {
     "To pay $99/mo to InMail people who'll never reply",
   ];
   return (
-    <section className="relative py-32 px-6 border-t border-[var(--border)]">
+    <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
       <div data-reveal className="reveal max-w-3xl mx-auto">
         <p className="eyebrow mb-4">The problem</p>
         <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] leading-[1.05]">
@@ -142,7 +157,7 @@ function HowItWorks() {
   return (
     <section
       id="how"
-      className="relative py-32 px-6 border-t border-[var(--border)]"
+      className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]"
     >
       <div data-reveal className="reveal max-w-6xl mx-auto">
         <div className="text-center mb-16">
@@ -237,7 +252,7 @@ function WhatYouGet() {
     { title: "Outcome-based reputation score — receipts, not endorsements", value: "priceless" },
   ];
   return (
-    <section className="relative py-32 px-6 border-t border-[var(--border)]">
+    <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
       <div data-reveal className="reveal max-w-4xl mx-auto">
         <p className="eyebrow mb-4">What you get</p>
         <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
@@ -279,7 +294,7 @@ function WhatYouGet() {
 
 function Guarantee() {
   return (
-    <section className="relative py-40 px-6 border-t border-[var(--border)]">
+    <section className="relative py-24 sm:py-40 px-6 border-t border-[var(--border)]">
       <div data-reveal className="reveal max-w-3xl mx-auto text-center">
         <p className="eyebrow mb-6">The Founder&apos;s Guarantee</p>
         <p className="text-3xl sm:text-5xl font-medium tracking-[-0.03em] leading-tight">
@@ -326,7 +341,7 @@ function Pricing() {
     },
   ];
   return (
-    <section className="relative py-32 px-6 border-t border-[var(--border)]">
+    <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
       <div data-reveal className="reveal max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <p className="eyebrow mb-4">Pricing</p>
@@ -341,7 +356,7 @@ function Pricing() {
               className={[
                 "reveal-child relative rounded-2xl p-7 flex flex-col transition-transform duration-300",
                 t.featured
-                  ? "border border-[var(--accent)]/40 bg-[var(--surface-2)] glow-ring scale-[1.02] sm:scale-[1.05]"
+                  ? "border border-[var(--accent)]/40 bg-[var(--surface-2)] glow-ring sm:scale-[1.05]"
                   : "border border-[var(--border)] bg-[var(--surface-1)] hover:border-[var(--border-strong)]",
               ].join(" ")}
               style={{ ["--stagger-delay" as string]: `${i * 100}ms` }}
@@ -409,7 +424,7 @@ function Faq() {
     },
   ];
   return (
-    <section className="relative py-32 px-6 border-t border-[var(--border)]">
+    <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
       <div data-reveal className="reveal max-w-3xl mx-auto">
         <div className="text-center mb-12">
           <p className="eyebrow mb-4">Questions</p>
@@ -441,7 +456,7 @@ function Faq() {
 
 function FinalCta() {
   return (
-    <section className="relative isolate overflow-hidden py-40 px-6 border-t border-[var(--border)]">
+    <section className="relative isolate overflow-hidden py-24 sm:py-40 px-6 border-t border-[var(--border)]">
       <div className="mesh-bg absolute inset-0 -z-10 opacity-60" aria-hidden />
       <div
         className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[var(--bg)] to-transparent -z-10"
