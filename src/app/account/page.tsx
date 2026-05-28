@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Settings } from "lucide-react";
+import { Download, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "../feed/_components/FeedHeader";
 import { AvatarUploader } from "./_components/AvatarUploader";
@@ -96,6 +96,22 @@ export default async function AccountPage() {
 
         <Section title="Notifications">
           <NotificationPrefsForm initial={prefs} />
+        </Section>
+
+        <Section title="Your data">
+          <p className="text-xs text-[var(--fg-muted)] mb-3">
+            Download a JSON file with every record Loop holds about you —
+            profile, posts, messages, matches, documents, reviews. Take it
+            with you anytime.
+          </p>
+          <a
+            href="/api/export"
+            download
+            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-4 py-2 text-sm text-[var(--fg)] hover:bg-white/[0.05]"
+          >
+            <Download className="h-4 w-4" />
+            Export my data
+          </a>
         </Section>
 
         <Section title="Account">

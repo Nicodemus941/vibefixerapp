@@ -173,6 +173,7 @@ export default async function FeedPage({
               key={p.id}
               post={p}
               viewerId={user.id}
+              viewerRole={role}
               reactionState={reactionState[p.id]}
               commentSummary={commentSummaries[p.id]}
             />

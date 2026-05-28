@@ -299,6 +299,7 @@ export default async function ProfilePage({
                 <PostCard
                   key={p.id}
                   viewerId={user.id}
+                  viewerRole={viewerProfile?.role ?? "user"}
                   reactionState={reactionState[p.id]}
                   commentSummary={commentSummaries[p.id]}
                   post={{
