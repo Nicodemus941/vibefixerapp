@@ -38,23 +38,23 @@ export function NeedsStep({
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-[var(--fg-muted)]">
         Add 1–3 things you need today. Reciprocity is required — no spectators.
       </p>
       {value.map((need, i) => (
         <div
           key={i}
-          className="rounded-2xl border border-neutral-200 bg-white p-5 space-y-4"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-5 space-y-4"
         >
           <div className="flex items-center justify-between">
-            <div className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+            <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-amber-400">
               Need {i + 1}
             </div>
             {value.length > 1 && (
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="text-neutral-400 hover:text-red-600"
+                className="text-[var(--fg-subtle)] hover:text-[var(--danger)] transition-colors"
                 aria-label={`Remove need ${i + 1}`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -133,7 +133,11 @@ export function NeedsStep({
               className="mt-1.5"
             >
               {URGENCIES.map((u) => (
-                <option key={u.value} value={u.value}>
+                <option
+                  key={u.value}
+                  value={u.value}
+                  className="bg-[var(--surface-2)] text-[var(--fg)]"
+                >
                   {u.label}
                 </option>
               ))}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileStep } from "./_steps/ProfileStep";
 import { OffersStep, EMPTY_OFFER } from "./_steps/OffersStep";
@@ -84,81 +84,87 @@ export default function OnboardingPage() {
   const current = STEPS[step - 1];
 
   return (
-    <div>
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-xs font-medium text-neutral-500">
-          {STEPS.map((s) => (
-            <span
-              key={s.n}
-              className={
-                s.n <= step
-                  ? "text-neutral-900"
-                  : "text-neutral-400"
-              }
-            >
-              {s.n === step ? `Step ${s.n} of 3` : `${s.n}`}
-              {s.n < 3 && <span className="mx-2 text-neutral-300">·</span>}
-            </span>
-          ))}
-        </div>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-          {current.title}
-        </h1>
-        <p className="mt-2 text-neutral-600">{current.desc}</p>
-      </div>
+    <div className="space-y-6">
+      {/* Progress strip */}
+      <ol className="flex items-center gap-2" aria-label="Onboarding progress">
+        {STEPS.map((s) => {
+          const done = s.n < step;
+          const active = s.n === step;
+          return (
+            <li key={s.n} className="flex-1 flex items-center gap-2">
+              <div
+                className={[
+                  "h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-mono tabular-nums transition-colors",
+                  done
+                    ? "bg-[var(--accent)] text-[var(--bg)]"
+                    : active
+                    ? "border border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10"
+                    : "border border-[var(--border)] text-[var(--fg-subtle)] bg-[var(--surface-1)]",
+                ].join(" ")}
+                aria-current={active ? "step" : undefined}
+              >
+                {done ? <Check className="h-3.5 w-3.5" /> : s.n}
+              </div>
+              {s.n < 3 && (
+                <div
+                  className={[
+                    "flex-1 h-px transition-colors",
+                    done ? "bg-[var(--accent)]" : "bg-[var(--border)]",
+                  ].join(" ")}
+                />
+              )}
+            </li>
+          );
+        })}
+      </ol>
 
       <div>
+        <p className="eyebrow mb-2">Step {step} of 3</p>
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] leading-tight">
+          {current.title}
+        </h1>
+        <p className="mt-2 text-[var(--fg-muted)]">{current.desc}</p>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
         {step === 1 && <ProfileStep value={profile} onChange={setProfile} />}
         {step === 2 && <OffersStep value={offers} onChange={setOffers} />}
         {step === 3 && <NeedsStep value={needs} onChange={setNeeds} />}
       </div>
 
       {error && (
-        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/[0.06] p-4 text-sm text-[var(--danger)]">
           {error}
         </div>
       )}
 
-      <div className="mt-8 flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <Button
           variant="ghost"
           onClick={() => setStep((s) => Math.max(1, s - 1))}
           disabled={step === 1 || pending}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="h-4 w-4 mr-1.5" />
           Back
         </Button>
 
-        <div className="flex items-center gap-2">
-          <a
-            href="/feed"
-            className="hidden sm:inline-flex items-center text-sm text-neutral-500 hover:text-neutral-700 px-3 py-2"
+        {step < 3 ? (
+          <Button
+            onClick={() => setStep((s) => s + 1)}
+            disabled={!canAdvance() || pending}
           >
-            Skip for now
-          </a>
-          {step < 3 ? (
-            <Button
-              onClick={() => setStep((s) => s + 1)}
-              disabled={!canAdvance() || pending}
-            >
-              Continue
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={!canAdvance() || pending}
-            >
-              {pending ? "Setting up…" : "Finish & enter Loop"}
-            </Button>
-          )}
-        </div>
+            Continue
+            <ArrowRight className="h-4 w-4 ml-1.5" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleSubmit}
+            disabled={!canAdvance() || pending}
+          >
+            {pending ? "Setting up…" : "Finish & enter Loop"}
+          </Button>
+        )}
       </div>
-      <p className="mt-3 sm:hidden text-center">
-        <a href="/feed" className="text-xs text-neutral-500 underline">
-          Skip for now
-        </a>
-      </p>
     </div>
   );
 }
