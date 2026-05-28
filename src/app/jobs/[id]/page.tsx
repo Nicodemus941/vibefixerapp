@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Briefcase, Building2, ExternalLink, Mail, MapPin } from "lucide-react";
@@ -6,6 +7,46 @@ import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { fetchJobListing } from "../actions";
 
 export const dynamic = "force-dynamic";
+
+const EMPLOYMENT_TYPE_MAP: Record<string, string> = {
+  full_time: "FULL_TIME",
+  part_time: "PART_TIME",
+  contract: "CONTRACTOR",
+  internship: "INTERN",
+  volunteer: "VOLUNTEER",
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const job = await fetchJobListing(id);
+  if (!job) {
+    return { title: "Job not found · Loop" };
+  }
+  const orgTag = job.organization_name ? ` at ${job.organization_name}` : "";
+  const title = `${job.title}${orgTag} · Loop`;
+  const description = job.description.length > 160
+    ? `${job.description.slice(0, 157).trim()}…`
+    : job.description;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `https://loopfounders.com/jobs/${job.id}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 const TYPE_LABELS: Record<string, string> = {
   full_time: "Full-time",
@@ -42,11 +83,65 @@ export default async function JobDetailPage({
   if (!job) notFound();
   const isOwn = job.poster_id === user.id;
 
+  const jobPostingLd = {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title: job.title,
+    description: job.description,
+    datePosted: job.created_at,
+    validThrough: job.expires_at ?? undefined,
+    employmentType: EMPLOYMENT_TYPE_MAP[job.employment_type],
+    hiringOrganization: job.organization_name
+      ? {
+          "@type": "Organization",
+          name: job.organization_name,
+          sameAs: job.organization_slug
+            ? `https://loopfounders.com/o/${job.organization_slug}`
+            : undefined,
+        }
+      : { "@type": "Organization", name: "Independent" },
+    jobLocation:
+      job.remote_policy === "remote"
+        ? undefined
+        : {
+            "@type": "Place",
+            address: { "@type": "PostalAddress", addressLocality: job.location },
+          },
+    jobLocationType: job.remote_policy === "remote" ? "TELECOMMUTE" : undefined,
+    baseSalary:
+      job.compensation_min || job.compensation_max
+        ? {
+            "@type": "MonetaryAmount",
+            currency: job.currency,
+            value: {
+              "@type": "QuantitativeValue",
+              minValue: job.compensation_min ?? undefined,
+              maxValue: job.compensation_max ?? undefined,
+              unitText:
+                job.compensation_period === "year"
+                  ? "YEAR"
+                  : job.compensation_period === "month"
+                  ? "MONTH"
+                  : job.compensation_period === "hour"
+                  ? "HOUR"
+                  : undefined,
+            },
+          }
+        : undefined,
+    applicantLocationRequirements: undefined,
+    directApply: !!job.application_url,
+    url: `https://loopfounders.com/jobs/${job.id}`,
+  };
+
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <FeedHeader
         displayName={profile?.display_name ?? "founder"}
         role={profile?.role ?? "user"}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jobPostingLd) }}
       />
       <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-5">
         <Link

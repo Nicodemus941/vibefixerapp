@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { Briefcase, Building2, ExternalLink, MapPin, Network, Users } from "lucide-react";
@@ -8,6 +9,36 @@ import { fetchOrganizationBySlug } from "@/app/organizations/actions";
 import { viewerConnectionsAtOrg } from "@/app/follows/actions";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const org = await fetchOrganizationBySlug(slug);
+  if (!org) {
+    return { title: "Company not found · Loop" };
+  }
+  const title = `${org.name} · Loop`;
+  const description = org.description
+    ? org.description.length > 160
+      ? `${org.description.slice(0, 157).trim()}…`
+      : org.description
+    : `${org.member_count} ${org.member_count === 1 ? "founder" : "founders"} on Loop work${org.member_count === 1 ? "s" : ""} at ${org.name}.`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `https://loopfounders.com/o/${org.slug}`,
+      images: org.logo_url ? [{ url: org.logo_url }] : undefined,
+    },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export default async function OrganizationPage({
   params,
@@ -53,11 +84,29 @@ export default async function OrganizationPage({
     viewerConnectionsAtOrg(org.id),
   ]);
 
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: org.name,
+    url: `https://loopfounders.com/o/${org.slug}`,
+    logo: org.logo_url ?? undefined,
+    description: org.description ?? undefined,
+    sameAs: org.website ? [org.website] : undefined,
+    industry: org.industry ?? undefined,
+    address: org.headquarters
+      ? { "@type": "PostalAddress", addressLocality: org.headquarters }
+      : undefined,
+  };
+
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <FeedHeader
         displayName={profile?.display_name ?? "founder"}
         role={profile?.role ?? "user"}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
       />
       <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         <header className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
