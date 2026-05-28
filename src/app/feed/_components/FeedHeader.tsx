@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gavel, Inbox, LogOut, Search, Settings, Sparkles, Users } from "lucide-react";
+import { Gavel, Inbox, LogOut, Search, Settings, Sparkles, Trophy, Users } from "lucide-react";
 import { signOut } from "../../auth/actions";
 import { fetchUnreadCount } from "../../notifications/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -60,6 +60,13 @@ export async function FeedHeader({
           >
             <Users className="h-3.5 w-3.5" />
             <span className="hidden md:inline">Groups</span>
+          </Link>
+          <Link
+            href="/leaderboard"
+            aria-label="Leaderboard"
+            className="press-shrink hidden md:inline-flex items-center justify-center h-8 w-8 rounded-full border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+          >
+            <Trophy className="h-3.5 w-3.5" />
           </Link>
           <Link
             href="/inbox"
