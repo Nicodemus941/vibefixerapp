@@ -42,11 +42,23 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Custom breakpoint for the very smallest phones (iPhone SE width). */
+@theme {
+  --breakpoint-xs: 380px;
+}
+
+/* Hard overflow guard + base typography. The overflow-x:hidden line
+   means a stray descendant extending past viewport width (a long
+   unbroken string, a fixed-width child, an off-screen modal) just
+   clips horizontally instead of triggering "pinch to zoom out" on
+   mobile. */
 html, body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* ============================================
