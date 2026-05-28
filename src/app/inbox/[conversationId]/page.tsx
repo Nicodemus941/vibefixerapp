@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchThread } from "../actions";
 import { FeedHeader } from "../../feed/_components/FeedHeader";
 import { MessageComposer } from "../_components/MessageComposer";
-import { MessageBubble } from "../_components/MessageBubble";
+import { ThreadStream } from "../_components/ThreadStream";
 
 export const dynamic = "force-dynamic";
 
@@ -89,22 +89,11 @@ export default async function ThreadPage({
       </div>
 
       <main className="flex-1 mx-auto w-full max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-3">
-        {messages.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-8 text-center">
-            <p className="text-[var(--fg-muted)]">
-              New conversation. Say something concrete — what you need, what you can deliver.
-            </p>
-          </div>
-        ) : (
-          messages.map((m) => (
-            <MessageBubble
-              key={m.id}
-              body={m.body}
-              createdAt={m.created_at}
-              isMine={m.sender_id === user.id}
-            />
-          ))
-        )}
+        <ThreadStream
+          conversationId={conversationId}
+          viewerId={user.id}
+          initial={messages}
+        />
       </main>
 
       <div className="sticky bottom-0 border-t border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur-md">

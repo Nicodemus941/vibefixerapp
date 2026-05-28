@@ -92,6 +92,83 @@ export async function fetchFeed(opts: {
   return { posts: (data ?? []) as FeedPost[] };
 }
 
+export type ReactionKind = "fire" | "handshake" | "in";
+
+export type ReactionStateMap = Record<
+  string,
+  { fire: number; handshake: number; in: number; mine: ReactionKind[] }
+>;
+
+export async function fetchReactionState(
+  postIds: string[],
+): Promise<ReactionStateMap> {
+  const out: ReactionStateMap = {};
+  for (const id of postIds) {
+    out[id] = { fire: 0, handshake: 0, in: 0, mine: [] };
+  }
+  if (postIds.length === 0) return out;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return out;
+
+  const { data } = await supabase
+    .from("post_reactions")
+    .select("post_id, kind, user_id")
+    .in("post_id", postIds);
+
+  for (const r of data ?? []) {
+    const bucket = out[r.post_id];
+    if (!bucket) continue;
+    const k = r.kind as ReactionKind;
+    if (k in bucket) bucket[k] = (bucket[k] as number) + 1;
+    if (r.user_id === user.id) bucket.mine.push(k);
+  }
+  return out;
+}
+
+export async function toggleReaction(input: {
+  postId: string;
+  kind: ReactionKind;
+}): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "not signed in" };
+
+  // Check whether the row exists; toggle accordingly.
+  const { data: existing } = await supabase
+    .from("post_reactions")
+    .select("post_id")
+    .eq("post_id", input.postId)
+    .eq("user_id", user.id)
+    .eq("kind", input.kind)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from("post_reactions")
+      .delete()
+      .eq("post_id", input.postId)
+      .eq("user_id", user.id)
+      .eq("kind", input.kind);
+    if (error) return { error: error.message };
+  } else {
+    const { error } = await supabase.from("post_reactions").insert({
+      post_id: input.postId,
+      user_id: user.id,
+      kind: input.kind,
+    });
+    if (error) return { error: error.message };
+  }
+
+  revalidatePath("/feed");
+  return {};
+}
+
 export async function fetchTrendingTags(): Promise<
   Array<{ tag: string; count: number }>
 > {

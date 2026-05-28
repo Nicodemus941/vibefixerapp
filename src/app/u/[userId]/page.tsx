@@ -4,6 +4,7 @@ import { MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PostCard } from "@/app/feed/_components/PostCard";
+import { fetchReactionState } from "@/app/feed/actions";
 import { startDmAndRedirect } from "@/app/inbox/actions";
 
 export const dynamic = "force-dynamic";
@@ -81,6 +82,10 @@ export default async function ProfilePage({
       .or(`seeker_id.eq.${profile.id},provider_id.eq.${profile.id}`)
       .eq("escrow_status", "released"),
   ]);
+
+  const reactionState = await fetchReactionState(
+    (posts ?? []).map((p) => p.id),
+  );
 
   const stats = [
     { label: "Posts", value: posts?.length ?? 0 },
@@ -246,6 +251,7 @@ export default async function ProfilePage({
                 <PostCard
                   key={p.id}
                   viewerId={user.id}
+                  reactionState={reactionState[p.id]}
                   post={{
                     id: p.id,
                     user_id: p.user_id,
