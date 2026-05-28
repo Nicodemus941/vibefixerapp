@@ -9,8 +9,10 @@ import { NotificationPrefsForm } from "./_components/NotificationPrefsForm";
 import { DangerZone } from "./_components/DangerZone";
 import { StripeConnectSection } from "./_components/StripeConnectSection";
 import { PositionsEditor } from "./_components/PositionsEditor";
+import { CertificationsEditor, EducationEditor } from "./_components/ResumeEditor";
 import { fetchStripeConnectStatus } from "../stripe/actions";
 import { fetchUserPositions } from "../organizations/actions";
+import { fetchCertifications, fetchEducation } from "../resume/actions";
 import type { NotificationPrefs } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -60,9 +62,11 @@ export default async function AccountPage({
     ...((profile?.notification_prefs as Partial<NotificationPrefs> | null) ?? {}),
   };
 
-  const [stripeStatus, positions] = await Promise.all([
+  const [stripeStatus, positions, education, certifications] = await Promise.all([
     fetchStripeConnectStatus(),
     fetchUserPositions(user.id),
+    fetchEducation(user.id),
+    fetchCertifications(user.id),
   ]);
 
   return (
@@ -122,6 +126,14 @@ export default async function AccountPage({
             prefillOrgId={positionPrefill?.orgId}
             prefillOrgName={positionPrefill?.orgName}
           />
+        </Section>
+
+        <Section title="Education">
+          <EducationEditor initial={education} />
+        </Section>
+
+        <Section title="Certifications / Accreditations">
+          <CertificationsEditor initial={certifications} />
         </Section>
 
         <Section title="Payments — Stripe Connect">

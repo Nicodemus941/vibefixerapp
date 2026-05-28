@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { Briefcase, Building2, MessageSquare } from "lucide-react";
+import { Award, Briefcase, Building2, GraduationCap, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PostCard } from "@/app/feed/_components/PostCard";
@@ -10,6 +10,7 @@ import { fetchReviewsForUser } from "@/app/reviews/actions";
 import { ReviewList, Stars } from "@/app/reviews/_components/ReviewList";
 import { Avatar } from "@/components/Avatar";
 import { fetchUserPositions } from "@/app/organizations/actions";
+import { fetchCertifications, fetchEducation } from "@/app/resume/actions";
 import { ProfileModerationMenu } from "./_components/ProfileModerationMenu";
 
 export const dynamic = "force-dynamic";
@@ -89,12 +90,15 @@ export default async function ProfilePage({
   ]);
 
   const postIds = (posts ?? []).map((p) => p.id);
-  const [reactionState, commentSummaries, reviews, positions] = await Promise.all([
-    fetchReactionState(postIds),
-    fetchCommentSummaries(postIds),
-    fetchReviewsForUser(profile.id, 20),
-    fetchUserPositions(profile.id),
-  ]);
+  const [reactionState, commentSummaries, reviews, positions, education, certifications] =
+    await Promise.all([
+      fetchReactionState(postIds),
+      fetchCommentSummaries(postIds),
+      fetchReviewsForUser(profile.id, 20),
+      fetchUserPositions(profile.id),
+      fetchEducation(profile.id),
+      fetchCertifications(profile.id),
+    ]);
 
   const { data: blockRow } = !isOwn
     ? await supabase
@@ -274,6 +278,83 @@ export default async function ProfilePage({
                 Manage experience
               </Link>
             )}
+          </section>
+        )}
+
+        {/* Education */}
+        {education.length > 0 && (
+          <section aria-label="Education" className="space-y-3">
+            <p className="eyebrow">Education</p>
+            <ul className="space-y-2">
+              {education.map((e) => (
+                <li
+                  key={e.id}
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 flex items-start gap-3"
+                >
+                  <GraduationCap className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--fg)] break-words">{e.school_name}</p>
+                    {(e.degree || e.field_of_study) && (
+                      <p className="text-sm text-[var(--fg-muted)] break-words">
+                        {[e.degree, e.field_of_study].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                    <p className="mt-0.5 font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums">
+                      {e.start_year && e.end_year
+                        ? `${e.start_year} — ${e.end_year}`
+                        : e.start_year
+                        ? `${e.start_year} — Present`
+                        : e.end_year ?? ""}
+                    </p>
+                    {e.description && (
+                      <p className="mt-2 text-xs text-[var(--fg-muted)] whitespace-pre-wrap">
+                        {e.description}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Certifications / Accreditations */}
+        {certifications.length > 0 && (
+          <section aria-label="Certifications" className="space-y-3">
+            <p className="eyebrow">Certifications & accreditations</p>
+            <ul className="space-y-2">
+              {certifications.map((c) => (
+                <li
+                  key={c.id}
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 flex items-start gap-3"
+                >
+                  <Award className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--fg)] break-words">{c.name}</p>
+                    {c.issuer && (
+                      <p className="text-sm text-[var(--fg-muted)] break-words">{c.issuer}</p>
+                    )}
+                    <p className="mt-0.5 font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums">
+                      {c.issued_date && c.expires_date
+                        ? `Issued ${new Date(c.issued_date).toLocaleString(undefined, { month: "short", year: "numeric" })} · expires ${new Date(c.expires_date).toLocaleString(undefined, { month: "short", year: "numeric" })}`
+                        : c.issued_date
+                        ? `Issued ${new Date(c.issued_date).toLocaleString(undefined, { month: "short", year: "numeric" })}`
+                        : ""}
+                    </p>
+                    {c.credential_url && (
+                      <a
+                        href={c.credential_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 inline-block font-mono text-[10px] text-[var(--accent)] hover:underline break-all"
+                      >
+                        View credential
+                      </a>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 

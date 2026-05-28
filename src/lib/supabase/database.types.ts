@@ -12,6 +12,81 @@ export type Database = {
   };
   public: {
     Tables: {
+      education: {
+        Row: {
+          created_at: string | null;
+          degree: string | null;
+          description: string | null;
+          end_year: number | null;
+          field_of_study: string | null;
+          id: string;
+          school_name: string;
+          start_year: number | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          degree?: string | null;
+          description?: string | null;
+          end_year?: number | null;
+          field_of_study?: string | null;
+          id?: string;
+          school_name: string;
+          start_year?: number | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          degree?: string | null;
+          description?: string | null;
+          end_year?: number | null;
+          field_of_study?: string | null;
+          id?: string;
+          school_name?: string;
+          start_year?: number | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      certifications: {
+        Row: {
+          created_at: string | null;
+          credential_id: string | null;
+          credential_url: string | null;
+          description: string | null;
+          expires_date: string | null;
+          id: string;
+          issued_date: string | null;
+          issuer: string | null;
+          name: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          credential_id?: string | null;
+          credential_url?: string | null;
+          description?: string | null;
+          expires_date?: string | null;
+          id?: string;
+          issued_date?: string | null;
+          issuer?: string | null;
+          name: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          credential_id?: string | null;
+          credential_url?: string | null;
+          description?: string | null;
+          expires_date?: string | null;
+          id?: string;
+          issued_date?: string | null;
+          issuer?: string | null;
+          name?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       organizations: {
         Row: {
           created_at: string | null;
