@@ -6,6 +6,7 @@ import { fetchFeed, fetchTrendingTags } from "./actions";
 import { Composer } from "./_components/Composer";
 import { PostCard } from "./_components/PostCard";
 import { FeedHeader } from "./_components/FeedHeader";
+import { ReciprocityBanner } from "./_components/ReciprocityBanner";
 
 type SearchParams = Promise<{ tag?: string | string[] }>;
 
@@ -28,13 +29,15 @@ export default async function FeedPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, onboarding_complete, role")
+    .select("display_name, onboarding_complete, role, reciprocity_status, last_need_posted_at")
     .eq("id", user.id)
     .maybeSingle();
 
   const displayName = profile?.display_name ?? "founder";
   const onboardingDone = profile?.onboarding_complete === true;
   const role = profile?.role ?? "user";
+  const reciprocityStatus = profile?.reciprocity_status ?? "active";
+  const isSuspended = reciprocityStatus === "suspended";
 
   const [{ posts, error: feedError }, trending] = await Promise.all([
     fetchFeed({ tag, limit: 30 }),
@@ -79,6 +82,12 @@ export default async function FeedPage({
           )}
         </div>
 
+        {/* Reciprocity status — warned/suspended */}
+        <ReciprocityBanner
+          status={reciprocityStatus}
+          lastNeedAt={profile?.last_need_posted_at ?? null}
+        />
+
         {/* Onboarding nudge */}
         {!onboardingDone && !tag && (
           <div className="rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent)]/[0.05] p-4 sm:p-5">
@@ -104,8 +113,8 @@ export default async function FeedPage({
           </div>
         )}
 
-        {/* Composer */}
-        <Composer displayName={displayName} />
+        {/* Composer — hidden when suspended */}
+        {!isSuspended && <Composer displayName={displayName} />}
 
         {/* Trending hashtags */}
         {trending.length > 0 && (
