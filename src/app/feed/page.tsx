@@ -12,6 +12,7 @@ import { Composer } from "./_components/Composer";
 import { PostCard } from "./_components/PostCard";
 import { FeedHeader } from "./_components/FeedHeader";
 import { ReciprocityBanner } from "./_components/ReciprocityBanner";
+import { LiveFeedBanner } from "./_components/LiveFeedBanner";
 
 type SearchParams = Promise<{ tag?: string | string[] }>;
 
@@ -123,6 +124,12 @@ export default async function FeedPage({
             </div>
           </div>
         )}
+
+        {/* Live new-posts pill */}
+        <LiveFeedBanner
+          viewerId={user.id}
+          initialTimestamp={new Date().toISOString()}
+        />
 
         {/* Composer — hidden when suspended */}
         {!isSuspended && <Composer displayName={displayName} />}
