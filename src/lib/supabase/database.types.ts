@@ -300,6 +300,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      posts: {
+        Row: {
+          body: string;
+          created_at: string | null;
+          embedding: string | null;
+          hashtags: string[];
+          id: string;
+          kind: string;
+          user_id: string;
+        };
+        Insert: {
+          body: string;
+          created_at?: string | null;
+          embedding?: string | null;
+          hashtags?: string[];
+          id?: string;
+          kind?: string;
+          user_id: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string | null;
+          embedding?: string | null;
+          hashtags?: string[];
+          id?: string;
+          kind?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       platform_events: {
         Row: {
           created_at: string | null;
@@ -409,6 +439,25 @@ export type Database = {
     Views: { [_ in never]: never };
     Functions: {
       enforce_reciprocity: { Args: Record<string, never>; Returns: undefined };
+      feed_for_user: {
+        Args: { viewer_id: string; tag_filter?: string | null; limit_count?: number };
+        Returns: Array<{
+          id: string;
+          user_id: string;
+          body: string;
+          hashtags: string[];
+          kind: string;
+          created_at: string;
+          similarity: number | null;
+          author_display_name: string;
+          author_company_name: string | null;
+          author_industry: string | null;
+        }>;
+      };
+      trending_hashtags: {
+        Args: { since_hours?: number; limit_count?: number };
+        Returns: Array<{ tag: string; count: number }>;
+      };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
