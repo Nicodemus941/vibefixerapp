@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Inbox, LogOut, Search, Settings, Sparkles } from "lucide-react";
+import { Inbox, LogOut, Search, Settings, Sparkles, Users } from "lucide-react";
 import { signOut } from "../../auth/actions";
 import { fetchUnreadCount } from "../../notifications/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -52,6 +52,14 @@ export async function FeedHeader({
           >
             <Sparkles className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Matches</span>
+          </Link>
+          <Link
+            href="/groups"
+            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+            aria-label="Groups"
+          >
+            <Users className="h-3.5 w-3.5" />
+            <span className="hidden md:inline">Groups</span>
           </Link>
           <Link
             href="/inbox"

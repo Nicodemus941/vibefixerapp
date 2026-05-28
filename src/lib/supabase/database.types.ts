@@ -279,6 +279,60 @@ export type Database = {
         };
         Relationships: [];
       };
+      groups: {
+        Row: {
+          created_at: string | null;
+          created_by: string;
+          description: string | null;
+          id: string;
+          member_count: number;
+          name: string;
+          slug: string;
+          visibility: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          created_by: string;
+          description?: string | null;
+          id?: string;
+          member_count?: number;
+          name: string;
+          slug: string;
+          visibility?: string;
+        };
+        Update: {
+          created_at?: string | null;
+          created_by?: string;
+          description?: string | null;
+          id?: string;
+          member_count?: number;
+          name?: string;
+          slug?: string;
+          visibility?: string;
+        };
+        Relationships: [];
+      };
+      group_members: {
+        Row: {
+          group_id: string;
+          joined_at: string | null;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          group_id: string;
+          joined_at?: string | null;
+          role?: string;
+          user_id: string;
+        };
+        Update: {
+          group_id?: string;
+          joined_at?: string | null;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       messages: {
         Row: {
           attachment_url: string | null;
@@ -485,6 +539,7 @@ export type Database = {
           body: string;
           created_at: string | null;
           embedding: string | null;
+          group_id: string | null;
           hashtags: string[];
           id: string;
           kind: string;
@@ -494,6 +549,7 @@ export type Database = {
           body: string;
           created_at?: string | null;
           embedding?: string | null;
+          group_id?: string | null;
           hashtags?: string[];
           id?: string;
           kind?: string;
@@ -503,6 +559,7 @@ export type Database = {
           body?: string;
           created_at?: string | null;
           embedding?: string | null;
+          group_id?: string | null;
           hashtags?: string[];
           id?: string;
           kind?: string;
