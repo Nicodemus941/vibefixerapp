@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { Inbox, LogOut, Sparkles } from "lucide-react";
 import { signOut } from "../../auth/actions";
+import { fetchUnreadCount } from "../../notifications/actions";
+import { createClient } from "@/lib/supabase/server";
+import { NotificationBell } from "./NotificationBell";
 
-export function FeedHeader({
+export async function FeedHeader({
   displayName,
   role,
 }: {
@@ -10,6 +13,14 @@ export function FeedHeader({
   role: string;
 }) {
   const isOwner = role === "owner";
+
+  // Fetch the user id once on the server so the bell can subscribe by id.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const unread = user ? await fetchUnreadCount() : 0;
+
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md">
       <div className="mx-auto max-w-2xl px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
@@ -35,10 +46,14 @@ export function FeedHeader({
             <Inbox className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Inbox</span>
           </Link>
+          {user && <NotificationBell userId={user.id} initialUnread={unread} />}
           <div className="hidden sm:flex items-center gap-2">
-            <span className="font-mono text-xs text-[var(--fg-subtle)]">
+            <Link
+              href={user ? `/u/${user.id}` : "/login"}
+              className="font-mono text-xs text-[var(--fg-subtle)] hover:text-[var(--fg)] transition-colors press-shrink"
+            >
               {displayName}
-            </span>
+            </Link>
             {isOwner && (
               <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/40">
                 Owner
