@@ -1,9 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Wand2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "../feed/_components/FeedHeader";
-import { fetchMyMatches, acceptMatch, passMatch, runMatcherNowForm } from "./actions";
+import {
+  fetchMyMatches,
+  acceptMatch,
+  passMatch,
+  runMatcherNowForm,
+  rerankPendingMatchesForm,
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -53,14 +59,26 @@ export default async function MatchesPage() {
             </p>
           </div>
           {isAdmin && (
-            <form action={runMatcherNowForm}>
-              <button
-                type="submit"
-                className="press-shrink shrink-0 inline-flex items-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-mono text-[var(--accent)] hover:bg-[var(--accent)]/15"
-              >
-                Run now
-              </button>
-            </form>
+            <div className="flex items-center gap-2 shrink-0">
+              <form action={runMatcherNowForm}>
+                <button
+                  type="submit"
+                  className="press-shrink inline-flex items-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-mono text-[var(--accent)] hover:bg-[var(--accent)]/15"
+                >
+                  Run now
+                </button>
+              </form>
+              <form action={rerankPendingMatchesForm}>
+                <button
+                  type="submit"
+                  className="press-shrink inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-xs font-mono text-violet-300 hover:bg-violet-400/15"
+                  title="Run Claude over unranked matches to score + draft intros"
+                >
+                  <Wand2 className="h-3 w-3" />
+                  Claude rerank
+                </button>
+              </form>
+            </div>
           )}
         </div>
 
@@ -182,6 +200,28 @@ function MatchCard({
           <p className="text-[var(--fg-muted)]">{subTitle}</p>
         </div>
       </div>
+
+      {match.ai_rationale && (
+        <div className="mt-3 rounded-xl border border-violet-400/30 bg-violet-400/[0.05] p-3">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-violet-300 flex items-center gap-1">
+            <Wand2 className="h-3 w-3" />
+            Why Loop matched you
+          </p>
+          <p className="mt-1 text-xs text-[var(--fg)] leading-relaxed">
+            {match.ai_rationale}
+          </p>
+          {viewerRole === "seeker" && match.ai_intro_draft && (
+            <details className="mt-2">
+              <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider text-violet-300 hover:text-violet-200">
+                Draft intro message
+              </summary>
+              <p className="mt-1.5 text-xs text-[var(--fg-muted)] italic whitespace-pre-wrap">
+                {match.ai_intro_draft}
+              </p>
+            </details>
+          )}
+        </div>
+      )}
 
       <footer className="mt-5 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
         <span className="font-mono text-[10px] text-[var(--fg-subtle)]">

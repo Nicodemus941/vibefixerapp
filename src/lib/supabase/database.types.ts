@@ -333,6 +333,9 @@ export type Database = {
       matches: {
         Row: {
           ai_intro_draft: string | null;
+          ai_model: string | null;
+          ai_rationale: string | null;
+          ai_reranked_at: string | null;
           created_at: string | null;
           id: string;
           match_score: number;
@@ -345,6 +348,9 @@ export type Database = {
         };
         Insert: {
           ai_intro_draft?: string | null;
+          ai_model?: string | null;
+          ai_rationale?: string | null;
+          ai_reranked_at?: string | null;
           created_at?: string | null;
           id?: string;
           match_score: number;
@@ -357,6 +363,9 @@ export type Database = {
         };
         Update: {
           ai_intro_draft?: string | null;
+          ai_model?: string | null;
+          ai_rationale?: string | null;
+          ai_reranked_at?: string | null;
           created_at?: string | null;
           id?: string;
           match_score?: number;
