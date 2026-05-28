@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { INDUSTRIES } from "@/lib/industries";
 import type { ProfilePayload } from "../actions";
 
 const REVENUE_BANDS: Array<{ value: ProfilePayload["revenue_band"]; label: string }> = [
@@ -62,14 +63,25 @@ export function ProfileStep({
       </div>
       <div>
         <Label htmlFor="industry">Industry</Label>
-        <Input
+        <Select
           id="industry"
           value={value.industry}
           onChange={set("industry")}
-          placeholder="SaaS, fintech, healthtech…"
           required
           className="mt-1.5"
-        />
+        >
+          <option value="" className="bg-[var(--surface-2)] text-[var(--fg-subtle)]">
+            Pick your industry
+          </option>
+          {INDUSTRIES.map((i) => (
+            <option key={i} value={i} className="bg-[var(--surface-2)] text-[var(--fg)]">
+              {i}
+            </option>
+          ))}
+        </Select>
+        <p className="font-mono text-[10px] text-[var(--fg-subtle)] mt-1.5">
+          Used to match you with the right founders.
+        </p>
       </div>
       <div>
         <Label htmlFor="revenue_band">Revenue band</Label>

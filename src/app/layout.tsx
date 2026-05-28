@@ -13,10 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Loop — Stop networking. Start building.",
+  title: {
+    default: "Loop — A reciprocal marketplace for founders",
+    template: "%s",
+  },
   description:
-    "The first platform where every founder must give AND receive. AI matches your needs to another founder's services in under 24 hours.",
+    "A founder-only marketplace where every member has to give as well as get. Post a need, get matched to another founder who delivers it, with escrow-protected contracts and reputation that comes from shipped work.",
   metadataBase: new URL("https://loopfounders.com"),
+  alternates: { canonical: "/" },
+  keywords: [
+    "founder marketplace",
+    "hire freelance founder",
+    "founder community",
+    "alternative to upwork",
+    "freelance escrow contract",
+    "fractional cmo cfo",
+    "startup services marketplace",
+  ],
   icons: {
     icon: [
       { url: "/loop-mark.svg", type: "image/svg+xml" },
@@ -43,6 +56,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#0a0a0a",
   colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

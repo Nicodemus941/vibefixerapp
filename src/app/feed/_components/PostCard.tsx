@@ -5,6 +5,7 @@ import { Avatar } from "@/components/Avatar";
 import type { FeedPost, ReactionKind, CommentSummary } from "../actions";
 import { ReactionBar } from "./ReactionBar";
 import { CommentThread } from "./CommentThread";
+import { PostMenu } from "./PostMenu";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -62,11 +63,13 @@ function renderBody(body: string) {
 export function PostCard({
   post,
   viewerId,
+  viewerRole,
   reactionState,
   commentSummary,
 }: {
   post: FeedPost;
   viewerId: string;
+  viewerRole?: string;
   reactionState?: { fire: number; handshake: number; in: number; mine: ReactionKind[] };
   commentSummary?: CommentSummary;
 }) {
@@ -110,6 +113,12 @@ export function PostCard({
             {k.label}
           </span>
         )}
+        <PostMenu
+          postId={post.id}
+          body={post.body}
+          isOwn={isOwn}
+          canModerate={viewerRole === "owner" || viewerRole === "admin"}
+        />
       </header>
       <p className="mt-3 text-[var(--fg)] leading-relaxed whitespace-pre-wrap break-words">
         {renderBody(post.body)}

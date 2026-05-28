@@ -120,10 +120,10 @@ export default function OnboardingPage() {
 
       <div>
         <p className="eyebrow mb-2">Step {step} of 3</p>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] leading-tight">
+        <h1 className="text-2xl sm:text-4xl font-semibold tracking-[-0.03em] leading-tight break-words">
           {current.title}
         </h1>
-        <p className="mt-2 text-[var(--fg-muted)]">{current.desc}</p>
+        <p className="mt-2 text-[var(--fg-muted)] text-sm sm:text-base">{current.desc}</p>
       </div>
 
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">

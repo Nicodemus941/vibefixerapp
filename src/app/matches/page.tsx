@@ -1,9 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Wand2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "../feed/_components/FeedHeader";
-import { fetchMyMatches, acceptMatch, passMatch, runMatcherNowForm } from "./actions";
+import {
+  fetchMyMatches,
+  acceptMatch,
+  passMatch,
+  runMatcherNowForm,
+  rerankPendingMatchesForm,
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +48,7 @@ export default async function MatchesPage() {
         role={profile?.role ?? "user"}
       />
       <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-[var(--accent)]" />
@@ -53,14 +59,26 @@ export default async function MatchesPage() {
             </p>
           </div>
           {isAdmin && (
-            <form action={runMatcherNowForm}>
-              <button
-                type="submit"
-                className="press-shrink shrink-0 inline-flex items-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-mono text-[var(--accent)] hover:bg-[var(--accent)]/15"
-              >
-                Run now
-              </button>
-            </form>
+            <div className="flex items-center gap-2 flex-wrap">
+              <form action={runMatcherNowForm}>
+                <button
+                  type="submit"
+                  className="press-shrink inline-flex items-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-mono text-[var(--accent)] hover:bg-[var(--accent)]/15"
+                >
+                  Run now
+                </button>
+              </form>
+              <form action={rerankPendingMatchesForm}>
+                <button
+                  type="submit"
+                  className="press-shrink inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-xs font-mono text-violet-300 hover:bg-violet-400/15"
+                  title="Score unranked matches and draft an intro for each one"
+                >
+                  <Wand2 className="h-3 w-3" />
+                  Rerank with AI
+                </button>
+              </form>
+            </div>
           )}
         </div>
 
@@ -183,15 +201,37 @@ function MatchCard({
         </div>
       </div>
 
-      <footer className="mt-5 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
-        <span className="font-mono text-[10px] text-[var(--fg-subtle)]">
+      {match.ai_rationale && (
+        <div className="mt-3 rounded-xl border border-violet-400/30 bg-violet-400/[0.05] p-3">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-violet-300 flex items-center gap-1">
+            <Wand2 className="h-3 w-3" />
+            Why Loop matched you
+          </p>
+          <p className="mt-1 text-xs text-[var(--fg)] leading-relaxed">
+            {match.ai_rationale}
+          </p>
+          {viewerRole === "seeker" && match.ai_intro_draft && (
+            <details className="mt-2">
+              <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider text-violet-300 hover:text-violet-200">
+                Draft intro message
+              </summary>
+              <p className="mt-1.5 text-xs text-[var(--fg-muted)] italic whitespace-pre-wrap">
+                {match.ai_intro_draft}
+              </p>
+            </details>
+          )}
+        </div>
+      )}
+
+      <footer className="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-[var(--border)] pt-4">
+        <span className="font-mono text-[10px] text-[var(--fg-subtle)] order-2 sm:order-1">
           matched {timeAgo(match.created_at)} ago
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 order-1 sm:order-2 ml-auto sm:ml-0">
           <form action={passMatch.bind(null, match.id)}>
             <button
               type="submit"
-              className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+              className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-2 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
             >
               Pass
             </button>
@@ -199,7 +239,7 @@ function MatchCard({
           <form action={acceptMatch.bind(null, match.id)}>
             <button
               type="submit"
-              className="press-shrink inline-flex items-center rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
+              className="press-shrink inline-flex items-center rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
             >
               Accept & DM
             </button>

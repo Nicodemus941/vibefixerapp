@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save } from "lucide-react";
 import { updateOwnProfile, type ProfileFormPayload } from "../actions";
+import { INDUSTRIES } from "@/lib/industries";
 
 const REVENUE_BANDS = [
   { value: "", label: "Choose…" },
@@ -81,12 +82,26 @@ export function ProfileForm({ initial }: { initial: ProfileFormPayload }) {
           />
         </Field>
         <Field label="Industry">
-          <input
+          <select
             value={form.industry}
             onChange={(e) => set("industry", e.target.value)}
             disabled={pending}
             className="w-full h-10 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-2)] px-3.5 text-sm text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-          />
+          >
+            <option value="" className="bg-[var(--surface-2)]">
+              Pick your industry
+            </option>
+            {INDUSTRIES.map((i) => (
+              <option key={i} value={i} className="bg-[var(--surface-2)]">
+                {i}
+              </option>
+            ))}
+            {form.industry && !INDUSTRIES.includes(form.industry as typeof INDUSTRIES[number]) && (
+              <option value={form.industry} className="bg-[var(--surface-2)]">
+                {form.industry} (legacy)
+              </option>
+            )}
+          </select>
         </Field>
         <Field label="Revenue band">
           <select

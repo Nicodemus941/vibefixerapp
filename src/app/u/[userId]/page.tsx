@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { MessageSquare } from "lucide-react";
+import { Award, Briefcase, Building2, GraduationCap, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PostCard } from "@/app/feed/_components/PostCard";
@@ -9,6 +9,11 @@ import { startDmAndRedirect } from "@/app/inbox/actions";
 import { fetchReviewsForUser } from "@/app/reviews/actions";
 import { ReviewList, Stars } from "@/app/reviews/_components/ReviewList";
 import { Avatar } from "@/components/Avatar";
+import { fetchUserPositions } from "@/app/organizations/actions";
+import { fetchCertifications, fetchEducation } from "@/app/resume/actions";
+import { fetchFollowState, fetchSocialCounts } from "@/app/follows/actions";
+import { FollowButton } from "./_components/FollowButton";
+import { ProfileModerationMenu } from "./_components/ProfileModerationMenu";
 
 export const dynamic = "force-dynamic";
 
@@ -87,20 +92,44 @@ export default async function ProfilePage({
   ]);
 
   const postIds = (posts ?? []).map((p) => p.id);
-  const [reactionState, commentSummaries, reviews] = await Promise.all([
+  const [
+    reactionState,
+    commentSummaries,
+    reviews,
+    positions,
+    education,
+    certifications,
+    socialCounts,
+    followState,
+  ] = await Promise.all([
     fetchReactionState(postIds),
     fetchCommentSummaries(postIds),
     fetchReviewsForUser(profile.id, 20),
+    fetchUserPositions(profile.id),
+    fetchEducation(profile.id),
+    fetchCertifications(profile.id),
+    fetchSocialCounts(profile.id),
+    fetchFollowState(profile.id),
   ]);
+
+  const { data: blockRow } = !isOwn
+    ? await supabase
+        .from("blocks")
+        .select("blocker_id")
+        .eq("blocker_id", user.id)
+        .eq("blocked_id", profile.id)
+        .maybeSingle()
+    : { data: null };
+  const isBlocked = Boolean(blockRow);
   const avgRating =
     reviews.length > 0
       ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
       : 0;
 
   const stats = [
-    { label: "Posts", value: posts?.length ?? 0 },
-    { label: "Reviews", value: reviews.length },
-    { label: "Offers", value: offers?.length ?? 0 },
+    { label: "Followers", value: socialCounts.followers },
+    { label: "Following", value: socialCounts.following },
+    { label: "Connections", value: socialCounts.connections },
     { label: "Deals shipped", value: dealCount ?? 0 },
   ];
 
@@ -113,7 +142,7 @@ export default async function ProfilePage({
       <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Header */}
         <header className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
             <Avatar
               name={profile.display_name}
               url={profile.avatar_url}
@@ -136,7 +165,7 @@ export default async function ProfilePage({
                 )}
               </div>
               {(profile.company_name || profile.industry) && (
-                <p className="mt-1 text-sm text-[var(--fg-muted)] truncate">
+                <p className="mt-1 text-sm text-[var(--fg-muted)] break-words">
                   {profile.company_name}
                   {profile.company_name && profile.industry && " · "}
                   {profile.industry}
@@ -156,22 +185,37 @@ export default async function ProfilePage({
                   href={profile.company_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 inline-block text-xs font-mono text-[var(--accent)] hover:underline truncate"
+                  className="mt-1 inline-block text-xs font-mono text-[var(--accent)] hover:underline break-all"
                 >
                   {profile.company_url.replace(/^https?:\/\//, "")}
                 </a>
               )}
             </div>
             {!isOwn && (
-              <form action={startDmAndRedirect.bind(null, profile.id, "profile")}>
-                <button
-                  type="submit"
-                  className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
-                >
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  Message
-                </button>
-              </form>
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
+                {!isBlocked && (
+                  <FollowButton
+                    targetUserId={profile.id}
+                    initiallyFollowing={followState.isFollowing}
+                    followsYou={followState.followsYou}
+                  />
+                )}
+                {!isBlocked && (
+                  <form action={startDmAndRedirect.bind(null, profile.id, "profile")}>
+                    <button
+                      type="submit"
+                      className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Message
+                    </button>
+                  </form>
+                )}
+                <ProfileModerationMenu
+                  targetId={profile.id}
+                  initiallyBlocked={isBlocked}
+                />
+              </div>
             )}
           </div>
 
@@ -199,6 +243,139 @@ export default async function ProfilePage({
             Joined {timeAgo(profile.created_at)} ago
           </p>
         </header>
+
+        {/* Experience */}
+        {positions.length > 0 && (
+          <section aria-label="Experience" className="space-y-3">
+            <p className="eyebrow">Experience</p>
+            <ul className="space-y-2">
+              {positions.map((p) => (
+                <li
+                  key={p.id}
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 flex items-start gap-3"
+                >
+                  <div className="h-10 w-10 shrink-0 rounded-xl bg-[var(--surface-3)] flex items-center justify-center text-[var(--fg-muted)] overflow-hidden">
+                    {p.organization_logo_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={p.organization_logo_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--fg)] break-words">{p.title}</p>
+                    <p className="text-sm text-[var(--fg-muted)] break-words">
+                      {p.organization_slug ? (
+                        <Link
+                          href={`/o/${p.organization_slug}`}
+                          className="hover:underline underline-offset-2"
+                        >
+                          {p.resolved_name}
+                        </Link>
+                      ) : (
+                        p.resolved_name
+                      )}
+                    </p>
+                    <p className="mt-0.5 font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums">
+                      {formatPositionRange(p.start_date, p.end_date, p.is_current)}
+                    </p>
+                    {p.description && (
+                      <p className="mt-2 text-xs text-[var(--fg-muted)] whitespace-pre-wrap">
+                        {p.description}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {isOwn && (
+              <Link
+                href="/account"
+                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+              >
+                <Briefcase className="h-3 w-3" />
+                Manage experience
+              </Link>
+            )}
+          </section>
+        )}
+
+        {/* Education */}
+        {education.length > 0 && (
+          <section aria-label="Education" className="space-y-3">
+            <p className="eyebrow">Education</p>
+            <ul className="space-y-2">
+              {education.map((e) => (
+                <li
+                  key={e.id}
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 flex items-start gap-3"
+                >
+                  <GraduationCap className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--fg)] break-words">{e.school_name}</p>
+                    {(e.degree || e.field_of_study) && (
+                      <p className="text-sm text-[var(--fg-muted)] break-words">
+                        {[e.degree, e.field_of_study].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                    <p className="mt-0.5 font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums">
+                      {e.start_year && e.end_year
+                        ? `${e.start_year} — ${e.end_year}`
+                        : e.start_year
+                        ? `${e.start_year} — Present`
+                        : e.end_year ?? ""}
+                    </p>
+                    {e.description && (
+                      <p className="mt-2 text-xs text-[var(--fg-muted)] whitespace-pre-wrap">
+                        {e.description}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Certifications / Accreditations */}
+        {certifications.length > 0 && (
+          <section aria-label="Certifications" className="space-y-3">
+            <p className="eyebrow">Certifications & accreditations</p>
+            <ul className="space-y-2">
+              {certifications.map((c) => (
+                <li
+                  key={c.id}
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 flex items-start gap-3"
+                >
+                  <Award className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--fg)] break-words">{c.name}</p>
+                    {c.issuer && (
+                      <p className="text-sm text-[var(--fg-muted)] break-words">{c.issuer}</p>
+                    )}
+                    <p className="mt-0.5 font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums">
+                      {c.issued_date && c.expires_date
+                        ? `Issued ${new Date(c.issued_date).toLocaleString(undefined, { month: "short", year: "numeric" })} · expires ${new Date(c.expires_date).toLocaleString(undefined, { month: "short", year: "numeric" })}`
+                        : c.issued_date
+                        ? `Issued ${new Date(c.issued_date).toLocaleString(undefined, { month: "short", year: "numeric" })}`
+                        : ""}
+                    </p>
+                    {c.credential_url && (
+                      <a
+                        href={c.credential_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 inline-block font-mono text-[10px] text-[var(--accent)] hover:underline break-all"
+                      >
+                        View credential
+                      </a>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* Offers */}
         {offers && offers.length > 0 && (
@@ -280,6 +457,7 @@ export default async function ProfilePage({
                 <PostCard
                   key={p.id}
                   viewerId={user.id}
+                  viewerRole={viewerProfile?.role ?? "user"}
                   reactionState={reactionState[p.id]}
                   commentSummary={commentSummaries[p.id]}
                   post={{
@@ -316,4 +494,14 @@ export default async function ProfilePage({
       </main>
     </div>
   );
+}
+
+function formatPositionRange(start: string, end: string | null, isCurrent: boolean): string {
+  const fmt = (s: string) => {
+    const d = new Date(s);
+    return d.toLocaleString(undefined, { month: "short", year: "numeric" });
+  };
+  if (isCurrent) return `${fmt(start)} — Present`;
+  if (end) return `${fmt(start)} — ${fmt(end)}`;
+  return fmt(start);
 }

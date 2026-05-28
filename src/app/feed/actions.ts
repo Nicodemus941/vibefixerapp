@@ -73,9 +73,71 @@ export async function createPost(input: {
   return { postId: data.id };
 }
 
+export async function editPost(input: {
+  postId: string;
+  body: string;
+}): Promise<{ error?: string }> {
+  const body = input.body.trim();
+  if (!body) return { error: "Can't be empty." };
+  if (body.length > POST_BODY_MAX)
+    return { error: `Keep it under ${POST_BODY_MAX} characters.` };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const hashtags = extractHashtags(body);
+  let embedding: string | null = null;
+  try {
+    embedding = await embed(body);
+  } catch {
+    embedding = null;
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("posts")
+    .update({ body, hashtags, embedding })
+    .eq("id", input.postId)
+    .eq("user_id", user.id);
+  if (error) return { error: error.message };
+
+  await logEvent("post_edited", user.id, { post_id: input.postId });
+  revalidatePath("/feed");
+  return {};
+}
+
+export async function deletePost(postId: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  // Owners + admins can also delete any post (moderation).
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  const isAdmin = me?.role === "owner" || me?.role === "admin";
+
+  let q = supabase.from("posts").delete().eq("id", postId);
+  if (!isAdmin) q = q.eq("user_id", user.id);
+  const { error } = await q;
+  if (error) return { error: error.message };
+
+  await logEvent("post_deleted", user.id, { post_id: postId, by_admin: isAdmin });
+  revalidatePath("/feed");
+  return {};
+}
+
 export async function fetchFeed(opts: {
   tag?: string | null;
   limit?: number;
+  view?: "personalized" | "recent";
 }): Promise<{ posts: FeedPost[]; error?: string }> {
   const supabase = await createClient();
   const {
@@ -87,6 +149,7 @@ export async function fetchFeed(opts: {
     viewer_id: user.id,
     tag_filter: opts.tag ?? null,
     limit_count: opts.limit ?? 30,
+    view_mode: opts.view ?? "personalized",
   });
 
   if (error) return { posts: [], error: error.message };

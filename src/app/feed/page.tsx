@@ -13,8 +13,9 @@ import { PostCard } from "./_components/PostCard";
 import { FeedHeader } from "./_components/FeedHeader";
 import { ReciprocityBanner } from "./_components/ReciprocityBanner";
 import { LiveFeedBanner } from "./_components/LiveFeedBanner";
+import { SponsoredCard } from "./_components/SponsoredCard";
 
-type SearchParams = Promise<{ tag?: string | string[] }>;
+type SearchParams = Promise<{ tag?: string | string[]; view?: string | string[] }>;
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,9 @@ export default async function FeedPage({
   const sp = await searchParams;
   const tag =
     typeof sp.tag === "string" ? sp.tag.toLowerCase().replace(/^#/, "") : null;
+  const viewParam = typeof sp.view === "string" ? sp.view : null;
+  const view: "personalized" | "recent" =
+    viewParam === "everyone" || viewParam === "recent" ? "recent" : "personalized";
 
   const supabase = await createClient();
   const {
@@ -46,7 +50,7 @@ export default async function FeedPage({
   const isSuspended = reciprocityStatus === "suspended";
 
   const [{ posts, error: feedError }, trending] = await Promise.all([
-    fetchFeed({ tag, limit: 30 }),
+    fetchFeed({ tag, limit: 30, view }),
     fetchTrendingTags(),
   ]);
 
@@ -70,18 +74,18 @@ export default async function FeedPage({
                   <span className="text-[var(--fg-subtle)] font-normal">Tag:</span>{" "}
                   <span className="text-[var(--accent)]">#{tag}</span>
                 </>
-              ) : onboardingDone ? (
-                <>Matched to your needs.</>
               ) : (
-                <>Your feed.</>
+                <>Loop&apos;s pulse.</>
               )}
             </h1>
             <p className="font-mono text-xs text-[var(--fg-subtle)] mt-1">
               {tag
-                ? "Showing posts tagged this only."
+                ? "Needs, offers, and wins tagged this."
+                : view === "recent"
+                ? "Everything founders are asking for, offering, and shipping. Newest first."
                 : onboardingDone
-                ? "Ranked by similarity to what you said you need."
-                : "Most recent posts."}
+                ? "Needs, offers, and wins matched to what you said you need."
+                : "Needs, offers, and wins from across Loop."}
             </p>
           </div>
           {tag && (
@@ -93,6 +97,18 @@ export default async function FeedPage({
             </Link>
           )}
         </div>
+
+        {/* For-you / Everyone tab toggle */}
+        {!tag && (
+          <div
+            role="tablist"
+            aria-label="Feed view"
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-1)] p-1"
+          >
+            <FeedViewTab href="/feed" active={view === "personalized"} label="For you" />
+            <FeedViewTab href="/feed?view=everyone" active={view === "recent"} label="Everyone" />
+          </div>
+        )}
 
         {/* Reciprocity status — warned/suspended */}
         <ReciprocityBanner
@@ -168,18 +184,50 @@ export default async function FeedPage({
             </p>
           )}
           {!feedError && posts.length === 0 && <EmptyState tag={tag} />}
-          {posts.map((p) => (
-            <PostCard
-              key={p.id}
-              post={p}
-              viewerId={user.id}
-              reactionState={reactionState[p.id]}
-              commentSummary={commentSummaries[p.id]}
-            />
+          {posts.map((p, idx) => (
+            <div key={p.id}>
+              <PostCard
+                post={p}
+                viewerId={user.id}
+                viewerRole={role}
+                reactionState={reactionState[p.id]}
+                commentSummary={commentSummaries[p.id]}
+              />
+              {/* Inject one sponsored slot ~5 posts in, when feed is dense
+                  enough to make ads feel native. SponsoredCard renders
+                  null if there's no eligible ad. */}
+              {idx === 4 && <div className="mt-4"><SponsoredCard /></div>}
+            </div>
           ))}
         </section>
       </main>
     </div>
+  );
+}
+
+function FeedViewTab({
+  href,
+  active,
+  label,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      role="tab"
+      aria-selected={active}
+      className={[
+        "press-shrink inline-flex items-center justify-center h-8 px-4 rounded-full text-xs font-medium transition-colors",
+        active
+          ? "bg-[var(--accent)] text-[var(--bg)]"
+          : "text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.04]",
+      ].join(" ")}
+    >
+      {label}
+    </Link>
   );
 }
 
@@ -188,8 +236,8 @@ function EmptyState({ tag }: { tag: string | null }) {
     <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-8 text-center">
       <p className="text-[var(--fg-muted)]">
         {tag
-          ? `No posts tagged #${tag} yet.`
-          : "No posts yet. Be the first — share what you need or what you can deliver today."}
+          ? `No needs, offers, or wins tagged #${tag} yet.`
+          : "Quiet right now. Post a need, an offer, or a win to get things moving."}
       </p>
     </div>
   );
