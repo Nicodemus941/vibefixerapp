@@ -97,10 +97,13 @@ function Hero() {
         className="mesh-bg absolute inset-0 -z-10"
         aria-hidden
       />
-      {/* Animated constellation — moves at 0.5x scroll (between mesh and headline) */}
+      {/* Animated constellation — moves at 0.5x scroll (between mesh and
+          headline). Visible on every screen size; we step the opacity
+          and parallax intensity down slightly on phones so it stays
+          subtle behind the wrapped headline. */}
       <div
-        data-parallax="0.5"
-        className="absolute inset-0 -z-10 opacity-70 hidden sm:block"
+        data-parallax="0.4"
+        className="absolute inset-0 -z-10 opacity-50 sm:opacity-70"
         aria-hidden
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
