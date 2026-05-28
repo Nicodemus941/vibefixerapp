@@ -51,6 +51,37 @@ export function ReviewList({ reviews }: { reviews: ReviewRow[] }) {
               <p className="mt-2 text-sm text-[var(--fg)] leading-relaxed whitespace-pre-wrap">
                 {r.body}
               </p>
+              {r.media.length > 0 && (
+                <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {r.media.map((m) =>
+                    m.kind === "image" ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <a
+                        key={m.id}
+                        href={m.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="press-shrink block aspect-square rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--surface-2)]"
+                      >
+                        <img
+                          src={m.url}
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                      </a>
+                    ) : (
+                      <video
+                        key={m.id}
+                        src={m.url}
+                        controls
+                        preload="metadata"
+                        className="aspect-square w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] object-cover"
+                      />
+                    ),
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </li>

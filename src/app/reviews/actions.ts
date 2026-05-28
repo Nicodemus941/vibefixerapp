@@ -4,6 +4,13 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logEvent } from "@/lib/platform-events";
 
+export type ReviewMedia = {
+  id: string;
+  kind: "image" | "video";
+  url: string;
+  position: number;
+};
+
 export type ReviewRow = {
   id: string;
   engagement_id: string;
@@ -15,6 +22,7 @@ export type ReviewRow = {
   created_at: string;
   reviewer_name: string;
   reviewer_company: string | null;
+  media: ReviewMedia[];
 };
 
 export async function fetchReviewsForUser(
@@ -33,11 +41,32 @@ export async function fetchReviewsForUser(
   if (!reviews || reviews.length === 0) return [];
 
   const reviewerIds = Array.from(new Set(reviews.map((r) => r.reviewer_id)));
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, display_name, company_name")
-    .in("id", reviewerIds);
+  const reviewIds = reviews.map((r) => r.id);
+
+  const [{ data: profiles }, { data: media }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, display_name, company_name")
+      .in("id", reviewerIds),
+    supabase
+      .from("review_media")
+      .select("id, review_id, kind, url, position")
+      .in("review_id", reviewIds)
+      .order("position", { ascending: true }),
+  ]);
+
   const pmap = new Map((profiles ?? []).map((p) => [p.id, p]));
+  const mediaByReview = new Map<string, ReviewMedia[]>();
+  for (const m of media ?? []) {
+    const arr = mediaByReview.get(m.review_id) ?? [];
+    arr.push({
+      id: m.id,
+      kind: m.kind as "image" | "video",
+      url: m.url,
+      position: m.position,
+    });
+    mediaByReview.set(m.review_id, arr);
+  }
 
   return reviews.map((r) => {
     const p = pmap.get(r.reviewer_id);
@@ -52,6 +81,7 @@ export async function fetchReviewsForUser(
       created_at: r.created_at as string,
       reviewer_name: p?.display_name ?? "Unknown",
       reviewer_company: p?.company_name ?? null,
+      media: mediaByReview.get(r.id) ?? [],
     };
   });
 }
@@ -139,11 +169,17 @@ export async function fetchPendingReviews(): Promise<PendingReviewRow[]> {
   });
 }
 
+export type ReviewMediaInput = {
+  kind: "image" | "video";
+  url: string;
+};
+
 export async function createReview(input: {
   engagementId: string;
   rating: number;
   body: string;
-}): Promise<{ error?: string }> {
+  media?: ReviewMediaInput[];
+}): Promise<{ error?: string; reviewId?: string }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -171,21 +207,69 @@ export async function createReview(input: {
     eng.seeker_id === user.id ? "seeker" : "provider";
   const reviewee = role === "seeker" ? eng.provider_id : eng.seeker_id;
 
-  const { error } = await supabase.from("reviews").insert({
-    engagement_id: input.engagementId,
-    reviewer_id: user.id,
-    reviewee_id: reviewee,
-    rating: input.rating,
-    body: input.body.trim(),
-    reviewer_role: role,
-  });
-  if (error) return { error: error.message };
+  const { data: inserted, error } = await supabase
+    .from("reviews")
+    .insert({
+      engagement_id: input.engagementId,
+      reviewer_id: user.id,
+      reviewee_id: reviewee,
+      rating: input.rating,
+      body: input.body.trim(),
+      reviewer_role: role,
+    })
+    .select("id")
+    .single();
+  if (error || !inserted) return { error: error?.message ?? "insert failed" };
+
+  if (input.media && input.media.length > 0) {
+    const rows = input.media.slice(0, 6).map((m, i) => ({
+      review_id: inserted.id,
+      uploader_id: user.id,
+      kind: m.kind,
+      url: m.url,
+      position: i,
+    }));
+    const { error: mediaErr } = await supabase.from("review_media").insert(rows);
+    if (mediaErr) {
+      // Don't fail the whole review if media insert hiccups — log it.
+      await logEvent("review_media_insert_failed", user.id, {
+        review_id: inserted.id,
+        error: mediaErr.message,
+      });
+    }
+  }
 
   await logEvent("review_created", user.id, {
     engagement_id: input.engagementId,
     rating: input.rating,
+    media_count: input.media?.length ?? 0,
   });
   revalidatePath(`/u/${reviewee}`);
   revalidatePath("/matches");
-  return {};
+  return { reviewId: inserted.id };
+}
+
+// Returns a signed upload URL for the review-media bucket. The client PUTs
+// the file there, then passes the public URL into createReview.
+export async function getReviewMediaUploadUrl(input: {
+  filename: string;
+}): Promise<{ uploadUrl?: string; publicUrl?: string; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "not signed in" };
+
+  const safeName = input.filename.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
+  const objectPath = `${user.id}/${Date.now()}_${safeName}`;
+
+  const { data, error } = await supabase.storage
+    .from("review-media")
+    .createSignedUploadUrl(objectPath);
+  if (error || !data) return { error: error?.message ?? "could not get upload url" };
+
+  const publicUrl = supabase.storage.from("review-media").getPublicUrl(objectPath).data
+    .publicUrl;
+
+  return { uploadUrl: data.signedUrl, publicUrl };
 }
