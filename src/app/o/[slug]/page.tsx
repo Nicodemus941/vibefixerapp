@@ -1,0 +1,152 @@
+import Link from "next/link";
+import { redirect, notFound } from "next/navigation";
+import { Briefcase, Building2, ExternalLink, MapPin, Users } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { Avatar } from "@/components/Avatar";
+import { FeedHeader } from "@/app/feed/_components/FeedHeader";
+import { fetchOrganizationBySlug } from "@/app/organizations/actions";
+
+export const dynamic = "force-dynamic";
+
+export default async function OrganizationPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect(`/login?next=/o/${slug}`);
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const org = await fetchOrganizationBySlug(slug);
+  if (!org) notFound();
+
+  return (
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
+      <FeedHeader
+        displayName={profile?.display_name ?? "founder"}
+        role={profile?.role ?? "user"}
+      />
+      <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        <header className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
+          <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
+            <div className="h-16 w-16 shrink-0 rounded-2xl bg-[var(--surface-3)] flex items-center justify-center text-2xl font-semibold text-[var(--fg-muted)] overflow-hidden">
+              {org.logo_url ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={org.logo_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <Building2 className="h-7 w-7" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-semibold tracking-tight break-words">
+                  {org.name}
+                </h1>
+                {org.verified && (
+                  <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/40">
+                    Verified
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--fg-muted)]">
+                {org.industry && (
+                  <span className="font-mono">{org.industry}</span>
+                )}
+                {org.size_band && (
+                  <span className="font-mono">{org.size_band} employees</span>
+                )}
+                {org.headquarters && (
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {org.headquarters}
+                  </span>
+                )}
+              </div>
+              {org.website && (
+                <a
+                  href={org.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-mono text-[var(--accent)] hover:underline break-all"
+                >
+                  {org.website.replace(/^https?:\/\//, "")}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          </div>
+          {org.description && (
+            <p className="mt-4 text-sm text-[var(--fg)] leading-relaxed whitespace-pre-wrap">
+              {org.description}
+            </p>
+          )}
+        </header>
+
+        <section>
+          <div className="flex items-baseline justify-between gap-3 mb-3">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              {org.member_count === 0
+                ? "No one on Loop has tagged this company yet"
+                : org.member_count === 1
+                ? "1 founder works here"
+                : `${org.member_count} founders work here`}
+            </h2>
+            <Link
+              href={`/account?add=position&org_id=${org.id}&org_name=${encodeURIComponent(org.name)}`}
+              className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110"
+            >
+              <Briefcase className="h-3 w-3" />
+              <span className="hidden sm:inline">I work here</span>
+              <span className="sm:hidden">Add role</span>
+            </Link>
+          </div>
+
+          {org.current_members.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center">
+              <p className="text-sm text-[var(--fg-muted)]">
+                Be the first to list your role here.
+              </p>
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {org.current_members.map((m) => (
+                <li
+                  key={m.user_id}
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-3 sm:p-4 flex items-center gap-3"
+                >
+                  <Link href={`/u/${m.user_id}`} aria-label={`View ${m.display_name}`}>
+                    <Avatar name={m.display_name} url={m.avatar_url} size="md" />
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={`/u/${m.user_id}`}
+                      className="font-medium text-[var(--fg)] hover:underline underline-offset-2 truncate block"
+                    >
+                      {m.display_name}
+                    </Link>
+                    <p className="text-sm text-[var(--fg-muted)] truncate">
+                      {m.title}
+                      {m.industry && (
+                        <span className="text-[var(--fg-subtle)]"> · {m.industry}</span>
+                      )}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </main>
+    </div>
+  );
+}

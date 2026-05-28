@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Download, Settings } from "lucide-react";
+import { Briefcase, Download, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "../feed/_components/FeedHeader";
 import { AvatarUploader } from "./_components/AvatarUploader";
@@ -8,7 +8,9 @@ import { ProfileForm } from "./_components/ProfileForm";
 import { NotificationPrefsForm } from "./_components/NotificationPrefsForm";
 import { DangerZone } from "./_components/DangerZone";
 import { StripeConnectSection } from "./_components/StripeConnectSection";
+import { PositionsEditor } from "./_components/PositionsEditor";
 import { fetchStripeConnectStatus } from "../stripe/actions";
+import { fetchUserPositions } from "../organizations/actions";
 import type { NotificationPrefs } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -25,12 +27,25 @@ const DEFAULT_PREFS: NotificationPrefs = {
   email_digest: "off",
 };
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ add?: string; org_id?: string; org_name?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/account");
+
+  const sp = await searchParams;
+  const positionPrefill =
+    sp.add === "position"
+      ? {
+          orgId: sp.org_id ?? undefined,
+          orgName: sp.org_name ?? undefined,
+        }
+      : undefined;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -45,7 +60,10 @@ export default async function AccountPage() {
     ...((profile?.notification_prefs as Partial<NotificationPrefs> | null) ?? {}),
   };
 
-  const stripeStatus = await fetchStripeConnectStatus();
+  const [stripeStatus, positions] = await Promise.all([
+    fetchStripeConnectStatus(),
+    fetchUserPositions(user.id),
+  ]);
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
@@ -88,6 +106,22 @@ export default async function AccountPage() {
               /u/{user.id.slice(0, 8)}…
             </Link>
           </p>
+        </Section>
+
+        <Section title="Experience">
+          <div className="mb-3 flex items-start gap-2 text-xs text-[var(--fg-muted)]">
+            <Briefcase className="h-4 w-4 mt-0.5 shrink-0" />
+            <p>
+              Add the companies you&apos;ve worked at. Tag a Loop company page if it
+              exists, or just type the name — you can link it later when the page
+              is added. <Link href="/organizations/new" className="text-[var(--accent)] hover:underline">Create a company page</Link>.
+            </p>
+          </div>
+          <PositionsEditor
+            initial={positions}
+            prefillOrgId={positionPrefill?.orgId}
+            prefillOrgName={positionPrefill?.orgName}
+          />
         </Section>
 
         <Section title="Payments — Stripe Connect">

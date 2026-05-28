@@ -12,6 +12,96 @@ export type Database = {
   };
   public: {
     Tables: {
+      organizations: {
+        Row: {
+          created_at: string | null;
+          created_by: string | null;
+          description: string | null;
+          headquarters: string | null;
+          id: string;
+          industry: string | null;
+          logo_url: string | null;
+          member_count: number;
+          name: string;
+          size_band: string | null;
+          slug: string;
+          updated_at: string | null;
+          verified: boolean;
+          website: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          headquarters?: string | null;
+          id?: string;
+          industry?: string | null;
+          logo_url?: string | null;
+          member_count?: number;
+          name: string;
+          size_band?: string | null;
+          slug: string;
+          updated_at?: string | null;
+          verified?: boolean;
+          website?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          headquarters?: string | null;
+          id?: string;
+          industry?: string | null;
+          logo_url?: string | null;
+          member_count?: number;
+          name?: string;
+          size_band?: string | null;
+          slug?: string;
+          updated_at?: string | null;
+          verified?: boolean;
+          website?: string | null;
+        };
+        Relationships: [];
+      };
+      positions: {
+        Row: {
+          created_at: string | null;
+          description: string | null;
+          end_date: string | null;
+          id: string;
+          is_current: boolean;
+          organization_id: string | null;
+          organization_name: string | null;
+          start_date: string;
+          title: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          id?: string;
+          is_current?: boolean;
+          organization_id?: string | null;
+          organization_name?: string | null;
+          start_date: string;
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          id?: string;
+          is_current?: boolean;
+          organization_id?: string | null;
+          organization_name?: string | null;
+          start_date?: string;
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       blocks: {
         Row: {
           blocked_id: string;
@@ -924,6 +1014,17 @@ export type Database = {
           avatar_url: string | null;
           reputation_score: number;
           review_count: number;
+        }>;
+      };
+      search_organizations: {
+        Args: { query: string; limit_count?: number };
+        Returns: Array<{
+          id: string;
+          slug: string;
+          name: string;
+          industry: string | null;
+          logo_url: string | null;
+          member_count: number;
         }>;
       };
       search_loop: {

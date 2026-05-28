@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { MessageSquare } from "lucide-react";
+import { Briefcase, Building2, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PostCard } from "@/app/feed/_components/PostCard";
@@ -9,6 +9,7 @@ import { startDmAndRedirect } from "@/app/inbox/actions";
 import { fetchReviewsForUser } from "@/app/reviews/actions";
 import { ReviewList, Stars } from "@/app/reviews/_components/ReviewList";
 import { Avatar } from "@/components/Avatar";
+import { fetchUserPositions } from "@/app/organizations/actions";
 import { ProfileModerationMenu } from "./_components/ProfileModerationMenu";
 
 export const dynamic = "force-dynamic";
@@ -88,10 +89,11 @@ export default async function ProfilePage({
   ]);
 
   const postIds = (posts ?? []).map((p) => p.id);
-  const [reactionState, commentSummaries, reviews] = await Promise.all([
+  const [reactionState, commentSummaries, reviews, positions] = await Promise.all([
     fetchReactionState(postIds),
     fetchCommentSummaries(postIds),
     fetchReviewsForUser(profile.id, 20),
+    fetchUserPositions(profile.id),
   ]);
 
   const { data: blockRow } = !isOwn
@@ -219,6 +221,62 @@ export default async function ProfilePage({
           </p>
         </header>
 
+        {/* Experience */}
+        {positions.length > 0 && (
+          <section aria-label="Experience" className="space-y-3">
+            <p className="eyebrow">Experience</p>
+            <ul className="space-y-2">
+              {positions.map((p) => (
+                <li
+                  key={p.id}
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 flex items-start gap-3"
+                >
+                  <div className="h-10 w-10 shrink-0 rounded-xl bg-[var(--surface-3)] flex items-center justify-center text-[var(--fg-muted)] overflow-hidden">
+                    {p.organization_logo_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={p.organization_logo_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--fg)] break-words">{p.title}</p>
+                    <p className="text-sm text-[var(--fg-muted)] break-words">
+                      {p.organization_slug ? (
+                        <Link
+                          href={`/o/${p.organization_slug}`}
+                          className="hover:underline underline-offset-2"
+                        >
+                          {p.resolved_name}
+                        </Link>
+                      ) : (
+                        p.resolved_name
+                      )}
+                    </p>
+                    <p className="mt-0.5 font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums">
+                      {formatPositionRange(p.start_date, p.end_date, p.is_current)}
+                    </p>
+                    {p.description && (
+                      <p className="mt-2 text-xs text-[var(--fg-muted)] whitespace-pre-wrap">
+                        {p.description}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {isOwn && (
+              <Link
+                href="/account"
+                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+              >
+                <Briefcase className="h-3 w-3" />
+                Manage experience
+              </Link>
+            )}
+          </section>
+        )}
+
         {/* Offers */}
         {offers && offers.length > 0 && (
           <section aria-label="Offers" className="space-y-3">
@@ -336,4 +394,14 @@ export default async function ProfilePage({
       </main>
     </div>
   );
+}
+
+function formatPositionRange(start: string, end: string | null, isCurrent: boolean): string {
+  const fmt = (s: string) => {
+    const d = new Date(s);
+    return d.toLocaleString(undefined, { month: "short", year: "numeric" });
+  };
+  if (isCurrent) return `${fmt(start)} — Present`;
+  if (end) return `${fmt(start)} — ${fmt(end)}`;
+  return fmt(start);
 }
