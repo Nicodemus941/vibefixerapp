@@ -317,7 +317,7 @@ function WhatYouGet() {
     { title: "AI-matched introductions every 24 hours", value: "$2,000/mo" },
     { title: "Founder-only network — verified revenue, no recruiters", value: "$500/mo" },
     { title: "Escrow-protected contracts — funds held until delivery", value: "$300/mo" },
-    { title: "Auto-drafted warm intros — Claude writes the opener", value: "$200/mo" },
+    { title: "Auto-drafted warm intros — Loop writes the opener", value: "$200/mo" },
     { title: "Outcome-based reputation score — receipts, not endorsements", value: "priceless" },
   ];
   return (
@@ -484,7 +484,7 @@ function Faq() {
     },
     {
       q: "How is the matching actually done?",
-      a: "Claude analyzes your needs against every offer on the platform — by price, urgency, industry, and proven reputation. Not keywords. Not job titles.",
+      a: "Loop analyzes your needs against every offer on the platform — by price, urgency, industry, and proven reputation. Not keywords. Not job titles.",
     },
     {
       q: "What's your cut?",

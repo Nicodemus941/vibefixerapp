@@ -72,10 +72,10 @@ export default async function MatchesPage() {
                 <button
                   type="submit"
                   className="press-shrink inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-xs font-mono text-violet-300 hover:bg-violet-400/15"
-                  title="Run Claude over unranked matches to score + draft intros"
+                  title="Score unranked matches and draft an intro for each one"
                 >
                   <Wand2 className="h-3 w-3" />
-                  Claude rerank
+                  Rerank with AI
                 </button>
               </form>
             </div>
