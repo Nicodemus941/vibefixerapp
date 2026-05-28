@@ -73,9 +73,12 @@ export function PostCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="font-medium text-[var(--fg)] truncate">
+            <Link
+              href={`/u/${post.user_id}`}
+              className="font-medium text-[var(--fg)] truncate hover:underline underline-offset-2"
+            >
               {post.author_display_name}
-            </span>
+            </Link>
             {post.author_company_name && (
               <span className="text-[var(--fg-subtle)] text-sm truncate">
                 · {post.author_company_name}

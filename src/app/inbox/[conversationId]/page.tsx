@@ -67,19 +67,24 @@ export default async function ThreadPage({
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <div className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-sm font-mono text-[var(--fg-muted)]">
-            {(header.counterparty_name[0] ?? "?").toUpperCase()}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-[var(--fg)] truncate">
-              {header.counterparty_name}
-            </p>
-            <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)] truncate">
-              {[header.counterparty_company, header.counterparty_industry]
-                .filter(Boolean)
-                .join(" · ") || header.origin.toUpperCase()}
-            </p>
-          </div>
+          <Link
+            href={`/u/${header.counterparty_id}`}
+            className="flex items-center gap-3 min-w-0 flex-1 group press-shrink"
+          >
+            <div className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-sm font-mono text-[var(--fg-muted)]">
+              {(header.counterparty_name[0] ?? "?").toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-[var(--fg)] truncate group-hover:underline underline-offset-2">
+                {header.counterparty_name}
+              </p>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)] truncate">
+                {[header.counterparty_company, header.counterparty_industry]
+                  .filter(Boolean)
+                  .join(" · ") || header.origin.toUpperCase()}
+              </p>
+            </div>
+          </Link>
         </div>
       </div>
 
