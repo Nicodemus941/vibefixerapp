@@ -321,6 +321,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          actor_id: string | null;
+          created_at: string | null;
+          id: string;
+          kind: string;
+          payload: Json | null;
+          read_at: string | null;
+          related_conversation_id: string | null;
+          related_match_id: string | null;
+          related_post_id: string | null;
+          user_id: string;
+        };
+        Insert: {
+          actor_id?: string | null;
+          created_at?: string | null;
+          id?: string;
+          kind: string;
+          payload?: Json | null;
+          read_at?: string | null;
+          related_conversation_id?: string | null;
+          related_match_id?: string | null;
+          related_post_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          actor_id?: string | null;
+          created_at?: string | null;
+          id?: string;
+          kind?: string;
+          payload?: Json | null;
+          read_at?: string | null;
+          related_conversation_id?: string | null;
+          related_match_id?: string | null;
+          related_post_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       posts: {
         Row: {
           body: string;
