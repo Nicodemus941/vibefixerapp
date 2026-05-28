@@ -153,10 +153,15 @@ export type Database = {
           escrow_status: string | null;
           id: string;
           match_id: string | null;
+          payment_method: string;
           platform_fee: number;
           provider_id: string;
           seeker_id: string;
+          stripe_charge_id: string | null;
           stripe_payment_intent: string | null;
+          stripe_payment_intent_id: string | null;
+          stripe_refund_id: string | null;
+          stripe_transfer_id: string | null;
         };
         Insert: {
           amount: number;
@@ -166,10 +171,15 @@ export type Database = {
           escrow_status?: string | null;
           id?: string;
           match_id?: string | null;
+          payment_method?: string;
           platform_fee: number;
           provider_id: string;
           seeker_id: string;
+          stripe_charge_id?: string | null;
           stripe_payment_intent?: string | null;
+          stripe_payment_intent_id?: string | null;
+          stripe_refund_id?: string | null;
+          stripe_transfer_id?: string | null;
         };
         Update: {
           amount?: number;
@@ -179,10 +189,15 @@ export type Database = {
           escrow_status?: string | null;
           id?: string;
           match_id?: string | null;
+          payment_method?: string;
           platform_fee?: number;
           provider_id?: string;
           seeker_id?: string;
+          stripe_charge_id?: string | null;
           stripe_payment_intent?: string | null;
+          stripe_payment_intent_id?: string | null;
+          stripe_refund_id?: string | null;
+          stripe_transfer_id?: string | null;
         };
         Relationships: [];
       };
@@ -536,6 +551,8 @@ export type Database = {
           reputation_score: number | null;
           revenue_band: string | null;
           role: string;
+          stripe_account_id: string | null;
+          stripe_account_status: string;
           tier: string;
           updated_at: string | null;
         };
@@ -555,6 +572,8 @@ export type Database = {
           reputation_score?: number | null;
           revenue_band?: string | null;
           role?: string;
+          stripe_account_id?: string | null;
+          stripe_account_status?: string;
           tier?: string;
           updated_at?: string | null;
         };
@@ -574,6 +593,8 @@ export type Database = {
           reputation_score?: number | null;
           revenue_band?: string | null;
           role?: string;
+          stripe_account_id?: string | null;
+          stripe_account_status?: string;
           tier?: string;
           updated_at?: string | null;
         };
