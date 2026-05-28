@@ -368,6 +368,7 @@ export type Database = {
           reciprocity_status: string | null;
           reputation_score: number | null;
           revenue_band: string | null;
+          role: string;
           tier: string;
           updated_at: string | null;
         };
@@ -384,6 +385,7 @@ export type Database = {
           reciprocity_status?: string | null;
           reputation_score?: number | null;
           revenue_band?: string | null;
+          role?: string;
           tier?: string;
           updated_at?: string | null;
         };
@@ -400,6 +402,7 @@ export type Database = {
           reciprocity_status?: string | null;
           reputation_score?: number | null;
           revenue_band?: string | null;
+          role?: string;
           tier?: string;
           updated_at?: string | null;
         };
@@ -457,6 +460,10 @@ export type Database = {
       trending_hashtags: {
         Args: { since_hours?: number; limit_count?: number };
         Returns: Array<{ tag: string; count: number }>;
+      };
+      start_or_get_dm: {
+        Args: { other_user_id: string; conv_origin?: string };
+        Returns: string;
       };
     };
     Enums: { [_ in never]: never };

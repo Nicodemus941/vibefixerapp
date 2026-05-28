@@ -28,12 +28,13 @@ export default async function FeedPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, onboarding_complete")
+    .select("display_name, onboarding_complete, role")
     .eq("id", user.id)
     .maybeSingle();
 
   const displayName = profile?.display_name ?? "founder";
   const onboardingDone = profile?.onboarding_complete === true;
+  const role = profile?.role ?? "user";
 
   const [{ posts, error: feedError }, trending] = await Promise.all([
     fetchFeed({ tag, limit: 30 }),
@@ -42,7 +43,7 @@ export default async function FeedPage({
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-      <FeedHeader displayName={displayName} />
+      <FeedHeader displayName={displayName} role={role} />
 
       <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-5">
         {/* Personalization header */}
@@ -141,7 +142,7 @@ export default async function FeedPage({
           )}
           {!feedError && posts.length === 0 && <EmptyState tag={tag} />}
           {posts.map((p) => (
-            <PostCard key={p.id} post={p} />
+            <PostCard key={p.id} post={p} viewerId={user.id} />
           ))}
         </section>
       </main>
