@@ -156,6 +156,7 @@ export default async function GroupPage({
               <PostCard
                 key={p.id}
                 viewerId={user.id}
+                viewerRole={viewer?.role ?? "user"}
                 reactionState={reactionState[p.id]}
                 commentSummary={commentSummaries[p.id]}
                 post={{

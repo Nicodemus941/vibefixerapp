@@ -17,15 +17,31 @@ export const dynamic = "force-dynamic";
 
 export default async function ThreadPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ conversationId: string }>;
+  searchParams: Promise<{ draft?: string }>;
 }) {
   const { conversationId } = await params;
+  const { draft: draftMatchId } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?next=/inbox/${conversationId}`);
+
+  let initialDraft: string | null = null;
+  if (draftMatchId) {
+    const { data: m } = await supabase
+      .from("matches")
+      .select("ai_intro_draft, seeker_id, provider_id")
+      .eq("id", draftMatchId)
+      .maybeSingle();
+    // Only seekers see the draft — it's written from the seeker's voice.
+    if (m && m.seeker_id === user.id && m.ai_intro_draft) {
+      initialDraft = m.ai_intro_draft;
+    }
+  }
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -135,9 +151,12 @@ export default async function ThreadPage({
         />
       </main>
 
-      <div className="sticky bottom-0 border-t border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur-md">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-3">
-          <MessageComposer conversationId={conversationId} />
+      <div className="sticky bottom-0 border-t border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur-md safe-bottom">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-3">
+          <MessageComposer
+            conversationId={conversationId}
+            initialDraft={initialDraft}
+          />
         </div>
       </div>
     </div>

@@ -12,6 +12,399 @@ export type Database = {
   };
   public: {
     Tables: {
+      education: {
+        Row: {
+          created_at: string | null;
+          degree: string | null;
+          description: string | null;
+          end_year: number | null;
+          field_of_study: string | null;
+          id: string;
+          school_name: string;
+          start_year: number | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          degree?: string | null;
+          description?: string | null;
+          end_year?: number | null;
+          field_of_study?: string | null;
+          id?: string;
+          school_name: string;
+          start_year?: number | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          degree?: string | null;
+          description?: string | null;
+          end_year?: number | null;
+          field_of_study?: string | null;
+          id?: string;
+          school_name?: string;
+          start_year?: number | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      certifications: {
+        Row: {
+          created_at: string | null;
+          credential_id: string | null;
+          credential_url: string | null;
+          description: string | null;
+          expires_date: string | null;
+          id: string;
+          issued_date: string | null;
+          issuer: string | null;
+          name: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          credential_id?: string | null;
+          credential_url?: string | null;
+          description?: string | null;
+          expires_date?: string | null;
+          id?: string;
+          issued_date?: string | null;
+          issuer?: string | null;
+          name: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          credential_id?: string | null;
+          credential_url?: string | null;
+          description?: string | null;
+          expires_date?: string | null;
+          id?: string;
+          issued_date?: string | null;
+          issuer?: string | null;
+          name?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      job_listings: {
+        Row: {
+          application_email: string | null;
+          application_url: string | null;
+          compensation_max: number | null;
+          compensation_min: number | null;
+          compensation_period: string | null;
+          created_at: string | null;
+          currency: string;
+          description: string;
+          embedding: string | null;
+          employment_type: string;
+          expires_at: string | null;
+          id: string;
+          location: string | null;
+          organization_id: string | null;
+          poster_id: string;
+          remote_policy: string;
+          status: string;
+          title: string;
+        };
+        Insert: {
+          application_email?: string | null;
+          application_url?: string | null;
+          compensation_max?: number | null;
+          compensation_min?: number | null;
+          compensation_period?: string | null;
+          created_at?: string | null;
+          currency?: string;
+          description: string;
+          embedding?: string | null;
+          employment_type: string;
+          expires_at?: string | null;
+          id?: string;
+          location?: string | null;
+          organization_id?: string | null;
+          poster_id: string;
+          remote_policy: string;
+          status?: string;
+          title: string;
+        };
+        Update: {
+          application_email?: string | null;
+          application_url?: string | null;
+          compensation_max?: number | null;
+          compensation_min?: number | null;
+          compensation_period?: string | null;
+          created_at?: string | null;
+          currency?: string;
+          description?: string;
+          embedding?: string | null;
+          employment_type?: string;
+          expires_at?: string | null;
+          id?: string;
+          location?: string | null;
+          organization_id?: string | null;
+          poster_id?: string;
+          remote_policy?: string;
+          status?: string;
+          title?: string;
+        };
+        Relationships: [];
+      };
+      follows: {
+        Row: {
+          created_at: string | null;
+          follower_id: string;
+          following_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          follower_id: string;
+          following_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          follower_id?: string;
+          following_id?: string;
+        };
+        Relationships: [];
+      };
+      organizations: {
+        Row: {
+          created_at: string | null;
+          created_by: string | null;
+          description: string | null;
+          headquarters: string | null;
+          id: string;
+          industry: string | null;
+          logo_url: string | null;
+          member_count: number;
+          name: string;
+          size_band: string | null;
+          slug: string;
+          updated_at: string | null;
+          verified: boolean;
+          website: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          headquarters?: string | null;
+          id?: string;
+          industry?: string | null;
+          logo_url?: string | null;
+          member_count?: number;
+          name: string;
+          size_band?: string | null;
+          slug: string;
+          updated_at?: string | null;
+          verified?: boolean;
+          website?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          headquarters?: string | null;
+          id?: string;
+          industry?: string | null;
+          logo_url?: string | null;
+          member_count?: number;
+          name?: string;
+          size_band?: string | null;
+          slug?: string;
+          updated_at?: string | null;
+          verified?: boolean;
+          website?: string | null;
+        };
+        Relationships: [];
+      };
+      positions: {
+        Row: {
+          created_at: string | null;
+          description: string | null;
+          end_date: string | null;
+          id: string;
+          is_current: boolean;
+          organization_id: string | null;
+          organization_name: string | null;
+          start_date: string;
+          title: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          id?: string;
+          is_current?: boolean;
+          organization_id?: string | null;
+          organization_name?: string | null;
+          start_date: string;
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          id?: string;
+          is_current?: boolean;
+          organization_id?: string | null;
+          organization_name?: string | null;
+          start_date?: string;
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      advertisements: {
+        Row: {
+          body: string;
+          budget_spent_cents: number;
+          budget_total_cents: number;
+          clicks: number;
+          cost_per_impression_cents: number;
+          created_at: string | null;
+          creative_url: string | null;
+          cta_label: string;
+          ends_at: string | null;
+          headline: string;
+          id: string;
+          impressions: number;
+          organization_id: string | null;
+          sponsor_id: string;
+          starts_at: string | null;
+          status: string;
+          target_industries: string[] | null;
+          target_revenue_bands: string[] | null;
+          target_url: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          body: string;
+          budget_spent_cents?: number;
+          budget_total_cents: number;
+          clicks?: number;
+          cost_per_impression_cents?: number;
+          created_at?: string | null;
+          creative_url?: string | null;
+          cta_label?: string;
+          ends_at?: string | null;
+          headline: string;
+          id?: string;
+          impressions?: number;
+          organization_id?: string | null;
+          sponsor_id: string;
+          starts_at?: string | null;
+          status?: string;
+          target_industries?: string[] | null;
+          target_revenue_bands?: string[] | null;
+          target_url: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          body?: string;
+          budget_spent_cents?: number;
+          budget_total_cents?: number;
+          clicks?: number;
+          cost_per_impression_cents?: number;
+          created_at?: string | null;
+          creative_url?: string | null;
+          cta_label?: string;
+          ends_at?: string | null;
+          headline?: string;
+          id?: string;
+          impressions?: number;
+          organization_id?: string | null;
+          sponsor_id?: string;
+          starts_at?: string | null;
+          status?: string;
+          target_industries?: string[] | null;
+          target_revenue_bands?: string[] | null;
+          target_url?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      ad_events: {
+        Row: {
+          ad_id: string;
+          created_at: string | null;
+          event_type: string;
+          id: string;
+          viewer_id: string | null;
+        };
+        Insert: {
+          ad_id: string;
+          created_at?: string | null;
+          event_type: string;
+          id?: string;
+          viewer_id?: string | null;
+        };
+        Update: {
+          ad_id?: string;
+          created_at?: string | null;
+          event_type?: string;
+          id?: string;
+          viewer_id?: string | null;
+        };
+        Relationships: [];
+      };
+      blocks: {
+        Row: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at: string | null;
+        };
+        Insert: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at?: string | null;
+        };
+        Update: {
+          blocked_id?: string;
+          blocker_id?: string;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
+      reports: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          reason: string;
+          reporter_id: string;
+          reviewed_at: string | null;
+          reviewer_id: string | null;
+          status: string;
+          target_id: string;
+          target_kind: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          reason: string;
+          reporter_id: string;
+          reviewed_at?: string | null;
+          reviewer_id?: string | null;
+          status?: string;
+          target_id: string;
+          target_kind: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          reason?: string;
+          reporter_id?: string;
+          reviewed_at?: string | null;
+          reviewer_id?: string | null;
+          status?: string;
+          target_id?: string;
+          target_kind?: string;
+        };
+        Relationships: [];
+      };
       cold_dm_quota: {
         Row: {
           limit_count: number;
@@ -194,7 +587,6 @@ export type Database = {
           provider_id: string;
           seeker_id: string;
           stripe_charge_id: string | null;
-          stripe_payment_intent: string | null;
           stripe_payment_intent_id: string | null;
           stripe_refund_id: string | null;
           stripe_transfer_id: string | null;
@@ -212,7 +604,6 @@ export type Database = {
           provider_id: string;
           seeker_id: string;
           stripe_charge_id?: string | null;
-          stripe_payment_intent?: string | null;
           stripe_payment_intent_id?: string | null;
           stripe_refund_id?: string | null;
           stripe_transfer_id?: string | null;
@@ -230,7 +621,6 @@ export type Database = {
           provider_id?: string;
           seeker_id?: string;
           stripe_charge_id?: string | null;
-          stripe_payment_intent?: string | null;
           stripe_payment_intent_id?: string | null;
           stripe_refund_id?: string | null;
           stripe_transfer_id?: string | null;
@@ -279,6 +669,9 @@ export type Database = {
       matches: {
         Row: {
           ai_intro_draft: string | null;
+          ai_model: string | null;
+          ai_rationale: string | null;
+          ai_reranked_at: string | null;
           created_at: string | null;
           id: string;
           match_score: number;
@@ -291,6 +684,9 @@ export type Database = {
         };
         Insert: {
           ai_intro_draft?: string | null;
+          ai_model?: string | null;
+          ai_rationale?: string | null;
+          ai_reranked_at?: string | null;
           created_at?: string | null;
           id?: string;
           match_score: number;
@@ -303,6 +699,9 @@ export type Database = {
         };
         Update: {
           ai_intro_draft?: string | null;
+          ai_model?: string | null;
+          ai_rationale?: string | null;
+          ai_reranked_at?: string | null;
           created_at?: string | null;
           id?: string;
           match_score?: number;
@@ -797,7 +1196,7 @@ export type Database = {
     Functions: {
       enforce_reciprocity: { Args: Record<string, never>; Returns: undefined };
       feed_for_user: {
-        Args: { viewer_id: string; tag_filter?: string | null; limit_count?: number };
+        Args: { viewer_id: string; tag_filter?: string | null; limit_count?: number; view_mode?: "personalized" | "recent" };
         Returns: Array<{
           id: string;
           user_id: string;
@@ -864,6 +1263,65 @@ export type Database = {
           avatar_url: string | null;
           reputation_score: number;
           review_count: number;
+        }>;
+      };
+      profile_social_counts: {
+        Args: { target_user: string };
+        Returns: Array<{ followers: number; following: number; connections: number }>;
+      };
+      viewer_connections_at_org: {
+        Args: { viewer_id: string; target_org: string };
+        Returns: number;
+      };
+      pick_ad_for_viewer: {
+        Args: { viewer_id: string };
+        Returns: Array<{
+          id: string;
+          sponsor_id: string;
+          organization_id: string | null;
+          organization_slug: string | null;
+          organization_name: string | null;
+          organization_logo_url: string | null;
+          headline: string;
+          body: string;
+          creative_url: string | null;
+          cta_label: string;
+          target_url: string;
+        }>;
+      };
+      match_jobs_for_user: {
+        Args: { viewer_id: string; limit_count?: number };
+        Returns: Array<{
+          id: string;
+          poster_id: string;
+          organization_id: string | null;
+          organization_slug: string | null;
+          organization_name: string | null;
+          organization_logo_url: string | null;
+          title: string;
+          description: string;
+          employment_type: string;
+          remote_policy: string;
+          location: string | null;
+          compensation_min: number | null;
+          compensation_max: number | null;
+          compensation_period: string | null;
+          currency: string;
+          application_url: string | null;
+          application_email: string | null;
+          created_at: string;
+          similarity: number | null;
+        }>;
+      };
+      search_organizations: {
+        Args: { query: string; limit_count?: number };
+        Returns: Array<{
+          id: string;
+          slug: string;
+          name: string;
+          industry: string | null;
+          logo_url: string | null;
+          member_count: number;
         }>;
       };
       search_loop: {

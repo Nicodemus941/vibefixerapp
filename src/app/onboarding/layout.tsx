@@ -41,7 +41,7 @@ export default function OnboardingLayout({
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 sm:px-6 py-8 sm:py-12">
+      <main className="mx-auto max-w-2xl px-4 sm:px-6 pt-8 sm:pt-12 pb-12 sm:pb-16 safe-bottom">
         {children}
       </main>
     </div>

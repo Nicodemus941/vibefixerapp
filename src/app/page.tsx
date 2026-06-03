@@ -19,7 +19,6 @@ export default function Home() {
         <Broken />
         <HowItWorks />
         <WhatYouGet />
-        <Guarantee />
         <Pricing />
         <Faq />
         <FinalCta />
@@ -76,9 +75,15 @@ function Nav() {
           </ul>
           <a
             href="/login"
-            className="press-shrink inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
+            className="press-shrink inline-flex items-center justify-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05] transition-colors"
           >
-            Sign in
+            Log in
+          </a>
+          <a
+            href="/login"
+            className="press-shrink inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
+          >
+            Sign up
           </a>
         </div>
       </nav>
@@ -97,10 +102,13 @@ function Hero() {
         className="mesh-bg absolute inset-0 -z-10"
         aria-hidden
       />
-      {/* Animated constellation — moves at 0.5x scroll (between mesh and headline) */}
+      {/* Animated constellation — moves at 0.5x scroll (between mesh and
+          headline). Visible on every screen size; we step the opacity
+          and parallax intensity down slightly on phones so it stays
+          subtle behind the wrapped headline. */}
       <div
-        data-parallax="0.5"
-        className="absolute inset-0 -z-10 opacity-70 hidden sm:block"
+        data-parallax="0.4"
+        className="absolute inset-0 -z-10 opacity-50 sm:opacity-70"
         aria-hidden
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -141,13 +149,41 @@ function Hero() {
 
         <h1
           data-parallax="0.85"
-          className="reveal-child text-[clamp(2.75rem,8vw,6.5rem)] font-semibold tracking-[-0.04em] leading-[0.95]"
-          style={{ ["--stagger-delay" as string]: "80ms" }}
+          className="text-[clamp(2.75rem,8vw,6.5rem)] font-semibold tracking-[-0.04em] leading-[0.95]"
         >
-          Stop networking.
+          <span
+            className="reveal-child inline-block"
+            style={{ ["--stagger-delay" as string]: "60ms" }}
+          >
+            Stop
+          </span>{" "}
+          <span
+            className="reveal-child inline-block"
+            style={{ ["--stagger-delay" as string]: "130ms" }}
+          >
+            networking.
+          </span>
           <br />
           <span className="bg-gradient-to-r from-[var(--fg)] to-[var(--fg-muted)] bg-clip-text text-transparent">
-            Start building.
+            <span
+              className="reveal-child inline-block"
+              style={{ ["--stagger-delay" as string]: "210ms" }}
+            >
+              Start
+            </span>{" "}
+            <span
+              className="reveal-child inline-block"
+              style={{ ["--stagger-delay" as string]: "290ms" }}
+            >
+              building.
+            </span>
+          </span>
+          <span
+            className="reveal-child cursor-blink ml-1 text-[var(--accent)] align-baseline"
+            style={{ ["--stagger-delay" as string]: "380ms" }}
+            aria-hidden
+          >
+            ▌
           </span>
         </h1>
 
@@ -176,6 +212,19 @@ function Hero() {
             See How It Works ↓
           </a>
         </div>
+
+        <p
+          className="reveal-child mt-6 text-sm text-[var(--fg-muted)]"
+          style={{ ["--stagger-delay" as string]: "320ms" }}
+        >
+          Already on Loop?{" "}
+          <a
+            href="/login"
+            className="font-medium text-[var(--accent)] hover:underline underline-offset-4"
+          >
+            Log in →
+          </a>
+        </p>
       </div>
     </section>
   );
@@ -317,7 +366,7 @@ function WhatYouGet() {
     { title: "AI-matched introductions every 24 hours", value: "$2,000/mo" },
     { title: "Founder-only network — verified revenue, no recruiters", value: "$500/mo" },
     { title: "Escrow-protected contracts — funds held until delivery", value: "$300/mo" },
-    { title: "Auto-drafted warm intros — Claude writes the opener", value: "$200/mo" },
+    { title: "Auto-drafted warm intros — Loop writes the opener", value: "$200/mo" },
     { title: "Outcome-based reputation score — receipts, not endorsements", value: "priceless" },
   ];
   return (
@@ -354,27 +403,6 @@ function WhatYouGet() {
             {" "}— as long as you reciprocate.
           </p>
         </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- Guarantee ---------------- */
-
-function Guarantee() {
-  return (
-    <section className="relative py-24 sm:py-40 px-6 border-t border-[var(--border)]">
-      <div data-reveal className="reveal max-w-3xl mx-auto text-center">
-        <p className="eyebrow mb-6">The Founder&apos;s Guarantee</p>
-        <p className="text-3xl sm:text-5xl font-medium tracking-[-0.03em] leading-tight">
-          Get matched with 3 qualified founders in 7 days,{" "}
-          <span className="text-[var(--fg-muted)]">
-            or we refund every cent + give you a full year free.
-          </span>
-        </p>
-        <p className="mt-8 text-[var(--fg-subtle)]">
-          We can say that because the model works.
-        </p>
       </div>
     </section>
   );
@@ -484,7 +512,7 @@ function Faq() {
     },
     {
       q: "How is the matching actually done?",
-      a: "Claude analyzes your needs against every offer on the platform — by price, urgency, industry, and proven reputation. Not keywords. Not job titles.",
+      a: "Loop analyzes your needs against every offer on the platform — by price, urgency, industry, and proven reputation. Not keywords. Not job titles.",
     },
     {
       q: "What's your cut?",
@@ -553,7 +581,16 @@ function FinalCta() {
             Claim Your Founder Spot — Free
           </a>
         </div>
-        <p className="mt-8 eyebrow">Only 500 spots left in the Founding Cohort</p>
+        <p className="mt-6 text-sm text-[var(--fg-muted)]">
+          Already on Loop?{" "}
+          <a
+            href="/login"
+            className="font-medium text-[var(--accent)] hover:underline underline-offset-4"
+          >
+            Log in →
+          </a>
+        </p>
+        <p className="mt-6 eyebrow">Only 500 spots left in the Founding Cohort</p>
       </div>
     </section>
   );
