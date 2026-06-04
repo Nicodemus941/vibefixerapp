@@ -1,4 +1,5 @@
 import { MotionMount } from "./_components/MotionMount";
+import { LandingStats } from "./_components/LandingStats";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       >
         <MotionMount />
         <Hero />
+        <LandingStats />
         <Broken />
         <HowItWorks />
         <WhatYouGet />
@@ -364,7 +366,7 @@ function BentoTile({
 function WhatYouGet() {
   const perks = [
     { title: "AI-matched introductions every 24 hours", value: "$2,000/mo" },
-    { title: "Founder-only network — verified revenue, no recruiters", value: "$500/mo" },
+    { title: "Founder-only network — reciprocity enforced, recruiters blocked", value: "$500/mo" },
     { title: "Escrow-protected contracts — funds held until delivery", value: "$300/mo" },
     { title: "Auto-drafted warm intros — Loop writes the opener", value: "$200/mo" },
     { title: "Outcome-based reputation score — receipts, not endorsements", value: "priceless" },
