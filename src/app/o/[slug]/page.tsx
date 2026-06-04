@@ -8,7 +8,8 @@ import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PublicHeader } from "@/components/PublicHeader";
 import { ShareButton } from "@/components/ShareButton";
 import { fetchOrganizationBySlug } from "@/app/organizations/actions";
-import { viewerConnectionsAtOrg } from "@/app/follows/actions";
+import { fetchOrgFollowState, viewerConnectionsAtOrg } from "@/app/follows/actions";
+import { FollowOrgButton } from "./_components/FollowOrgButton";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +79,8 @@ export default async function OrganizationPage({
   const canPostJob = Boolean(ownPos);
 
   // Open jobs at this org + how many of your connections work here
-  const [{ data: orgJobs }, connectionCount] = await Promise.all([
+  // + the org's follower count + whether the viewer follows it
+  const [{ data: orgJobs }, connectionCount, orgFollow] = await Promise.all([
     supabase
       .from("job_listings")
       .select("id, title, employment_type, remote_policy, location")
@@ -87,6 +89,7 @@ export default async function OrganizationPage({
       .order("created_at", { ascending: false })
       .limit(10),
     viewerConnectionsAtOrg(org.id),
+    fetchOrgFollowState(org.id),
   ]);
 
   const orgLd = {
@@ -172,6 +175,13 @@ export default async function OrganizationPage({
             </p>
           )}
           <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
+            <FollowOrgButton
+              orgId={org.id}
+              orgSlug={org.slug}
+              initiallyFollowing={orgFollow.isFollowing}
+              initialFollowerCount={orgFollow.followerCount}
+              isAuthenticated={Boolean(user)}
+            />
             <ShareButton
               url={`/o/${org.slug}`}
               title={org.name}
