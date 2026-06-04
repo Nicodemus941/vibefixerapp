@@ -27,7 +27,32 @@ const REMOTE_LABELS: Record<string, string> = {
   onsite: "On-site",
 };
 
-export default async function JobsPage() {
+const EMPLOYMENT_FILTERS = [
+  { value: "full_time", label: "Full-time" },
+  { value: "part_time", label: "Part-time" },
+  { value: "contract", label: "Contract" },
+  { value: "internship", label: "Internship" },
+  { value: "volunteer", label: "Volunteer" },
+];
+
+const REMOTE_FILTERS = [
+  { value: "remote", label: "Remote" },
+  { value: "hybrid", label: "Hybrid" },
+  { value: "onsite", label: "On-site" },
+];
+
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string; remote?: string }>;
+}) {
+  const sp = await searchParams;
+  const employmentType =
+    sp.type && EMPLOYMENT_FILTERS.some((f) => f.value === sp.type) ? sp.type : null;
+  const remotePolicy =
+    sp.remote && REMOTE_FILTERS.some((f) => f.value === sp.remote) ? sp.remote : null;
+  const filtersActive = Boolean(employmentType || remotePolicy);
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -41,8 +66,21 @@ export default async function JobsPage() {
         .maybeSingle()
     : { data: null };
 
-  const matches = await fetchJobMatches(40);
+  const matches = await fetchJobMatches(40, {
+    employmentType,
+    remotePolicy,
+  });
   const personalized = matches.some((m) => m.similarity != null);
+
+  function filterUrl(next: Partial<{ type: string | null; remote: string | null }>) {
+    const params = new URLSearchParams();
+    const t = next.type !== undefined ? next.type : employmentType;
+    const r = next.remote !== undefined ? next.remote : remotePolicy;
+    if (t) params.set("type", t);
+    if (r) params.set("remote", r);
+    const qs = params.toString();
+    return qs ? `/jobs?${qs}` : "/jobs";
+  }
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
@@ -78,15 +116,59 @@ export default async function JobsPage() {
           </Link>
         </div>
 
+        {/* Filters */}
+        <div className="space-y-2">
+          <FilterRow label="Type" all={filterUrl({ type: null })} active={!employmentType}>
+            {EMPLOYMENT_FILTERS.map((f) => (
+              <FilterChip
+                key={f.value}
+                href={filterUrl({ type: f.value })}
+                active={employmentType === f.value}
+                label={f.label}
+              />
+            ))}
+          </FilterRow>
+          <FilterRow label="Location" all={filterUrl({ remote: null })} active={!remotePolicy}>
+            {REMOTE_FILTERS.map((f) => (
+              <FilterChip
+                key={f.value}
+                href={filterUrl({ remote: f.value })}
+                active={remotePolicy === f.value}
+                label={f.label}
+              />
+            ))}
+          </FilterRow>
+          {filtersActive && (
+            <Link
+              href="/jobs"
+              className="inline-flex items-center text-xs font-mono text-[var(--fg-muted)] hover:text-[var(--fg)]"
+            >
+              Clear filters ↺
+            </Link>
+          )}
+        </div>
+
         {matches.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-8 text-center">
             <Briefcase className="h-6 w-6 mx-auto text-[var(--fg-subtle)] mb-2" />
             <p className="text-[var(--fg-muted)]">
-              No open jobs yet. Be the first —{" "}
-              <Link href="/jobs/new" className="text-[var(--accent)] hover:underline">
-                post one
-              </Link>
-              .
+              {filtersActive ? (
+                <>
+                  No matches with these filters.{" "}
+                  <Link href="/jobs" className="text-[var(--accent)] hover:underline">
+                    Clear them
+                  </Link>{" "}
+                  to see everything.
+                </>
+              ) : (
+                <>
+                  No open jobs yet. Be the first —{" "}
+                  <Link href="/jobs/new" className="text-[var(--accent)] hover:underline">
+                    post one
+                  </Link>
+                  .
+                </>
+              )}
             </p>
           </div>
         ) : (
@@ -173,4 +255,50 @@ function formatCompensation(
   if (min) return `${fmt(min)}+${periodLabel}`;
   if (max) return `up to ${fmt(max)}${periodLabel}`;
   return "";
+}
+
+function FilterRow({
+  label,
+  all,
+  active,
+  children,
+}: {
+  label: string;
+  all: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)] w-16 shrink-0">
+        {label}
+      </span>
+      <FilterChip href={all} active={active} label="All" />
+      {children}
+    </div>
+  );
+}
+
+function FilterChip({
+  href,
+  active,
+  label,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={[
+        "press-shrink inline-flex items-center rounded-full px-2.5 py-1 text-xs font-mono transition-colors",
+        active
+          ? "bg-[var(--accent)] text-[var(--bg)]"
+          : "border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.04]",
+      ].join(" ")}
+    >
+      {label}
+    </Link>
+  );
 }

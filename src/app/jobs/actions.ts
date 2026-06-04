@@ -143,24 +143,40 @@ function parseNumber(v: FormDataEntryValue | null): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export async function fetchJobMatches(limit = 30): Promise<JobMatch[]> {
+export type JobFilters = {
+  employmentType?: string | null;
+  remotePolicy?: string | null;
+};
+
+function applyFilters(jobs: JobMatch[], filters: JobFilters): JobMatch[] {
+  return jobs.filter((j) => {
+    if (filters.employmentType && j.employment_type !== filters.employmentType) return false;
+    if (filters.remotePolicy && j.remote_policy !== filters.remotePolicy) return false;
+    return true;
+  });
+}
+
+export async function fetchJobMatches(limit = 30, filters: JobFilters = {}): Promise<JobMatch[]> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   // Authenticated viewer: rank by similarity to their needs embedding.
+  // Filtering is applied in memory after the embedding rank because the
+  // RPC doesn't take filter args — fine at this scale (<= 60 rows).
   if (user) {
     const { data, error } = await supabase.rpc("match_jobs_for_user", {
       viewer_id: user.id,
-      limit_count: limit,
+      limit_count: limit * 2,
     });
     if (error) return [];
-    return (data ?? []) as JobMatch[];
+    const rows = (data ?? []) as JobMatch[];
+    return applyFilters(rows, filters).slice(0, limit);
   }
 
   // Anonymous visitor: open jobs by recency, no personalization.
-  const { data } = await supabase
+  let query = supabase
     .from("job_listings")
     .select(
       `id, poster_id, organization_id, title, description, employment_type, remote_policy,
@@ -169,7 +185,10 @@ export async function fetchJobMatches(limit = 30): Promise<JobMatch[]> {
        organizations:organization_id(slug, name, logo_url)`,
     )
     .eq("status", "open")
-    .or("expires_at.is.null,expires_at.gt.now()")
+    .or("expires_at.is.null,expires_at.gt.now()");
+  if (filters.employmentType) query = query.eq("employment_type", filters.employmentType);
+  if (filters.remotePolicy) query = query.eq("remote_policy", filters.remotePolicy);
+  const { data } = await query
     .order("created_at", { ascending: false })
     .limit(limit);
   return (data ?? []).map((row) => {
