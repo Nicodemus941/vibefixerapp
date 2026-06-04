@@ -7,6 +7,7 @@ const PUBLIC_PATHS = new Set([
   "/login",
   "/auth/callback",
   "/jobs",
+  "/discover",
   "/sitemap.xml",
   "/robots.txt",
 ]);
@@ -16,10 +17,12 @@ function isPublic(pathname: string) {
   if (pathname.startsWith("/_next")) return true;
   if (pathname.startsWith("/favicon")) return true;
   if (pathname.startsWith("/api/auth")) return true;
-  // /jobs/[id] and /o/[slug] are public read for SEO. The pages themselves
-  // render a sign-in CTA for anonymous visitors instead of bouncing them.
   if (pathname.startsWith("/jobs/") && !pathname.startsWith("/jobs/new")) return true;
   if (pathname.startsWith("/o/")) return true;
+  // Public business cards — designed as the shareable identity. The
+  // full /u/[userId] profile remains auth-gated; /c/[userId] exposes
+  // only the curated subset.
+  if (pathname.startsWith("/c/")) return true;
   return false;
 }
 

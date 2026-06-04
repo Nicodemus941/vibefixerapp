@@ -10,24 +10,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const entries: MetadataRoute.Sitemap = [
-    {
-      url: `${SITE_URL}/`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 1.0,
-    },
-    {
-      url: `${SITE_URL}/jobs`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${SITE_URL}/login`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.4,
-    },
+    { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "weekly", priority: 1.0 },
+    { url: `${SITE_URL}/discover`, lastModified: now, changeFrequency: "daily", priority: 0.95 },
+    { url: `${SITE_URL}/jobs`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${SITE_URL}/login`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
   ];
 
   // Best-effort dynamic entries — if the DB is unreachable at build
@@ -63,6 +49,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(o.updated_at as string),
         changeFrequency: "weekly",
         priority: 0.6,
+      });
+    }
+
+    // Public business cards — onboarded profiles with at least one
+    // active offer. We don't need to JOIN here because the offers
+    // table read suffices to gate; the sitemap is best-effort.
+    const { data: providers } = await supabase
+      .from("offers")
+      .select("user_id")
+      .eq("is_active", true)
+      .limit(20000);
+    const uniqueUserIds = Array.from(new Set((providers ?? []).map((p) => p.user_id)));
+    for (const uid of uniqueUserIds.slice(0, 5000)) {
+      entries.push({
+        url: `${SITE_URL}/c/${uid}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.5,
       });
     }
   } catch {
