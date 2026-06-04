@@ -49,6 +49,17 @@ export default async function FeedPage({
   const reciprocityStatus = profile?.reciprocity_status ?? "active";
   const isSuspended = reciprocityStatus === "suspended";
 
+  // Cold-start signal — a brand-new user with no offers OR needs gets
+  // an empty matcher and an empty "for you" feed. Detect that and
+  // surface the right next-step nudge above the feed.
+  const [{ count: offerCount }, { count: needCount }] = await Promise.all([
+    supabase.from("offers").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+    supabase.from("needs").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+  ]);
+  const hasOffers = (offerCount ?? 0) > 0;
+  const hasNeeds = (needCount ?? 0) > 0;
+  const isColdStart = !hasOffers || !hasNeeds;
+
   const [{ posts, error: feedError }, trending] = await Promise.all([
     fetchFeed({ tag, limit: 30, view }),
     fetchTrendingTags(),
@@ -116,26 +127,45 @@ export default async function FeedPage({
           lastNeedAt={profile?.last_need_posted_at ?? null}
         />
 
-        {/* Onboarding nudge */}
-        {!onboardingDone && !tag && (
+        {/* Cold-start nudge — shown when the user has no offers OR no
+            needs. Headline + CTA change based on which side is missing,
+            so a partial-onboarded user gets the right next step instead
+            of a generic "finish profile" call. */}
+        {isColdStart && !tag && (
           <div className="rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent)]/[0.05] p-4 sm:p-5">
             <div className="flex items-start gap-3">
               <div className="shrink-0 mt-0.5 text-[var(--accent)]">
                 <Sparkles className="h-5 w-5" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-[var(--fg)]">
-                  Add what you need to get personalized matches.
+                  {!hasOffers && !hasNeeds
+                    ? "Welcome to Loop. Set up what you do and what you need."
+                    : !hasOffers
+                    ? "Add what you can offer to other founders."
+                    : "Tell Loop what you need so it can match you."}
                 </p>
                 <p className="text-sm text-[var(--fg-muted)] mt-1">
-                  Right now you&apos;re seeing the latest posts. Once you list 1–3 needs and offers, the feed re-ranks to surface what fits you.
+                  {!hasOffers && !hasNeeds
+                    ? "1-3 things you can deliver, 1-3 things you need. Loop matches you against every other founder in under 24 hours."
+                    : !hasOffers
+                    ? "Reciprocity required — every founder on Loop has to give as well as get. List 1-3 offers to unlock matches."
+                    : "Without a need, the matcher has nothing to rank against. List 1-3 things you need to start seeing matches."}
                 </p>
-                <Link
-                  href="/onboarding"
-                  className="press-shrink mt-3 inline-flex items-center rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
-                >
-                  Finish profile
-                </Link>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href="/onboarding"
+                    className="press-shrink inline-flex items-center rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110"
+                  >
+                    Finish setup
+                  </Link>
+                  <Link
+                    href="/discover"
+                    className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+                  >
+                    Browse founders
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
