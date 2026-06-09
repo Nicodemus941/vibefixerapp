@@ -59,10 +59,93 @@ body {
 }
 
 .gold-text {
-  background: linear-gradient(180deg, var(--color-gold2), var(--color-gold));
+  background: linear-gradient(100deg, #e8b73e 0%, #f6d27a 40%, #fff6df 50%, #f6d27a 60%, #e8b73e 100%);
+  background-size: 220% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: goldShimmer 5s linear infinite;
+}
+
+@keyframes goldShimmer {
+  to {
+    background-position: 220% center;
+  }
+}
+
+/* Word-by-word headline reveal */
+.word {
+  display: inline-block;
+  margin-right: 0.26em;
+  opacity: 0;
+  animation: wordUp 0.62s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--wi, 0) * 65ms);
+}
+@keyframes wordUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) rotateX(28deg);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+/* Staggered element reveal */
+.reveal {
+  opacity: 0;
+  animation: fadeUp 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.reveal-1 { animation-delay: 0.45s; }
+.reveal-2 { animation-delay: 0.62s; }
+.reveal-3 { animation-delay: 0.78s; }
+
+/* Animated page transition */
+.page-anim {
+  animation: pageIn 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.994);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+/* Logo mark draw-in */
+@keyframes drawArrow {
+  from { stroke-dashoffset: 64; }
+  to { stroke-dashoffset: 0; }
+}
+.logo-arrow {
+  stroke-dasharray: 64;
+  animation: drawArrow 0.9s ease 0.15s both;
+}
+@keyframes logoPop {
+  0% { opacity: 0; transform: scale(0.6) rotate(-8deg); }
+  100% { opacity: 1; transform: none; }
+}
+.logo-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: logoPop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word, .reveal, .page-anim, .logo-arrow, .logo-pop, .gold-text, .fade-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
 }
 
 .brand-gradient {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { Words } from "@/components/Words";
 import {
   Home,
   Car,
@@ -86,26 +87,27 @@ function Hero() {
   return (
     <section className="relative overflow-hidden">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 lg:grid-cols-2 lg:py-20">
-        <div className="fade-up">
-          <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+        <div>
+          <span className="reveal inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
             <Sparkles size={13} /> Trusted since 2018 · Faith-Driven. Results-Focused.
           </span>
-          <h1 className="mt-5 text-4xl font-black leading-[1.03] text-white sm:text-5xl lg:text-[3.4rem]">
-            Get the <span className="gold-text">negative items removed</span> and finally qualify for the
-            home, car, or funding you deserve.
+          <h1 className="mt-5 text-4xl font-black leading-[1.08] text-white sm:text-5xl lg:text-[3.4rem]">
+            <Words text="Get the" start={0} />
+            <Words text="negative items removed" start={2} className="gold-text" />
+            <Words text="and finally qualify for the home, car, or funding you deserve." start={5} />
           </h1>
-          <p className="mt-5 max-w-xl text-lg text-slate-300">
+          <p className="reveal reveal-1 mt-5 max-w-xl text-lg text-slate-300">
             We challenge the collections, charge-offs, and late payments dragging your score down — with a
             custom dispute strategy built for <b className="text-white">maximum deletions</b>. Most clients see
             movement in <b className="text-sky-300">45–90 days</b>.
           </p>
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="reveal reveal-2 mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             <CTA />
             <a href="tel:6893256649" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-line)] px-6 py-4 font-semibold text-white hover:bg-white/5">
               <Phone size={17} className="text-sky-400" /> Talk to me 1st
             </a>
           </div>
-          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="reveal reveal-3 mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
               href="/dashboard"
               className="group inline-flex items-center justify-center gap-2 rounded-xl brand-gradient px-6 py-3 font-semibold text-white glow"

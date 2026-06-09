@@ -119,7 +119,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         </header>
-        <main className="px-4 py-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="px-4 py-6 lg:px-8 lg:py-8">
+          <div key={pathname} className="page-anim">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
