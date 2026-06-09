@@ -32,6 +32,7 @@ export default function Landing() {
       <Problem />
       <Transformation />
       <Offer />
+      <LeadForm />
       <HowItWorks />
       <Proof />
       <Goals />
@@ -43,7 +44,7 @@ export default function Landing() {
   );
 }
 
-function CTA({ children = "Get My FREE Credit Analysis", className = "", href = "#start" }: { children?: React.ReactNode; className?: string; href?: string }) {
+function CTA({ children = "Get My FREE Credit Analysis", className = "", href = "#apply" }: { children?: React.ReactNode; className?: string; href?: string }) {
   return (
     <Link
       href={href}
@@ -268,6 +269,9 @@ function Offer() {
         </div>
 
         <div className="card glow flex flex-col justify-center p-7 text-center">
+          <div className="mx-auto mb-4 inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-[11px] font-semibold text-amber-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 live-dot" /> Limited new-client spots this month
+          </div>
           <div className="text-sm font-semibold uppercase tracking-wide text-amber-300">Start today for</div>
           <div className="mt-1 text-5xl font-black text-white">$0</div>
           <div className="text-sm text-slate-400">Free credit analysis — no obligation</div>
@@ -279,6 +283,122 @@ function Offer() {
           <a href="tel:6893256649" className="mt-3 text-sm font-semibold text-sky-300 hover:underline">
             or call (689) 325-6649
           </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LeadForm() {
+  const goals = ["Buy a Home", "Buy a Car", "Rent an Apartment", "Start a Business", "Business Funding", "Just rebuild my score"];
+  const [form, setForm] = useState({ name: "", phone: "", email: "", goal: "Buy a Home" });
+  const [sent, setSent] = useState(false);
+  const ready = form.name.trim() && form.phone.trim();
+
+  return (
+    <section id="apply" className="scroll-mt-20 border-y border-[var(--color-line)] bg-[var(--color-panel)]/40">
+      <div className="mx-auto grid max-w-5xl items-center gap-8 px-5 py-16 lg:grid-cols-2">
+        <div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+            <Sparkles size={13} /> 100% Free · No obligation
+          </span>
+          <h2 className="mt-4 text-3xl font-black text-white sm:text-4xl">
+            Get your <span className="gold-text">free credit analysis</span>
+          </h2>
+          <p className="mt-3 text-slate-300">
+            Tell us where you want to go and we'll pull together a no-cost breakdown of what's hurting your
+            score — and the exact plan to fix it. Takes 30 seconds.
+          </p>
+          <ul className="mt-5 space-y-2">
+            {["See every negative item that can be challenged", "A custom plan mapped to your goal", "No pressure, no contracts — just answers"].map((t) => (
+              <li key={t} className="flex items-center gap-2 text-sm text-slate-200">
+                <Check size={16} className="text-emerald-400" /> {t}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 flex items-center gap-2 text-sm text-slate-400">
+            <Lock size={15} className="text-sky-400" /> Your information is private &amp; secure.
+          </div>
+        </div>
+
+        <div className="card glow p-6">
+          {sent ? (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <div className="grid h-14 w-14 place-items-center rounded-full bg-emerald-500/15 text-emerald-400">
+                <Check size={28} />
+              </div>
+              <h3 className="text-xl font-black text-white">You're in, {form.name.split(" ")[0] || "friend"}! 🎉</h3>
+              <p className="max-w-xs text-sm text-slate-300">
+                Jonathan will personally reach out at <b className="text-white">{form.phone}</b> with your free
+                analysis. Want answers faster?
+              </p>
+              <a href="tel:6893256649" className="mt-1 inline-flex items-center gap-2 rounded-xl gold-gradient px-5 py-3 text-sm font-extrabold text-black">
+                <Phone size={16} /> Call (689) 325-6649 now
+              </a>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (ready) setSent(true);
+              }}
+              className="space-y-3"
+            >
+              <div>
+                <label className="mb-1 block text-xs text-slate-400">Full name</label>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Your name"
+                  className="w-full rounded-lg border border-[var(--color-line)] bg-white/[0.03] px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs text-slate-400">Phone</label>
+                  <input
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    placeholder="(555) 555-5555"
+                    inputMode="tel"
+                    className="w-full rounded-lg border border-[var(--color-line)] bg-white/[0.03] px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-slate-400">Email <span className="text-slate-600">(optional)</span></label>
+                  <input
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="you@email.com"
+                    inputMode="email"
+                    className="w-full rounded-lg border border-[var(--color-line)] bg-white/[0.03] px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-sky-500/50 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-slate-400">What's your #1 goal?</label>
+                <select
+                  value={form.goal}
+                  onChange={(e) => setForm({ ...form, goal: e.target.value })}
+                  className="w-full rounded-lg border border-[var(--color-line)] bg-white/[0.03] px-3 py-2.5 text-sm text-white focus:border-sky-500/50 focus:outline-none"
+                >
+                  {goals.map((g) => (
+                    <option key={g} value={g} className="bg-[var(--color-panel)]">{g}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                disabled={!ready}
+                className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl gold-gradient px-6 py-3.5 text-base font-extrabold text-black transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Get My FREE Analysis <ArrowRight size={18} />
+              </button>
+              <p className="text-center text-[11px] text-slate-500">
+                By submitting you agree to be contacted about your credit. No spam, ever.
+              </p>
+            </form>
+          )}
         </div>
       </div>
     </section>
