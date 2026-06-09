@@ -21,6 +21,12 @@ import {
   Zap,
   FileSearch,
   Target,
+  LayoutDashboard,
+  Users,
+  ScrollText,
+  MessagesSquare,
+  Workflow,
+  UserCircle,
 } from "lucide-react";
 
 export default function Landing() {
@@ -34,6 +40,7 @@ export default function Landing() {
       <Offer />
       <LeadForm />
       <HowItWorks />
+      <PlatformDemo />
       <Proof />
       <Goals />
       <Guarantee />
@@ -429,6 +436,62 @@ function HowItWorks() {
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function PlatformDemo() {
+  const demos = [
+    { href: "/dashboard", icon: LayoutDashboard, title: "Owner Dashboard", desc: "KPIs, pipeline, today's priorities, and every client at a glance." },
+    { href: "/analysis", icon: FileSearch, title: "AI Credit Analysis", desc: "Upload a report → AI breakdown + 90-day projection → email it." },
+    { href: "/disputes", icon: ScrollText, title: "Atomic Dispute Engine", desc: "Pick items + strategy → generate custom dispute letters." },
+    { href: "/gameplan", icon: Target, title: "Goal Game Plan", desc: "6–12 month roadmaps for home, car, business & funding." },
+    { href: "/clients", icon: Users, title: "Client CRM", desc: "Profiles, monitoring logins, rounds, docs, notes, payments." },
+    { href: "/communications", icon: MessagesSquare, title: "Text & Email", desc: "Message clients by SMS and email with quick templates." },
+    { href: "/automations", icon: Workflow, title: "Automations", desc: "Onboarding, follow-ups, and 30-day reminders on autopilot." },
+    { href: "/portal", icon: UserCircle, title: "Client Portal", desc: "What your client sees: score, progress, and wins in real time." },
+  ];
+  return (
+    <section className="mx-auto max-w-6xl px-5 py-16">
+      <div className="text-center">
+        <span className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-300">
+          <Sparkles size={13} /> Live interactive demo
+        </span>
+        <h2 className="mt-4 text-3xl font-black text-white sm:text-4xl">
+          See the platform in action
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-slate-300">
+          This isn't a mockup — click any tool below to explore the actual software powered by sample clients.
+        </p>
+      </div>
+
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {demos.map((d) => (
+          <Link
+            key={d.href}
+            href={d.href}
+            className="card group flex flex-col p-5 transition hover:glow"
+          >
+            <div className="mb-3 grid h-11 w-11 place-items-center rounded-xl brand-gradient text-white">
+              <d.icon size={20} />
+            </div>
+            <div className="font-bold text-white">{d.title}</div>
+            <p className="mt-1 flex-1 text-sm text-slate-400">{d.desc}</p>
+            <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-sky-300">
+              Open demo <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
+            </span>
+          </Link>
+        ))}
+      </div>
+
+      <div className="mt-8 text-center">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 rounded-xl brand-gradient px-6 py-3.5 font-extrabold text-white glow"
+        >
+          <LayoutDashboard size={18} /> Open the full Command Center
+        </Link>
       </div>
     </section>
   );
