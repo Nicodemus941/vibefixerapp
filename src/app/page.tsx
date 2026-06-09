@@ -105,6 +105,20 @@ function Hero() {
               <Phone size={17} className="text-sky-400" /> Talk to me 1st
             </a>
           </div>
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/dashboard"
+              className="group inline-flex items-center justify-center gap-2 rounded-xl brand-gradient px-6 py-3 font-semibold text-white glow"
+            >
+              Enter Dashboard <ArrowRight size={17} className="transition group-hover:translate-x-0.5" />
+            </Link>
+            <Link
+              href="/portal"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-line)] px-6 py-3 font-semibold text-slate-200 hover:bg-white/5"
+            >
+              View Client Portal
+            </Link>
+          </div>
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
             <span className="flex items-center gap-1.5"><ShieldCheck size={15} className="text-emerald-400" /> No contracts</span>
             <span className="flex items-center gap-1.5"><Lock size={15} className="text-sky-400" /> 100% confidential</span>
