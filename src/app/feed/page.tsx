@@ -2,14 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import {
-  fetchFeed,
-  fetchTrendingTags,
-  fetchReactionState,
-  fetchCommentSummaries,
-} from "./actions";
+import { fetchFeed, fetchTrendingTags } from "./actions";
+import { hydrateFeed } from "./data";
+import type { FeedView } from "@/lib/feed-types";
 import { Composer } from "./_components/Composer";
-import { PostCard } from "./_components/PostCard";
+import { FeedItem } from "./_components/PostCard";
 import { FeedHeader } from "./_components/FeedHeader";
 import { ReciprocityBanner } from "./_components/ReciprocityBanner";
 import { LiveFeedBanner } from "./_components/LiveFeedBanner";
@@ -28,8 +25,13 @@ export default async function FeedPage({
   const tag =
     typeof sp.tag === "string" ? sp.tag.toLowerCase().replace(/^#/, "") : null;
   const viewParam = typeof sp.view === "string" ? sp.view : null;
-  const view: "personalized" | "recent" =
-    viewParam === "everyone" || viewParam === "recent" ? "recent" : "personalized";
+  // "everyone" is the old name for Recent; keep old links working.
+  const view: FeedView =
+    viewParam === "everyone" || viewParam === "recent"
+      ? "recent"
+      : viewParam === "following"
+      ? "following"
+      : "personalized";
 
   const supabase = await createClient();
   const {
@@ -65,11 +67,7 @@ export default async function FeedPage({
     fetchTrendingTags(),
   ]);
 
-  const postIds = posts.map((p) => p.id);
-  const [reactionState, commentSummaries] = await Promise.all([
-    fetchReactionState(postIds),
-    fetchCommentSummaries(postIds),
-  ]);
+  const bundle = await hydrateFeed(supabase, user.id, posts);
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
@@ -94,6 +92,8 @@ export default async function FeedPage({
                 ? "Needs, offers, and wins tagged this."
                 : view === "recent"
                 ? "Everything founders are asking for, offering, and shipping. Newest first."
+                : view === "following"
+                ? "Posts and reposts from founders you follow. Newest first."
                 : onboardingDone
                 ? "Needs, offers, and wins matched to what you said you need."
                 : "Needs, offers, and wins from across Loop."}
@@ -109,16 +109,16 @@ export default async function FeedPage({
           )}
         </div>
 
-        {/* For-you / Everyone tab toggle */}
+        {/* For you / Following / Recent */}
         {!tag && (
-          <div
-            role="tablist"
+          <nav
             aria-label="Feed view"
             className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-1)] p-1"
           >
             <FeedViewTab href="/feed" active={view === "personalized"} label="For you" />
-            <FeedViewTab href="/feed?view=everyone" active={view === "recent"} label="Everyone" />
-          </div>
+            <FeedViewTab href="/feed?view=following" active={view === "following"} label="Following" />
+            <FeedViewTab href="/feed?view=recent" active={view === "recent"} label="Recent" />
+          </nav>
         )}
 
         {/* Reciprocity status — warned/suspended */}
@@ -147,10 +147,10 @@ export default async function FeedPage({
                 </p>
                 <p className="text-sm text-[var(--fg-muted)] mt-1">
                   {!hasOffers && !hasNeeds
-                    ? "1-3 things you can deliver, 1-3 things you need. Loop matches you against every other founder in under 24 hours."
+                    ? "1 to 3 things you can deliver, 1 to 3 things you need. Loop matches you against every other founder in under 24 hours."
                     : !hasOffers
-                    ? "Reciprocity required — every founder on Loop has to give as well as get. List 1-3 offers to unlock matches."
-                    : "Without a need, the matcher has nothing to rank against. List 1-3 things you need to start seeing matches."}
+                    ? "Reciprocity required. Every founder on Loop has to give as well as get. List 1 to 3 offers to unlock matches."
+                    : "Without a need, the matcher has nothing to rank against. List 1 to 3 things you need to start seeing matches."}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Link
@@ -178,7 +178,7 @@ export default async function FeedPage({
         />
 
         {/* Composer — hidden when suspended */}
-        {!isSuspended && <Composer displayName={displayName} />}
+        {!isSuspended && <Composer displayName={displayName} userId={user.id} />}
 
         {/* Trending hashtags */}
         {trending.length > 0 && (
@@ -213,22 +213,18 @@ export default async function FeedPage({
               Couldn&apos;t load the feed: {feedError}
             </p>
           )}
-          {!feedError && posts.length === 0 && <EmptyState tag={tag} />}
-          {posts.map((p, idx) => (
-            <div key={p.id}>
-              <PostCard
-                post={p}
-                viewerId={user.id}
-                viewerRole={role}
-                reactionState={reactionState[p.id]}
-                commentSummary={commentSummaries[p.id]}
-              />
-              {/* Inject one sponsored slot ~5 posts in, when feed is dense
-                  enough to make ads feel native. SponsoredCard renders
-                  null if there's no eligible ad. */}
-              {idx === 4 && <div className="mt-4"><SponsoredCard /></div>}
-            </div>
-          ))}
+          {!feedError && posts.length === 0 && <EmptyState tag={tag} view={view} />}
+          <div className="space-y-4">
+            {posts.map((p, idx) => (
+              <div key={p.id}>
+                <FeedItem post={p} bundle={bundle} viewerId={user.id} viewerRole={role} />
+                {/* Inject one sponsored slot ~5 posts in, when feed is dense
+                    enough to make ads feel native. SponsoredCard renders
+                    null if there's no eligible ad. */}
+                {idx === 4 && <div className="mt-4"><SponsoredCard /></div>}
+              </div>
+            ))}
+          </div>
         </section>
       </main>
     </div>
@@ -247,10 +243,9 @@ function FeedViewTab({
   return (
     <Link
       href={href}
-      role="tab"
-      aria-selected={active}
+      aria-current={active ? "page" : undefined}
       className={[
-        "press-shrink inline-flex items-center justify-center h-8 px-4 rounded-full text-xs font-medium transition-colors",
+        "press-shrink inline-flex items-center justify-center h-8 px-3 xs:px-4 rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]",
         active
           ? "bg-[var(--accent)] text-[var(--bg)]"
           : "text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.04]",
@@ -261,14 +256,24 @@ function FeedViewTab({
   );
 }
 
-function EmptyState({ tag }: { tag: string | null }) {
+function EmptyState({ tag, view }: { tag: string | null; view: FeedView }) {
   return (
     <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-8 text-center">
       <p className="text-[var(--fg-muted)]">
         {tag
           ? `No needs, offers, or wins tagged #${tag} yet.`
+          : view === "following"
+          ? "Nothing from people you follow yet. Follow founders from their profile or Browse."
           : "Quiet right now. Post a need, an offer, or a win to get things moving."}
       </p>
+      {view === "following" && !tag && (
+        <Link
+          href="/discover"
+          className="press-shrink mt-3 inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+        >
+          Browse founders
+        </Link>
+      )}
     </div>
   );
 }

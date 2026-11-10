@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Briefcase, Compass, ExternalLink, Flag, Gavel, LogOut, Megaphone, Settings, Trophy, User as UserIcon, Users } from "lucide-react";
+import { Bookmark, Briefcase, Compass, ExternalLink, Flag, Gavel, LogOut, Megaphone, Settings, Trophy, User as UserIcon, Users } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import { signOut } from "../../auth/actions";
 
@@ -87,6 +87,9 @@ export function HeaderAvatarMenu({
           </MenuLink>
           <MenuLink href={`/c/${userId}`} icon={<ExternalLink className="h-4 w-4" />} onSelect={() => setOpen(false)}>
             My public card
+          </MenuLink>
+          <MenuLink href="/saved" icon={<Bookmark className="h-4 w-4" />} onSelect={() => setOpen(false)}>
+            Saved posts
           </MenuLink>
           <MenuLink href="/discover" icon={<Compass className="h-4 w-4" />} onSelect={() => setOpen(false)}>
             Discover founders

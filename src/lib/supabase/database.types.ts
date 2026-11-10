@@ -905,6 +905,7 @@ export type Database = {
           body: string;
           created_at: string | null;
           id: string;
+          parent_comment_id: string | null;
           post_id: string;
           user_id: string;
         };
@@ -912,6 +913,7 @@ export type Database = {
           body: string;
           created_at?: string | null;
           id?: string;
+          parent_comment_id?: string | null;
           post_id: string;
           user_id: string;
         };
@@ -919,6 +921,7 @@ export type Database = {
           body?: string;
           created_at?: string | null;
           id?: string;
+          parent_comment_id?: string | null;
           post_id?: string;
           user_id?: string;
         };
@@ -991,32 +994,173 @@ export type Database = {
         Row: {
           body: string;
           created_at: string | null;
+          document: Json | null;
           embedding: string | null;
           group_id: string | null;
           hashtags: string[];
           id: string;
           kind: string;
+          link_preview: Json | null;
+          media: Json;
+          quoted_post_id: string | null;
+          repost_of_id: string | null;
           user_id: string;
         };
         Insert: {
           body: string;
           created_at?: string | null;
+          document?: Json | null;
           embedding?: string | null;
           group_id?: string | null;
           hashtags?: string[];
           id?: string;
           kind?: string;
+          link_preview?: Json | null;
+          media?: Json;
+          quoted_post_id?: string | null;
+          repost_of_id?: string | null;
           user_id: string;
         };
         Update: {
           body?: string;
           created_at?: string | null;
+          document?: Json | null;
           embedding?: string | null;
           group_id?: string | null;
           hashtags?: string[];
           id?: string;
           kind?: string;
+          link_preview?: Json | null;
+          media?: Json;
+          quoted_post_id?: string | null;
+          repost_of_id?: string | null;
           user_id?: string;
+        };
+        Relationships: [];
+      };
+      comment_likes: {
+        Row: {
+          comment_id: string;
+          created_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          comment_id: string;
+          created_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          comment_id?: string;
+          created_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      post_mentions: {
+        Row: {
+          author_id: string;
+          comment_id: string | null;
+          created_at: string | null;
+          id: string;
+          mentioned_user_id: string;
+          post_id: string;
+        };
+        Insert: {
+          author_id: string;
+          comment_id?: string | null;
+          created_at?: string | null;
+          id?: string;
+          mentioned_user_id: string;
+          post_id: string;
+        };
+        Update: {
+          author_id?: string;
+          comment_id?: string | null;
+          created_at?: string | null;
+          id?: string;
+          mentioned_user_id?: string;
+          post_id?: string;
+        };
+        Relationships: [];
+      };
+      post_saves: {
+        Row: {
+          created_at: string | null;
+          post_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          post_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          post_id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      post_polls: {
+        Row: {
+          created_at: string;
+          duration_days: number;
+          ends_at: string;
+          options: string[];
+          post_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          duration_days: number;
+          ends_at?: string;
+          options: string[];
+          post_id: string;
+        };
+        Update: {
+          created_at?: string;
+          duration_days?: number;
+          ends_at?: string;
+          options?: string[];
+          post_id?: string;
+        };
+        Relationships: [];
+      };
+      poll_votes: {
+        Row: {
+          created_at: string | null;
+          option_index: number;
+          post_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          option_index: number;
+          post_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          option_index?: number;
+          post_id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      post_impressions: {
+        Row: {
+          created_at: string | null;
+          post_id: string;
+          viewer_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          post_id: string;
+          viewer_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          post_id?: string;
+          viewer_id?: string;
         };
         Relationships: [];
       };
@@ -1214,7 +1358,12 @@ export type Database = {
     Functions: {
       enforce_reciprocity: { Args: Record<string, never>; Returns: undefined };
       feed_for_user: {
-        Args: { viewer_id: string; tag_filter?: string | null; limit_count?: number; view_mode?: "personalized" | "recent" };
+        Args: {
+          viewer_id: string;
+          tag_filter?: string | null;
+          limit_count?: number;
+          view_mode?: "personalized" | "recent" | "following";
+        };
         Returns: Array<{
           id: string;
           user_id: string;
@@ -1227,6 +1376,48 @@ export type Database = {
           author_company_name: string | null;
           author_industry: string | null;
           author_avatar_url: string | null;
+          media: Json;
+          document: Json | null;
+          link_preview: Json | null;
+          repost_of_id: string | null;
+          quoted_post_id: string | null;
+        }>;
+      };
+      blocked_with_viewer: {
+        Args: { other: string };
+        Returns: boolean;
+      };
+      viewer_is_active: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      mention_candidates: {
+        Args: { q: string; limit_count?: number };
+        Returns: Array<{
+          id: string;
+          display_name: string;
+          company_name: string | null;
+          avatar_url: string | null;
+        }>;
+      };
+      post_repost_counts: {
+        Args: { post_ids: string[] };
+        Returns: Array<{ post_id: string; reposts: number }>;
+      };
+      post_view_counts: {
+        Args: { post_ids: string[] };
+        Returns: Array<{ post_id: string; views: number }>;
+      };
+      poll_results: {
+        Args: { post_ids: string[] };
+        Returns: Array<{
+          post_id: string;
+          options: string[];
+          ends_at: string;
+          my_vote: number | null;
+          total_votes: number;
+          counts: number[] | null;
+          show_results: boolean;
         }>;
       };
       trending_hashtags: {
