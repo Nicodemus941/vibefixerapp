@@ -81,7 +81,7 @@ export async function FeedHeader({
           </nav>
         </div>
       </header>
-      <MobileTabBar />
+      <MobileTabBar userId={user?.id} />
     </>
   );
 }

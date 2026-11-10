@@ -168,6 +168,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      org_follows: {
+        Row: {
+          created_at: string | null;
+          follower_id: string;
+          organization_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          follower_id: string;
+          organization_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          follower_id?: string;
+          organization_id?: string;
+        };
+        Relationships: [];
+      };
       organizations: {
         Row: {
           created_at: string | null;
@@ -1271,6 +1289,10 @@ export type Database = {
       };
       viewer_connections_at_org: {
         Args: { viewer_id: string; target_org: string };
+        Returns: number;
+      };
+      org_follower_count: {
+        Args: { target_org: string };
         Returns: number;
       };
       pick_ad_for_viewer: {

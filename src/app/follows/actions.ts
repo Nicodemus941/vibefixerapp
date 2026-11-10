@@ -108,3 +108,77 @@ export async function viewerConnectionsAtOrg(orgId: string): Promise<number> {
   if (error) return 0;
   return Number(data ?? 0);
 }
+
+// ============================================
+// Org follows (separate graph from people follows)
+// ============================================
+
+export type OrgFollowState = {
+  isFollowing: boolean;
+  followerCount: number;
+};
+
+export async function fetchOrgFollowState(orgId: string): Promise<OrgFollowState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [{ data }, { data: countData }] = await Promise.all([
+    user
+      ? supabase
+          .from("org_follows")
+          .select("follower_id")
+          .eq("follower_id", user.id)
+          .eq("organization_id", orgId)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase.rpc("org_follower_count", { target_org: orgId }),
+  ]);
+
+  return {
+    isFollowing: Boolean(data),
+    followerCount: Number(countData ?? 0),
+  };
+}
+
+export async function followOrg(orgId: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "not signed in" };
+
+  const { error } = await supabase
+    .from("org_follows")
+    .insert({ follower_id: user.id, organization_id: orgId });
+  if (error && !error.message.toLowerCase().includes("duplicate")) {
+    return { error: error.message };
+  }
+  await logEvent("org_followed", user.id, { organization_id: orgId });
+
+  const { data: org } = await supabase
+    .from("organizations").select("slug").eq("id", orgId).maybeSingle();
+  if (org?.slug) revalidatePath(`/o/${org.slug}`);
+  return {};
+}
+
+export async function unfollowOrg(orgId: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "not signed in" };
+
+  const { error } = await supabase
+    .from("org_follows")
+    .delete()
+    .eq("follower_id", user.id)
+    .eq("organization_id", orgId);
+  if (error) return { error: error.message };
+
+  const { data: org } = await supabase
+    .from("organizations").select("slug").eq("id", orgId).maybeSingle();
+  if (org?.slug) revalidatePath(`/o/${org.slug}`);
+  return {};
+}
