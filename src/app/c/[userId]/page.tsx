@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Briefcase, MessageSquare, Star } from "lucide-react";
+import { ArrowRight, Award, Briefcase, Link2, MessageSquare, Star, Target, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/Avatar";
 import { CoverBand } from "@/components/CoverBand";
@@ -11,6 +11,19 @@ import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PublicHeader } from "@/components/PublicHeader";
 import { ShareButton } from "@/components/ShareButton";
 import { fetchPublicProvider } from "@/app/discover/actions";
+import {
+  eitherBlocked,
+  readCertifications,
+  readEducation,
+  readShowcase,
+} from "@/lib/profile-showcase-data";
+import {
+  AchievementsList,
+  CredentialsList,
+  FeaturedCards,
+  GoalsList,
+  LinkifiedText,
+} from "@/components/ProfileShowcase";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +84,7 @@ export default async function PublicCardPage({
   if (!card) notFound();
 
   const supabase = await createClient();
+  const admin = createAdminClient();
   const [
     {
       data: { user },
@@ -78,8 +92,20 @@ export default async function PublicCardPage({
     coverUrl,
   ] = await Promise.all([
     supabase.auth.getUser(),
-    fetchCoverUrl(createAdminClient(), "profiles", userId),
+    fetchCoverUrl(admin, "profiles", userId),
   ]);
+
+  // The card is public, so its sections are read with the service role
+  // (like offers above). For a signed in viewer, apply the same two way
+  // block rule the RLS policies use on /u.
+  const hidden = user ? await eitherBlocked(admin, user.id, userId) : false;
+  const [showcase, education, certifications] = hidden
+    ? [{ featured: [], achievements: [], goals: [] }, [], []]
+    : await Promise.all([
+        readShowcase(admin, userId),
+        readEducation(admin, userId),
+        readCertifications(admin, userId),
+      ]);
   const { data: viewerProfile } = user
     ? await supabase
         .from("profiles")
@@ -173,9 +199,10 @@ export default async function PublicCardPage({
             </div>
           </div>
           {card.bio && (
-            <p className="mt-4 text-[15px] text-[var(--fg)] leading-relaxed whitespace-pre-wrap break-words">
-              {card.bio}
-            </p>
+            <LinkifiedText
+              text={card.bio}
+              className="mt-4 text-[15px] text-[var(--fg)] leading-relaxed whitespace-pre-wrap break-words"
+            />
           )}
           <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
             {user ? (
@@ -205,6 +232,28 @@ export default async function PublicCardPage({
           </div>
         </section>
 
+        {showcase.featured.length > 0 && (
+          <section aria-labelledby="card-featured" className="space-y-3">
+            <h2 id="card-featured" className="eyebrow flex items-center gap-2 px-1">
+              <Link2 className="h-3.5 w-3.5" aria-hidden />
+              Featured
+            </h2>
+            <FeaturedCards items={showcase.featured} compact />
+          </section>
+        )}
+
+        {showcase.goals.length > 0 && (
+          <section aria-labelledby="card-goals" className="space-y-3">
+            <h2 id="card-goals" className="eyebrow flex items-center gap-2 px-1">
+              <Target className="h-3.5 w-3.5" aria-hidden />
+              Working toward
+            </h2>
+            <div className="surface-card p-4 sm:p-5">
+              <GoalsList items={showcase.goals} />
+            </div>
+          </section>
+        )}
+
         {card.offers.length > 0 && (
           <section className="space-y-3">
             <h2 className="eyebrow flex items-center gap-2 px-1">
@@ -226,6 +275,30 @@ export default async function PublicCardPage({
                 </li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {showcase.achievements.length > 0 && (
+          <section aria-labelledby="card-achievements" className="space-y-3">
+            <h2 id="card-achievements" className="eyebrow flex items-center gap-2 px-1">
+              <Trophy className="h-3.5 w-3.5" aria-hidden />
+              Achievements
+            </h2>
+            <div className="surface-card p-4 sm:p-5">
+              <AchievementsList items={showcase.achievements} />
+            </div>
+          </section>
+        )}
+
+        {(education.length > 0 || certifications.length > 0) && (
+          <section aria-labelledby="card-credentials" className="space-y-3">
+            <h2 id="card-credentials" className="eyebrow flex items-center gap-2 px-1">
+              <Award className="h-3.5 w-3.5" aria-hidden />
+              Education and certifications
+            </h2>
+            <div className="surface-card p-4 sm:p-5">
+              <CredentialsList education={education} certifications={certifications} />
+            </div>
           </section>
         )}
 

@@ -59,8 +59,13 @@ export function ProfileForm({ initial }: { initial: ProfileFormPayload }) {
           rows={3}
           disabled={pending}
           placeholder="One sentence on what you do."
+          aria-describedby="bio-hint"
           className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--surface-2)] px-3.5 py-2 text-sm text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
         />
+        <span id="bio-hint" className="mt-1 block text-xs text-[var(--fg-muted)]">
+          Links that start with http, https or www become clickable on your profile.{" "}
+          <span className="num">{form.bio.length}</span> of 500 characters.
+        </span>
       </Field>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Company">
