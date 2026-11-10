@@ -23,6 +23,8 @@ export type FeedPost = {
   link_preview?: LinkPreview | null;
   repost_of_id?: string | null;
   quoted_post_id?: string | null;
+  /** Why "For you" placed it: 'can_help' | 'fits_needs' | 'following'. */
+  rank_reason?: string | null;
 };
 
 export type ReactionState = {

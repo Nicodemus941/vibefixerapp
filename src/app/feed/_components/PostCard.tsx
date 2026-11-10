@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { MessageSquare, Repeat2 } from "lucide-react";
-import { startDmAndRedirect } from "@/app/inbox/actions";
+import { HandHeart, MessageSquare, Repeat2 } from "lucide-react";
+import { offerHelpAndRedirect, startDmAndRedirect } from "@/app/inbox/actions";
+import { rankReasonLabel } from "@/lib/feed-rank";
+import { PRIMARY_BTN } from "./styles";
 import { Avatar } from "@/components/Avatar";
 import type { FeedBundle, FeedPost } from "@/lib/feed-types";
 import { emptyReactionCounts } from "@/lib/reactions";
@@ -24,6 +26,10 @@ function timeAgo(iso: string): string {
   const d = Math.round(h / 24);
   if (d < 7) return `${d}d`;
   return new Date(iso).toLocaleDateString();
+}
+
+function firstName(name: string): string {
+  return name.trim().split(/\s+/)[0] || name;
 }
 
 function kindLabel(kind: string): { label: string; color: string } | null {
@@ -190,12 +196,16 @@ export function PostCard({
           </div>
           <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)]">
             {post.author_industry}
-            {post.similarity !== null && (
+            {rankReasonLabel(post.rank_reason) && (
               <span
-                className="normal-case tracking-normal tabular-nums"
-                title="How closely this matches what you said you need"
+                className="normal-case tracking-normal"
+                title="Why this is near the top of For you"
               >
-                {post.author_industry ? " · " : ""}match {(post.similarity * 100).toFixed(0)}%
+                {post.author_industry ? " · " : ""}
+                {rankReasonLabel(post.rank_reason)}
+                {post.similarity !== null && (
+                  <span className="tabular-nums"> ({(post.similarity * 100).toFixed(0)}% match)</span>
+                )}
               </span>
             )}
           </p>
@@ -237,15 +247,19 @@ export function PostCard({
         allowRepost={allowRepost}
         views={null}
         quotePreview={<QuotedPost post={post} />}
-        messageSlot={
-          !isOwn ? (
-            <form action={startDmAndRedirect.bind(null, post.user_id, "post")} className="flex flex-1">
-              <button
-                type="submit"
-                className={`press-shrink inline-flex min-w-0 flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 rounded-lg px-1 sm:px-2 py-1.5 sm:py-2 text-[11px] sm:text-sm font-medium text-[var(--fg-muted)] hover:bg-white/[0.04] hover:text-[var(--fg)] transition-colors ${FOCUS}`}
-              >
-                <MessageSquare className="h-4 w-4" aria-hidden />
-                Message
+        primarySlot={
+          isOwn ? undefined : post.kind === "need" ? (
+            <form action={offerHelpAndRedirect.bind(null, post.id)}>
+              <button type="submit" className={PRIMARY_BTN}>
+                <HandHeart className="h-4 w-4" aria-hidden />
+                I can help
+              </button>
+            </form>
+          ) : post.kind === "offer" ? (
+            <form action={startDmAndRedirect.bind(null, post.user_id, "post")}>
+              <button type="submit" className={`${PRIMARY_BTN} max-w-full`}>
+                <MessageSquare className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="truncate">Message {firstName(post.author_display_name)}</span>
               </button>
             </form>
           ) : undefined

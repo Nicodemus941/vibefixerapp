@@ -46,6 +46,7 @@ type PostRowLike = {
   repost_of_id?: string | null;
   quoted_post_id?: string | null;
   similarity?: number | null;
+  rank_reason?: string | null;
   author_display_name?: string;
   author_company_name?: string | null;
   author_industry?: string | null;
@@ -78,6 +79,7 @@ export function toFeedPost(
     link_preview: asPreview(row.link_preview),
     repost_of_id: row.repost_of_id ?? null,
     quoted_post_id: row.quoted_post_id ?? null,
+    rank_reason: row.rank_reason ?? null,
   };
 }
 

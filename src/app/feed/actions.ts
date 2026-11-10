@@ -19,6 +19,7 @@ import { POST_MEDIA_BUCKET, sanitizeDocument, sanitizeMedia } from "@/lib/post-m
 import { isReactionKind, type ReactionKind } from "@/lib/reactions";
 import type { FeedPost, FeedView } from "@/lib/feed-types";
 import { toFeedPost } from "./data";
+import { compareFeedRank } from "@/lib/feed-rank";
 
 export type {
   FeedPost,
@@ -331,6 +332,10 @@ export async function fetchFeed(opts: {
     seen.add(key);
     posts.push(toFeedPost(row));
   }
+  // The database already orders "For you" by help first, then people you
+  // follow, then recency. Re-applying the same stable order here keeps the
+  // rule in one tested place (src/lib/feed-rank.ts) if the SQL drifts.
+  if ((opts.view ?? "personalized") === "personalized") posts.sort(compareFeedRank);
   return { posts };
 }
 

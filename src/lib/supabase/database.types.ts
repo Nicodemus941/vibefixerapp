@@ -1555,6 +1555,7 @@ export type Database = {
           link_preview: Json | null;
           repost_of_id: string | null;
           quoted_post_id: string | null;
+          rank_reason: "can_help" | "fits_needs" | "following" | null;
         }>;
       };
       blocked_with_viewer: {
