@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "A founder-only marketplace where every member has to give as well as get. Post a need, get matched to another founder who delivers it, with escrow-protected contracts and reputation that comes from shipped work.",
+    "The free professional network for founders and builders. Share what you need and what you offer, get matched with people who deliver, and build a reputation from shipped work.",
   metadataBase: new URL("https://loopfounders.com"),
   alternates: { canonical: "/" },
   keywords: [
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     "hire freelance founder",
     "founder community",
     "alternative to upwork",
-    "freelance escrow contract",
+    "linkedin alternative for founders",
     "fractional cmo cfo",
     "startup services marketplace",
   ],
