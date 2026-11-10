@@ -1690,6 +1690,15 @@ export type Database = {
           person_role: string | null;
         }>;
       };
+      member_reply_stats: {
+        Args: { target: string };
+        Returns: Array<{
+          eligible: number;
+          replied: number;
+          reply_rate: number | null;
+          median_reply_seconds: number | null;
+        }>;
+      };
       pending_matches_for: {
         Args: { viewer_id: string };
         Returns: Array<{
