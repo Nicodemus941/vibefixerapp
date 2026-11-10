@@ -14,42 +14,44 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Loop — A reciprocal marketplace for founders",
+    default: "Loop · The free network for people who build",
     template: "%s",
   },
   description:
-    "The free professional network for founders and builders. Share what you need and what you offer, get matched with people who deliver, and build a reputation from shipped work.",
+    "Loop is a free professional network for founders and builders. Say what you need and what you offer, see your matches every day, and agree on the deal in your inbox. Loop takes no fee.",
   metadataBase: new URL("https://loopfounders.com"),
   alternates: { canonical: "/" },
   keywords: [
-    "founder marketplace",
-    "hire freelance founder",
-    "founder community",
-    "alternative to upwork",
+    "founder network",
     "linkedin alternative for founders",
+    "founder community",
+    "hire freelance founder",
     "fractional cmo cfo",
     "startup services marketplace",
   ],
-  icons: {
-    icon: [
-      { url: "/loop-mark.svg", type: "image/svg+xml" },
-    ],
-  },
+  // icon.png, apple-icon.png and manifest.ts in src/app are picked up
+  // automatically by the App Router file conventions.
   openGraph: {
-    title: "Loop — Stop networking. Start building.",
+    title: "Loop · Real work. Real deals. No noise.",
     description:
-      "The first platform where every founder must give AND receive. AI matches your needs to another founder's services in under 24 hours.",
+      "The free professional network for people who build. Say what you need and what you offer, and meet the people who fit.",
     url: "https://loopfounders.com",
     siteName: "Loop",
-    images: [{ url: "/og-image.svg", width: 1200, height: 630, alt: "Loop" }],
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Loop: Real work. Real deals. No noise. The free professional network for people who build.",
+      },
+    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Loop — Stop networking. Start building.",
-    description:
-      "Reciprocal founder marketplace. AI matches your needs to another founder's services in under 24 hours.",
-    images: ["/og-image.svg"],
+    title: "Loop · Real work. Real deals. No noise.",
+    description: "The free professional network for people who build.",
+    images: ["/og-image.png"],
   },
 };
 

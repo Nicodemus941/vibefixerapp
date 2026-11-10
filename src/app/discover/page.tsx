@@ -13,12 +13,12 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Discover founders · Loop",
   description:
-    "Browse founders, freelancers, and operators offering services on Loop — by industry and category. Hire, collaborate, or trade help.",
+    "Browse founders, freelancers, and operators offering services on Loop, by industry and category. Hire, collaborate, or trade help.",
   alternates: { canonical: "/discover" },
   openGraph: {
     title: "Discover founders · Loop",
     description:
-      "Browse founders offering services on Loop — by industry and category.",
+      "Browse founders offering services on Loop, by industry and category.",
     type: "website",
     url: "https://loopfounders.com/discover",
   },
