@@ -154,6 +154,19 @@ export async function deleteOwnAccount(): Promise<void> {
   await logEvent("account_deletion_started", user.id, {});
 
   const admin = createAdminClient();
+  // Storage objects don't cascade with the rows. Remove this member's
+  // uploaded Featured images (profile-media/{user_id}/...) first. Best
+  // effort: a missing bucket or an error must not block deletion.
+  try {
+    const { data: objects } = await admin.storage.from("profile-media").list(user.id, { limit: 1000 });
+    const paths = (objects ?? []).map((o) => `${user.id}/${o.name}`);
+    if (paths.length > 0) await admin.storage.from("profile-media").remove(paths);
+  } catch {
+    // ignore
+  }
+  // profile_featured, profile_achievements, profile_goals, education and
+  // certifications cascade from profiles(id), which cascades from the
+  // auth user deleted here.
   await admin.auth.admin.deleteUser(user.id);
 
   await supabase.auth.signOut();

@@ -14,6 +14,8 @@ import { DangerZone } from "./_components/DangerZone";
 import { StripeConnectSection } from "./_components/StripeConnectSection";
 import { PositionsEditor } from "./_components/PositionsEditor";
 import { CertificationsEditor, EducationEditor } from "./_components/ResumeEditor";
+import { AchievementsEditor, FeaturedEditor, GoalsEditor } from "./_components/ShowcaseEditors";
+import { readShowcase } from "@/lib/profile-showcase-data";
 import { fetchStripeConnectStatus } from "../stripe/actions";
 import { fetchUserPositions } from "../organizations/actions";
 import { fetchCertifications, fetchEducation } from "../resume/actions";
@@ -66,12 +68,13 @@ export default async function AccountPage({
     ...((profile?.notification_prefs as Partial<NotificationPrefs> | null) ?? {}),
   };
 
-  const [stripeStatus, positions, education, certifications, coverUrl] = await Promise.all([
+  const [stripeStatus, positions, education, certifications, coverUrl, showcase] = await Promise.all([
     fetchStripeConnectStatus(),
     fetchUserPositions(user.id),
     fetchEducation(user.id),
     fetchCertifications(user.id),
     fetchCoverUrl(supabase, "profiles", user.id),
+    readShowcase(supabase, user.id),
   ]);
 
   return (
@@ -87,7 +90,7 @@ export default async function AccountPage({
             Settings
           </h1>
           <p className="text-sm text-[var(--fg-muted)] mt-1">
-            Your profile, photo, cover, notifications and account controls.
+            Your profile, featured work, goals, photo, cover, notifications and account controls.
           </p>
         </div>
 
@@ -138,6 +141,26 @@ export default async function AccountPage({
           </p>
         </Section>
 
+        <Section
+          title="Featured"
+          id="featured"
+          intro="Links to your articles, publications, press, podcasts, videos and your own work. Shown near the top of your profile and on your public card."
+        >
+          <FeaturedEditor initial={showcase.featured} />
+        </Section>
+
+        <Section
+          title="Working toward"
+          id="goals"
+          intro="A few honest goals and how people could help. No progress bars, just what you are building toward."
+        >
+          <GoalsEditor initial={showcase.goals} />
+        </Section>
+
+        <Section title="Achievements" id="achievements">
+          <AchievementsEditor initial={showcase.achievements} />
+        </Section>
+
         <Section title="Experience" id="experience">
           <div className="mb-3 flex items-start gap-2 text-xs text-[var(--fg-muted)]">
             <Briefcase className="h-4 w-4 mt-0.5 shrink-0" />
@@ -154,11 +177,11 @@ export default async function AccountPage({
           />
         </Section>
 
-        <Section title="Education">
+        <Section title="Education" id="education">
           <EducationEditor initial={education} />
         </Section>
 
-        <Section title="Certifications / Accreditations">
+        <Section title="Certifications and accreditations" id="certifications">
           <CertificationsEditor initial={certifications} />
         </Section>
 
@@ -173,7 +196,8 @@ export default async function AccountPage({
         <Section title="Your data">
           <p className="text-xs text-[var(--fg-muted)] mb-3">
             Download a JSON file with every record Loop holds about you:
-            profile, posts, messages, matches, documents, reviews. Take it
+            profile, featured links, goals, achievements, posts, messages,
+            matches, documents, reviews. Take it
             with you anytime.
           </p>
           <a
@@ -201,10 +225,12 @@ export default async function AccountPage({
 function Section({
   title,
   id,
+  intro,
   children,
 }: {
   title: string;
   id?: string;
+  intro?: string;
   children: React.ReactNode;
 }) {
   const headingId = `settings-${title.toLowerCase().replace(/[^a-z]+/g, "-")}`;
@@ -213,6 +239,7 @@ function Section({
       <h2 id={headingId} className="text-[17px] font-semibold tracking-[-0.01em] px-1">
         {title}
       </h2>
+      {intro && <p className="px-1 text-xs text-[var(--fg-muted)]">{intro}</p>}
       <div className="surface-card p-5">
         {children}
       </div>

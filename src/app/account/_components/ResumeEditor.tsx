@@ -2,12 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Award, GraduationCap, Loader2, Plus, Trash2 } from "lucide-react";
+import { Award, ExternalLink, FileText, GraduationCap, Link2, Loader2, Plus, Trash2 } from "lucide-react";
 import {
   addCertification,
   addEducation,
   deleteCertification,
   deleteEducation,
+  updateCertificationLinks,
+  updateEducationLinks,
   type CertificationRow,
   type EducationRow,
 } from "@/app/resume/actions";
@@ -26,6 +28,9 @@ export function EducationEditor({ initial }: { initial: EducationRow[] }) {
               key={r.id}
               row={r}
               onDelete={() => setRows((prev) => prev.filter((x) => x.id !== r.id))}
+              onLinks={(proof_url, document_url) =>
+                setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, proof_url, document_url } : x)))
+              }
             />
           ))}
         </ul>
@@ -44,21 +49,23 @@ export function EducationEditor({ initial }: { initial: EducationRow[] }) {
           onCancel={() => setOpen(false)}
         />
       ) : (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-2 text-sm text-[var(--fg)] hover:bg-[var(--surface-2)]"
-        >
-          <Plus className="h-4 w-4" />
-          Add education
-        </button>
+        <AddButton onClick={() => setOpen(true)} label="Add education" />
       )}
     </div>
   );
 }
 
-function EducationItem({ row, onDelete }: { row: EducationRow; onDelete: () => void }) {
+function EducationItem({
+  row,
+  onDelete,
+  onLinks,
+}: {
+  row: EducationRow;
+  onDelete: () => void;
+  onLinks: (proof: string | null, doc: string | null) => void;
+}) {
   const [pending, startTransition] = useTransition();
+  const [editing, setEditing] = useState(false);
 
   function remove() {
     if (!confirm("Remove this education entry?")) return;
@@ -69,28 +76,43 @@ function EducationItem({ row, onDelete }: { row: EducationRow; onDelete: () => v
   }
 
   return (
-    <li className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3 flex items-start gap-3">
-      <GraduationCap className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[var(--fg)] break-words">{row.school_name}</p>
-        {(row.degree || row.field_of_study) && (
-          <p className="text-xs text-[var(--fg-muted)] break-words">
-            {[row.degree, row.field_of_study].filter(Boolean).join(", ")}
+    <li className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3">
+      <div className="flex items-start gap-3">
+        <GraduationCap className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" aria-hidden />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-[var(--fg)] break-words">{row.school_name}</p>
+          {(row.degree || row.field_of_study) && (
+            <p className="text-xs text-[var(--fg-muted)] break-words">
+              {[row.degree, row.field_of_study].filter(Boolean).join(", ")}
+            </p>
+          )}
+          <p className="text-xs text-[var(--fg-subtle)] mt-0.5 num">
+            {formatYearRange(row.start_year, row.end_year)}
           </p>
-        )}
-        <p className="font-mono text-[10px] text-[var(--fg-subtle)] mt-0.5 tabular-nums">
-          {formatYearRange(row.start_year, row.end_year)}
-        </p>
+          <ProofLinks proof={row.proof_url} doc={row.document_url} proofLabel="Proof" />
+        </div>
+        <div className="flex shrink-0 items-center">
+          <IconButton label={`Edit links for ${row.school_name}`} onClick={() => setEditing((v) => !v)} pressed={editing}>
+            <Link2 className="h-4 w-4" aria-hidden />
+          </IconButton>
+          <IconButton label={`Remove ${row.school_name}`} onClick={remove} disabled={pending} danger>
+            {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Trash2 className="h-4 w-4" aria-hidden />}
+          </IconButton>
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={remove}
-        disabled={pending}
-        aria-label="Remove education"
-        className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full text-[var(--fg-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--danger)]"
-      >
-        {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-      </button>
+      {editing && (
+        <LinksForm
+          proofLabel="Proof or verification link"
+          initialProof={row.proof_url ?? ""}
+          initialDoc={row.document_url ?? ""}
+          save={(proofUrl, documentUrl) => updateEducationLinks(row.id, { proofUrl, documentUrl })}
+          onSaved={(proof, doc) => {
+            onLinks(proof, doc);
+            setEditing(false);
+          }}
+          onCancel={() => setEditing(false)}
+        />
+      )}
     </li>
   );
 }
@@ -108,6 +130,8 @@ function EducationForm({
   const [startYear, setStartYear] = useState("");
   const [endYear, setEndYear] = useState("");
   const [description, setDescription] = useState("");
+  const [proofUrl, setProofUrl] = useState("");
+  const [documentUrl, setDocumentUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -121,33 +145,29 @@ function EducationForm({
         startYear: startYear ? Number(startYear) : null,
         endYear: endYear ? Number(endYear) : null,
         description: description || null,
+        proofUrl,
+        documentUrl,
       });
-      if (r.error) {
-        setError(r.error);
+      if (r.error || !r.id) {
+        setError(r.error ?? "Could not save.");
         return;
       }
       onAdded({
-        id: crypto.randomUUID(),
+        id: r.id,
         school_name: schoolName.trim(),
         degree: degree.trim() || null,
         field_of_study: field.trim() || null,
         start_year: startYear ? Number(startYear) : null,
         end_year: endYear ? Number(endYear) : null,
         description: description.trim() || null,
+        proof_url: r.proof_url ?? null,
+        document_url: r.document_url ?? null,
       });
     });
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent)]/[0.04] p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--accent)]">
-          Add education
-        </p>
-        <button type="button" onClick={onCancel} className="text-xs text-[var(--fg-subtle)] hover:text-[var(--fg)]">
-          Cancel
-        </button>
-      </div>
+    <FormShell title="Add education" onCancel={onCancel}>
       <SmallField label="School">
         <Input value={schoolName} onChange={setSchoolName} placeholder="MIT, Berkeley, YC Startup School…" />
       </SmallField>
@@ -175,17 +195,14 @@ function EducationForm({
           className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--surface-2)] px-3.5 py-2 text-sm text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
         />
       </SmallField>
-      {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
-      <button
-        type="button"
-        onClick={submit}
-        disabled={pending || !schoolName.trim()}
-        className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:brightness-110 disabled:opacity-40"
-      >
-        {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-        Save
-      </button>
-    </div>
+      <SmallField label="Proof or verification link (optional)">
+        <Input value={proofUrl} onChange={setProofUrl} type="url" placeholder="https://registrar.example.edu/verify/…" />
+      </SmallField>
+      <SmallField label="Document link (optional)">
+        <Input value={documentUrl} onChange={setDocumentUrl} type="url" placeholder="Link to a diploma or transcript you host" />
+      </SmallField>
+      <FormFooter error={error} pending={pending} disabled={!schoolName.trim()} onSave={submit} />
+    </FormShell>
   );
 }
 
@@ -203,6 +220,9 @@ export function CertificationsEditor({ initial }: { initial: CertificationRow[] 
               key={r.id}
               row={r}
               onDelete={() => setRows((prev) => prev.filter((x) => x.id !== r.id))}
+              onLinks={(credential_url, document_url) =>
+                setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, credential_url, document_url } : x)))
+              }
             />
           ))}
         </ul>
@@ -221,21 +241,23 @@ export function CertificationsEditor({ initial }: { initial: CertificationRow[] 
           onCancel={() => setOpen(false)}
         />
       ) : (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-2 text-sm text-[var(--fg)] hover:bg-[var(--surface-2)]"
-        >
-          <Plus className="h-4 w-4" />
-          Add certification
-        </button>
+        <AddButton onClick={() => setOpen(true)} label="Add certification" />
       )}
     </div>
   );
 }
 
-function CertItem({ row, onDelete }: { row: CertificationRow; onDelete: () => void }) {
+function CertItem({
+  row,
+  onDelete,
+  onLinks,
+}: {
+  row: CertificationRow;
+  onDelete: () => void;
+  onLinks: (credential: string | null, doc: string | null) => void;
+}) {
   const [pending, startTransition] = useTransition();
+  const [editing, setEditing] = useState(false);
 
   function remove() {
     if (!confirm("Remove this certification?")) return;
@@ -246,36 +268,42 @@ function CertItem({ row, onDelete }: { row: CertificationRow; onDelete: () => vo
   }
 
   return (
-    <li className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3 flex items-start gap-3">
-      <Award className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[var(--fg)] break-words">{row.name}</p>
-        {row.issuer && (
-          <p className="text-xs text-[var(--fg-muted)] break-words">{row.issuer}</p>
-        )}
-        <p className="font-mono text-[10px] text-[var(--fg-subtle)] mt-0.5 tabular-nums">
-          {formatCertDates(row.issued_date, row.expires_date)}
-        </p>
-        {row.credential_url && (
-          <a
-            href={row.credential_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-[10px] text-[var(--accent)] hover:underline break-all"
-          >
-            Credential
-          </a>
-        )}
+    <li className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3">
+      <div className="flex items-start gap-3">
+        <Award className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" aria-hidden />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-[var(--fg)] break-words">{row.name}</p>
+          {row.issuer && <p className="text-xs text-[var(--fg-muted)] break-words">{row.issuer}</p>}
+          <p className="text-xs text-[var(--fg-subtle)] mt-0.5 num">
+            {formatCertDates(row.issued_date, row.expires_date)}
+          </p>
+          <ProofLinks proof={row.credential_url} doc={row.document_url} proofLabel="Credential" />
+        </div>
+        <div className="flex shrink-0 items-center">
+          <IconButton label={`Edit links for ${row.name}`} onClick={() => setEditing((v) => !v)} pressed={editing}>
+            <Link2 className="h-4 w-4" aria-hidden />
+          </IconButton>
+          <IconButton label={`Remove ${row.name}`} onClick={remove} disabled={pending} danger>
+            {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Trash2 className="h-4 w-4" aria-hidden />}
+          </IconButton>
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={remove}
-        disabled={pending}
-        aria-label="Remove certification"
-        className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full text-[var(--fg-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--danger)]"
-      >
-        {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-      </button>
+      {editing && (
+        <LinksForm
+          proofLabel="Credential or verification link"
+          initialProof={row.credential_url ?? ""}
+          initialDoc={row.document_url ?? ""}
+          save={async (proofUrl, documentUrl) => {
+            const r = await updateCertificationLinks(row.id, { proofUrl, documentUrl });
+            return { error: r.error, proof_url: r.credential_url, document_url: r.document_url };
+          }}
+          onSaved={(proof, doc) => {
+            onLinks(proof, doc);
+            setEditing(false);
+          }}
+          onCancel={() => setEditing(false)}
+        />
+      )}
     </li>
   );
 }
@@ -291,8 +319,8 @@ function CertForm({
   const [issuer, setIssuer] = useState("");
   const [issuedDate, setIssuedDate] = useState("");
   const [expiresDate, setExpiresDate] = useState("");
-  const [credentialId, setCredentialId] = useState("");
   const [credentialUrl, setCredentialUrl] = useState("");
+  const [documentUrl, setDocumentUrl] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -304,37 +332,31 @@ function CertForm({
         issuer: issuer || null,
         issuedDate: issuedDate || null,
         expiresDate: expiresDate || null,
-        credentialId: credentialId || null,
+        credentialId: null,
         credentialUrl: credentialUrl || null,
         description: null,
+        documentUrl,
       });
-      if (r.error) {
-        setError(r.error);
+      if (r.error || !r.id) {
+        setError(r.error ?? "Could not save.");
         return;
       }
       onAdded({
-        id: crypto.randomUUID(),
+        id: r.id,
         name: name.trim(),
         issuer: issuer.trim() || null,
         issued_date: issuedDate || null,
         expires_date: expiresDate || null,
-        credential_id: credentialId.trim() || null,
-        credential_url: credentialUrl.trim() || null,
+        credential_id: null,
+        credential_url: r.credential_url ?? null,
         description: null,
+        document_url: r.document_url ?? null,
       });
     });
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent)]/[0.04] p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--accent)]">
-          Add certification
-        </p>
-        <button type="button" onClick={onCancel} className="text-xs text-[var(--fg-subtle)] hover:text-[var(--fg)]">
-          Cancel
-        </button>
-      </div>
+    <FormShell title="Add certification" onCancel={onCancel}>
       <SmallField label="Name">
         <Input value={name} onChange={setName} placeholder="AWS Solutions Architect, CFA, Y Combinator W23…" />
       </SmallField>
@@ -349,29 +371,205 @@ function CertForm({
           <Input value={expiresDate} onChange={setExpiresDate} type="date" />
         </SmallField>
       </div>
-      <SmallField label="Credential URL (optional)">
+      <SmallField label="Credential or verification link (optional)">
         <Input value={credentialUrl} onChange={setCredentialUrl} type="url" placeholder="https://…" />
       </SmallField>
-      {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
+      <SmallField label="Document link (optional)">
+        <Input value={documentUrl} onChange={setDocumentUrl} type="url" placeholder="Link to a certificate you host" />
+      </SmallField>
+      <FormFooter error={error} pending={pending} disabled={!name.trim()} onSave={submit} />
+    </FormShell>
+  );
+}
+
+// ---------- shared bits ----------
+
+function LinksForm({
+  proofLabel,
+  initialProof,
+  initialDoc,
+  save,
+  onSaved,
+  onCancel,
+}: {
+  proofLabel: string;
+  initialProof: string;
+  initialDoc: string;
+  save: (
+    proofUrl: string,
+    documentUrl: string,
+  ) => Promise<{ error?: string; proof_url?: string | null; document_url?: string | null }>;
+  onSaved: (proof: string | null, doc: string | null) => void;
+  onCancel: () => void;
+}) {
+  const [proof, setProof] = useState(initialProof);
+  const [doc, setDoc] = useState(initialDoc);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function submit() {
+    setError(null);
+    startTransition(async () => {
+      const r = await save(proof, doc);
+      if (r.error) {
+        setError(r.error);
+        return;
+      }
+      onSaved(r.proof_url ?? null, r.document_url ?? null);
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="mt-3 space-y-3 border-t border-[var(--border)] pt-3">
+      <SmallField label={`${proofLabel} (optional)`}>
+        <Input value={proof} onChange={setProof} type="url" placeholder="https://…" />
+      </SmallField>
+      <SmallField label="Document link (optional)">
+        <Input value={doc} onChange={setDoc} type="url" placeholder="https://…" />
+      </SmallField>
+      <div className="flex items-center gap-2">
+        <FormFooter error={error} pending={pending} disabled={false} onSave={submit} />
+        <button
+          type="button"
+          onClick={onCancel}
+          className="inline-flex h-11 items-center px-3 text-sm text-[var(--fg-muted)] hover:text-[var(--fg)]"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ProofLinks({ proof, doc, proofLabel }: { proof: string | null; doc: string | null; proofLabel: string }) {
+  if (!proof && !doc) return null;
+  return (
+    <p className="mt-1 flex flex-wrap gap-x-3 text-xs">
+      {proof && (
+        <a
+          href={proof}
+          target="_blank"
+          rel="noopener noreferrer nofollow ugc"
+          className="inline-flex items-center gap-1 font-semibold text-[var(--accent-text)] hover:underline"
+        >
+          <ExternalLink className="h-3 w-3" aria-hidden />
+          {proofLabel}
+        </a>
+      )}
+      {doc && (
+        <a
+          href={doc}
+          target="_blank"
+          rel="noopener noreferrer nofollow ugc"
+          className="inline-flex items-center gap-1 font-semibold text-[var(--accent-text)] hover:underline"
+        >
+          <FileText className="h-3 w-3" aria-hidden />
+          Document
+        </a>
+      )}
+    </p>
+  );
+}
+
+function FormShell({ title, onCancel, children }: { title: string; onCancel: () => void; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent-soft)] p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-[var(--accent-text)]">{title}</p>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="inline-flex h-11 items-center px-2 text-sm text-[var(--fg-muted)] hover:text-[var(--fg)]"
+        >
+          Cancel
+        </button>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function FormFooter({
+  error,
+  pending,
+  disabled,
+  onSave,
+}: {
+  error: string | null;
+  pending: boolean;
+  disabled: boolean;
+  onSave: () => void;
+}) {
+  return (
+    <>
+      {error && (
+        <p role="alert" className="text-xs text-[var(--danger)]">
+          {error}
+        </p>
+      )}
       <button
         type="button"
-        onClick={submit}
-        disabled={pending || !name.trim()}
-        className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:brightness-110 disabled:opacity-40"
+        onClick={onSave}
+        disabled={pending || disabled}
+        className="press-shrink inline-flex h-11 items-center gap-1.5 rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)] disabled:opacity-40"
       >
-        {pending && <Loader2 className="h-4 w-4 animate-spin" />}
+        {pending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
         Save
       </button>
-    </div>
+    </>
+  );
+}
+
+function AddButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="press-shrink inline-flex h-11 items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-4 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--surface-2)]"
+    >
+      <Plus className="h-4 w-4" aria-hidden />
+      {label}
+    </button>
+  );
+}
+
+function IconButton({
+  label,
+  onClick,
+  disabled,
+  danger,
+  pressed,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+  pressed?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      aria-pressed={pressed}
+      className={`press-shrink inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--fg-subtle)] hover:bg-[var(--surface-1)] disabled:opacity-40 ${
+        danger ? "hover:text-[var(--danger)]" : "hover:text-[var(--fg)]"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
 function SmallField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--fg-subtle)] block mb-1.5">
-        {label}
-      </span>
+      <span className="text-[13px] font-semibold text-[var(--fg)] block mb-1.5">{label}</span>
       {children}
     </label>
   );
@@ -400,7 +598,7 @@ function Input({
       placeholder={placeholder}
       min={min}
       max={max}
-      className="w-full h-10 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-2)] px-3.5 text-sm text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+      className="w-full h-11 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 text-sm text-[var(--fg)] placeholder:text-[var(--fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
     />
   );
 }

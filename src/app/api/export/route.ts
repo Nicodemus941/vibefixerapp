@@ -41,6 +41,12 @@ export async function GET() {
     reputationEvents,
     coldDmQuota,
     platformEvents,
+    education,
+    certifications,
+    positions,
+    featured,
+    achievements,
+    goals,
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
     supabase.from("posts").select("*").eq("user_id", uid),
@@ -83,6 +89,13 @@ export async function GET() {
     supabase.from("reputation_events").select("*").eq("user_id", uid),
     supabase.from("cold_dm_quota").select("*").eq("user_id", uid),
     supabase.from("platform_events").select("*").eq("user_id", uid),
+    supabase.from("education").select("*").eq("user_id", uid),
+    supabase.from("certifications").select("*").eq("user_id", uid),
+    supabase.from("positions").select("*").eq("user_id", uid),
+    // Profile showcase (20261110210000). Errors (table not there yet) export as [].
+    supabase.from("profile_featured").select("*").eq("user_id", uid).order("position"),
+    supabase.from("profile_achievements").select("*").eq("user_id", uid).order("position"),
+    supabase.from("profile_goals").select("*").eq("user_id", uid).order("position"),
   ]);
 
   const payload = {
@@ -111,6 +124,12 @@ export async function GET() {
     reputation_events: reputationEvents.data ?? [],
     cold_dm_quota: coldDmQuota.data ?? [],
     platform_events: platformEvents.data ?? [],
+    education: education.data ?? [],
+    certifications: certifications.data ?? [],
+    positions: positions.data ?? [],
+    profile_featured: featured.data ?? [],
+    profile_achievements: achievements.data ?? [],
+    profile_goals: goals.data ?? [],
   };
 
   await logEvent("data_exported", uid, {

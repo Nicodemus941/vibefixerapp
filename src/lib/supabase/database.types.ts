@@ -14,6 +14,8 @@ export type Database = {
     Tables: {
       education: {
         Row: {
+          document_url: string | null;
+          proof_url: string | null;
           created_at: string | null;
           degree: string | null;
           description: string | null;
@@ -25,6 +27,8 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          document_url?: string | null;
+          proof_url?: string | null;
           created_at?: string | null;
           degree?: string | null;
           description?: string | null;
@@ -36,6 +40,8 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          document_url?: string | null;
+          proof_url?: string | null;
           created_at?: string | null;
           degree?: string | null;
           description?: string | null;
@@ -50,6 +56,7 @@ export type Database = {
       };
       certifications: {
         Row: {
+          document_url: string | null;
           created_at: string | null;
           credential_id: string | null;
           credential_url: string | null;
@@ -62,6 +69,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          document_url?: string | null;
           created_at?: string | null;
           credential_id?: string | null;
           credential_url?: string | null;
@@ -74,6 +82,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          document_url?: string | null;
           created_at?: string | null;
           credential_id?: string | null;
           credential_url?: string | null;
@@ -83,6 +92,123 @@ export type Database = {
           issued_date?: string | null;
           issuer?: string | null;
           name?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      profile_featured: {
+        Row: {
+          created_at: string;
+          description: string | null;
+          id: string;
+          image_url: string | null;
+          kind: string;
+          position: number;
+          published_on: string | null;
+          publisher: string | null;
+          title: string;
+          updated_at: string;
+          url: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          image_url?: string | null;
+          kind?: string;
+          position?: number;
+          published_on?: string | null;
+          publisher?: string | null;
+          title: string;
+          updated_at?: string;
+          url: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          image_url?: string | null;
+          kind?: string;
+          position?: number;
+          published_on?: string | null;
+          publisher?: string | null;
+          title?: string;
+          updated_at?: string;
+          url?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      profile_achievements: {
+        Row: {
+          achieved_on: string | null;
+          created_at: string;
+          description: string | null;
+          id: string;
+          issuer: string | null;
+          position: number;
+          proof_url: string | null;
+          title: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          achieved_on?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          issuer?: string | null;
+          position?: number;
+          proof_url?: string | null;
+          title: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          achieved_on?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          issuer?: string | null;
+          position?: number;
+          proof_url?: string | null;
+          title?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      profile_goals: {
+        Row: {
+          created_at: string;
+          help_text: string | null;
+          id: string;
+          position: number;
+          statement: string;
+          target_date: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          help_text?: string | null;
+          id?: string;
+          position?: number;
+          statement: string;
+          target_date?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          help_text?: string | null;
+          id?: string;
+          position?: number;
+          statement?: string;
+          target_date?: string | null;
+          updated_at?: string;
           user_id?: string;
         };
         Relationships: [];

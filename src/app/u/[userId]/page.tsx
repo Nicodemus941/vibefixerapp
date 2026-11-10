@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { redirect, notFound } from "next/navigation";
-import { Award, Building2, GraduationCap, MessageSquare, Pencil } from "lucide-react";
+import { Building2, MessageSquare, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { FeedItem } from "@/app/feed/_components/PostCard";
@@ -17,6 +17,14 @@ import { fetchUserPositions } from "@/app/organizations/actions";
 import { fetchCertifications, fetchEducation } from "@/app/resume/actions";
 import { fetchFollowState, fetchSocialCounts } from "@/app/follows/actions";
 import { FollowButton } from "./_components/FollowButton";
+import { readShowcase } from "@/lib/profile-showcase-data";
+import {
+  AchievementsList,
+  CredentialsList,
+  FeaturedCards,
+  GoalsList,
+  LinkifiedText,
+} from "@/components/ProfileShowcase";
 import { ProfileModerationMenu } from "./_components/ProfileModerationMenu";
 
 export const dynamic = "force-dynamic";
@@ -130,6 +138,7 @@ export default async function ProfilePage({
     certifications,
     socialCounts,
     followState,
+    showcase,
   ] = await Promise.all([
     hydrateFeed(supabase, user.id, feedPosts),
     fetchReviewsForUser(profile.id, 20),
@@ -138,6 +147,8 @@ export default async function ProfilePage({
     fetchCertifications(profile.id),
     fetchSocialCounts(profile.id),
     fetchFollowState(profile.id),
+    // RLS hides these across a block in either direction.
+    readShowcase(supabase, profile.id),
   ]);
 
   const { data: blockRow } = !isOwn
@@ -299,8 +310,49 @@ export default async function ProfilePage({
           <div className="space-y-4 sm:space-y-5 min-w-0">
             {profile.bio && (
               <Card title="About">
-                <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
+                <LinkifiedText
+                  text={profile.bio}
+                  className="text-[15px] leading-relaxed whitespace-pre-wrap break-words"
+                />
               </Card>
+            )}
+
+            {showcase.featured.length > 0 ? (
+              <Card
+                title="Featured"
+                meta={isOwn ? undefined : `${showcase.featured.length} link${showcase.featured.length === 1 ? "" : "s"}`}
+                action={isOwn ? { href: "/account#featured", label: "Edit" } : undefined}
+              >
+                <FeaturedCards items={showcase.featured} />
+              </Card>
+            ) : (
+              isOwn && (
+                <EmptyCard title="Featured">
+                  Link articles you wrote, press about you, podcasts, talks and things you built so
+                  people can see your work.{" "}
+                  <Link href="/account#featured" className="font-semibold text-[var(--accent-text)] hover:underline">
+                    Add a featured link
+                  </Link>
+                </EmptyCard>
+              )
+            )}
+
+            {showcase.goals.length > 0 ? (
+              <Card
+                title="Working toward"
+                action={isOwn ? { href: "/account#goals", label: "Edit" } : undefined}
+              >
+                <GoalsList items={showcase.goals} />
+              </Card>
+            ) : (
+              isOwn && (
+                <EmptyCard title="Working toward">
+                  Share what you are building toward and how people could help.{" "}
+                  <Link href="/account#goals" className="font-semibold text-[var(--accent-text)] hover:underline">
+                    Add a goal
+                  </Link>
+                </EmptyCard>
+              )
             )}
 
             {offers && offers.length > 0 ? (
@@ -389,6 +441,15 @@ export default async function ProfilePage({
               )}
             </Card>
 
+            {showcase.achievements.length > 0 && (
+              <Card
+                title="Achievements"
+                action={isOwn ? { href: "/account#achievements", label: "Edit" } : undefined}
+              >
+                <AchievementsList items={showcase.achievements} />
+              </Card>
+            )}
+
             {positions.length > 0 && (
               <Card
                 title="Experience"
@@ -438,72 +499,11 @@ export default async function ProfilePage({
             )}
 
             {(education.length > 0 || certifications.length > 0) && (
-              <Card title="Education and certifications">
-                <ul>
-                  {education.map((e, i) => (
-                    <li
-                      key={e.id}
-                      className={`flex items-start gap-3.5 py-4 ${i > 0 ? "border-t border-[var(--border)]" : "pt-0"}`}
-                    >
-                      <div className="h-11 w-11 shrink-0 rounded-[10px] bg-[var(--surface-2)] text-[var(--fg-muted)] flex items-center justify-center">
-                        <GraduationCap className="h-5 w-5" aria-hidden />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-[15px] break-words">{e.school_name}</p>
-                        {(e.degree || e.field_of_study) && (
-                          <p className="text-[13px] break-words">
-                            {[e.degree, e.field_of_study].filter(Boolean).join(", ")}
-                          </p>
-                        )}
-                        <p className="mt-0.5 text-[13px] text-[var(--fg-subtle)]">
-                          {e.start_year && e.end_year
-                            ? `${e.start_year} to ${e.end_year}`
-                            : e.start_year
-                            ? `${e.start_year} to now`
-                            : e.end_year ?? ""}
-                        </p>
-                        {e.description && (
-                          <p className="mt-2 text-[13px] text-[var(--fg-muted)] whitespace-pre-wrap">
-                            {e.description}
-                          </p>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                  {certifications.map((c, i) => (
-                    <li
-                      key={c.id}
-                      className={`flex items-start gap-3.5 py-4 ${
-                        i > 0 || education.length > 0 ? "border-t border-[var(--border)]" : "pt-0"
-                      }`}
-                    >
-                      <div className="h-11 w-11 shrink-0 rounded-[10px] bg-[var(--accent-soft)] text-[var(--accent-text)] flex items-center justify-center">
-                        <Award className="h-5 w-5" aria-hidden />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-[15px] break-words">{c.name}</p>
-                        {c.issuer && <p className="text-[13px] break-words">{c.issuer}</p>}
-                        <p className="mt-0.5 text-[13px] text-[var(--fg-subtle)]">
-                          {c.issued_date && c.expires_date
-                            ? `Issued ${monthYear(c.issued_date)} · expires ${monthYear(c.expires_date)}`
-                            : c.issued_date
-                            ? `Issued ${monthYear(c.issued_date)}`
-                            : ""}
-                        </p>
-                        {c.credential_url && (
-                          <a
-                            href={c.credential_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-1 inline-flex min-h-11 items-center text-[13px] font-semibold text-[var(--accent-text)] hover:underline"
-                          >
-                            View credential
-                          </a>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+              <Card
+                title="Education and certifications"
+                action={isOwn ? { href: "/account#education", label: "Edit" } : undefined}
+              >
+                <CredentialsList education={education} certifications={certifications} />
               </Card>
             )}
 
