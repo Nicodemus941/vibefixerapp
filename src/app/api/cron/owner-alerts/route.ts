@@ -7,7 +7,7 @@ import { cronAuthorized, mailerFor, ownerAlertDb } from "@/lib/email/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-// Vercel Cron every 5 minutes. Emails OWNER_ALERT_EMAIL once per new
+// Supabase pg_cron every 5 minutes (POST). Emails OWNER_ALERT_EMAIL once per new
 // member. Without MAILGUN_API_KEY it claims nothing.
 export async function GET(request: Request) {
   if (!cronAuthorized(request)) {
@@ -29,3 +29,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "sender failed" }, { status: 500 });
   }
 }
+
+// pg_cron (Supabase) calls this with POST every 5 minutes.
+export const POST = GET;

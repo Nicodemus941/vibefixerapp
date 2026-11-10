@@ -1,8 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
-    { "path": "/api/cron/send-emails", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/send-emails?mode=digest", "schedule": "0 13 * * *" },
-    { "path": "/api/cron/owner-alerts", "schedule": "*/5 * * * *" }
+    { "path": "/api/cron/send-emails?mode=digest", "schedule": "0 13 * * *" }
   ]
 }

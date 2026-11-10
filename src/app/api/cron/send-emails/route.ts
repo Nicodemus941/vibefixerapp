@@ -8,8 +8,8 @@ import { cronAuthorized, mailerFor, notificationDb } from "@/lib/email/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-// Vercel Cron: every 5 minutes (immediate) and daily at 13:00 UTC
-// (?mode=digest). Protected by CRON_SECRET. Without MAILGUN_API_KEY it
+// Supabase pg_cron every 5 minutes (immediate, POST) and Vercel Cron daily at 13:00 UTC
+// (?mode=digest, GET). Protected by CRON_SECRET. Without MAILGUN_API_KEY it
 // claims nothing and returns { skipped: "no_mail_key" }.
 export async function GET(request: Request) {
   if (!cronAuthorized(request)) {
@@ -33,3 +33,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ mode, error: "sender failed" }, { status: 500 });
   }
 }
+
+// pg_cron (Supabase) calls this with POST every 5 minutes.
+export const POST = GET;
