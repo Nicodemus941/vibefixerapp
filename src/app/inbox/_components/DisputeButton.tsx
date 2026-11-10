@@ -53,17 +53,17 @@ export function DisputeButton({
 
   if (existing && existing.status === "open") {
     return (
-      <div className="mt-2 rounded-xl border border-amber-400/40 bg-amber-400/[0.08] p-3 text-xs">
-        <p className="flex items-start gap-1.5 text-amber-400 font-medium">
+      <div className="mt-2 rounded-xl border border-[var(--need-fg)]/40 bg-[var(--need-fg)]/[0.08] p-3 text-xs">
+        <p className="flex items-start gap-1.5 text-[var(--need-fg)] font-medium">
           <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-          Dispute open — awaiting admin resolution.
+          Dispute open. Waiting for an admin to resolve it.
         </p>
         <p className="mt-2 text-[var(--fg-muted)] whitespace-pre-wrap">{existing.reason}</p>
         <button
           type="button"
           onClick={withdraw}
           disabled={pending}
-          className="press-shrink mt-2 inline-flex items-center gap-1 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1 text-xs text-[var(--fg-muted)] hover:text-[var(--fg)]"
+          className="press-shrink mt-2 inline-flex items-center gap-1 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] min-h-11 sm:min-h-9 px-3.5 text-[13px] font-semibold text-[var(--fg-muted)] hover:text-[var(--fg)]"
         >
           Withdraw
         </button>
@@ -73,7 +73,7 @@ export function DisputeButton({
 
   if (existing && existing.status !== "open") {
     return (
-      <p className="mt-2 font-mono text-[10px] text-[var(--fg-subtle)]">
+      <p className="mt-2 text-xs text-[var(--fg-subtle)]">
         Dispute {existing.status.replace(/_/g, " ")} ·{" "}
         {existing.resolved_at && new Date(existing.resolved_at).toLocaleDateString()}
       </p>
@@ -86,26 +86,26 @@ export function DisputeButton({
         type="button"
         onClick={() => setOpen((o) => !o)}
         disabled={pending}
-        className="press-shrink inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-400/[0.06] px-3 py-1 text-xs text-amber-400 hover:bg-amber-400/[0.12]"
+        className="press-shrink inline-flex items-center gap-1 rounded-full border border-[var(--need-fg)]/40 bg-[var(--need-bg)] min-h-11 sm:min-h-9 px-3.5 text-[13px] font-semibold text-[var(--need-fg)] hover:bg-[var(--need-fg)]/[0.12]"
       >
         {open ? <X className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
         {open ? "Cancel" : "Dispute"}
       </button>
       {open && (
-        <div className="mt-2 rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-3 space-y-2">
+        <div className="mt-2 rounded-xl border border-[var(--need-fg)]/30 bg-[var(--need-fg)]/[0.05] p-3 space-y-2">
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value.slice(0, 4000))}
             placeholder="What happened? Be specific so the admin can resolve fairly."
             rows={3}
             disabled={pending}
-            className="w-full rounded-lg border border-amber-400/40 bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className="w-full rounded-lg border border-[var(--need-fg)]/40 bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--need-fg)]"
           />
           <button
             type="button"
             onClick={submit}
             disabled={pending || !reason.trim()}
-            className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110 disabled:opacity-40"
+            className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--need-fg)] min-h-11 sm:min-h-9 px-3.5 text-[13px] font-semibold text-[var(--bg)] hover:brightness-110 disabled:opacity-40"
           >
             {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <AlertTriangle className="h-3 w-3" />}
             Open dispute

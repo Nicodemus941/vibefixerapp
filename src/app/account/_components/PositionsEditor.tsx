@@ -67,7 +67,7 @@ export function PositionsEditor({
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-2 text-sm text-[var(--fg)] hover:bg-white/[0.05]"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-2 text-sm text-[var(--fg)] hover:bg-[var(--surface-2)]"
         >
           <Plus className="h-4 w-4" />
           Add position
@@ -120,7 +120,7 @@ function PositionRowItem({
         onClick={remove}
         disabled={pending}
         aria-label="Remove position"
-        className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full text-[var(--fg-subtle)] hover:bg-white/[0.04] hover:text-[var(--danger)]"
+        className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full text-[var(--fg-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--danger)]"
       >
         {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
       </button>
@@ -272,19 +272,19 @@ function AddPositionForm({
                 key={h.id}
                 type="button"
                 onClick={() => pickOrg(h)}
-                className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 hover:bg-white/[0.04]"
+                className="w-full text-left flex items-center justify-between gap-2 px-3 py-2 hover:bg-[var(--surface-2)]"
               >
                 <div className="min-w-0">
                   <p className="text-sm text-[var(--fg)] truncate">{h.name}</p>
                   <p className="font-mono text-[10px] text-[var(--fg-subtle)] truncate">
-                    {h.industry ?? "—"} · {h.member_count} on Loop
+                    {h.industry ?? "No industry"} · {h.member_count} on Loop
                   </p>
                 </div>
               </button>
             ))}
             <Link
               href="/organizations/new"
-              className="block px-3 py-2 text-xs text-[var(--accent)] hover:bg-white/[0.04] border-t border-[var(--border)]"
+              className="block px-3 py-2 text-xs text-[var(--accent)] hover:bg-[var(--surface-2)] border-t border-[var(--border)]"
             >
               Can&apos;t find it? Create the company page
             </Link>
@@ -292,7 +292,7 @@ function AddPositionForm({
         )}
         {!orgId && orgQuery.length >= 2 && (
           <p className="mt-1 font-mono text-[10px] text-[var(--fg-subtle)]">
-            No match? Keep typing — Loop will store the name as-is.
+            No match? Keep typing. Loop will store the name as typed.
           </p>
         )}
       </div>
@@ -369,7 +369,7 @@ function formatRange(start: string, end: string | null, isCurrent: boolean): str
     const d = new Date(s);
     return d.toLocaleString(undefined, { month: "short", year: "numeric" });
   };
-  if (isCurrent) return `${fmt(start)} — Present`;
-  if (end) return `${fmt(start)} — ${fmt(end)}`;
+  if (isCurrent) return `${fmt(start)} to now`;
+  if (end) return `${fmt(start)} to ${fmt(end)}`;
   return fmt(start);
 }

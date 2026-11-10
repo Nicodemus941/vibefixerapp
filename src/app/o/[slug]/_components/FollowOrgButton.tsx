@@ -29,12 +29,12 @@ export function FollowOrgButton({
     return (
       <Link
         href={`/login?next=/o/${orgSlug}`}
-        className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05]"
+        className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] h-11 px-4 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--surface-2)]"
       >
-        <Bell className="h-3.5 w-3.5" />
+        <Bell className="h-4 w-4" />
         Sign in to follow
         {followerCount > 0 && (
-          <span className="font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums ml-1">
+          <span className="num text-xs text-[var(--fg-subtle)] ml-1">
             · {followerCount}
           </span>
         )}
@@ -70,21 +70,21 @@ export function FollowOrgButton({
         onMouseLeave={() => setHover(false)}
         disabled={pending}
         className={[
-          "press-shrink inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs sm:text-sm font-medium transition-colors",
+          "press-shrink inline-flex items-center gap-1.5 rounded-full h-11 px-4 text-sm font-semibold transition-colors",
           hover
             ? "border border-[var(--danger)]/50 bg-[var(--danger)]/[0.08] text-[var(--danger)]"
             : "border border-[var(--accent)]/50 bg-[var(--accent)]/[0.08] text-[var(--accent)]",
         ].join(" ")}
       >
         {pending ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         ) : hover ? (
-          <BellOff className="h-3.5 w-3.5" />
+          <BellOff className="h-4 w-4" />
         ) : (
-          <Check className="h-3.5 w-3.5" />
+          <Check className="h-4 w-4" />
         )}
         {hover ? "Unfollow" : "Following"}
-        <span className="font-mono text-[10px] tabular-nums opacity-70 ml-0.5">
+        <span className="num text-xs opacity-80 ml-0.5">
           · {followerCount}
         </span>
       </button>
@@ -96,12 +96,12 @@ export function FollowOrgButton({
       type="button"
       onClick={toggle}
       disabled={pending}
-      className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05]"
+      className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] h-11 px-4 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--surface-2)]"
     >
-      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
       Follow
       {followerCount > 0 && (
-        <span className="font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums ml-0.5">
+        <span className="num text-xs text-[var(--fg-subtle)] ml-0.5">
           · {followerCount}
         </span>
       )}

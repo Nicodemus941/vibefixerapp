@@ -134,7 +134,7 @@ export default async function AdsDashboardPage() {
                     )}
                     <Link
                       href={`/ads/${a.id}`}
-                      className="press-shrink ml-auto inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+                      className="press-shrink ml-auto inline-flex items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
                     >
                       Details
                     </Link>
@@ -185,7 +185,7 @@ function StatusButton({
             ? "bg-[var(--accent)] text-[var(--bg)] hover:brightness-110"
             : danger
             ? "border border-[var(--danger)]/40 bg-[var(--danger)]/10 text-[var(--danger)] hover:bg-[var(--danger)]/15"
-            : "border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:bg-white/[0.05]",
+            : "border border-[var(--border-strong)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:bg-[var(--surface-2)]",
         ].join(" ")}
       >
         {label}

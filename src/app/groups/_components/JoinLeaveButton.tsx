@@ -30,7 +30,7 @@ export function JoinLeaveButton({
 
   if (role === "owner") {
     return (
-      <span className="press-shrink shrink-0 inline-flex items-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-mono uppercase tracking-wider text-[var(--accent)]">
+      <span className="press-shrink shrink-0 inline-flex items-center rounded-full bg-[var(--accent-soft)] h-11 px-4 text-sm font-semibold text-[var(--accent-text)]">
         Owner
       </span>
     );
@@ -42,9 +42,9 @@ export function JoinLeaveButton({
       onClick={go}
       disabled={pending}
       className={[
-        "press-shrink shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs sm:text-sm font-medium transition-colors",
+        "press-shrink shrink-0 inline-flex items-center gap-1.5 rounded-full h-11 px-4 text-sm font-semibold transition-colors",
         isMember
-          ? "border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.05]"
+          ? "border border-[var(--border-strong)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface-2)]"
           : "bg-[var(--accent)] text-[var(--bg)] hover:brightness-110",
       ].join(" ")}
     >

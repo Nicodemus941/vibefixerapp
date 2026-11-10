@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import type { ReviewRow } from "../actions";
+import { Avatar } from "@/components/Avatar";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -15,16 +16,14 @@ function timeAgo(iso: string): string {
 export function ReviewList({ reviews }: { reviews: ReviewRow[] }) {
   if (reviews.length === 0) return null;
   return (
-    <ul className="space-y-3">
+    <ul>
       {reviews.map((r) => (
         <li
           key={r.id}
-          className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4"
+          className="border-t border-[var(--border)] py-4 first:border-t-0"
         >
           <div className="flex items-start gap-3">
-            <div className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-sm font-mono text-[var(--fg-muted)]">
-              {(r.reviewer_name[0] ?? "?").toUpperCase()}
-            </div>
+            <Avatar name={r.reviewer_name} url={null} size="md" />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-baseline gap-x-2">
                 <Link
@@ -38,13 +37,13 @@ export function ReviewList({ reviews }: { reviews: ReviewRow[] }) {
                     · {r.reviewer_company}
                   </span>
                 )}
-                <span className="font-mono text-[10px] text-[var(--fg-subtle)] ml-auto">
+                <span className="text-xs text-[var(--fg-subtle)] ml-auto">
                   {timeAgo(r.created_at)}
                 </span>
               </div>
               <div className="mt-1 flex items-center gap-1.5">
                 <Stars value={r.rating} />
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)]">
+                <span className="text-xs text-[var(--fg-subtle)]">
                   as {r.reviewer_role}
                 </span>
               </div>
@@ -92,13 +91,18 @@ export function ReviewList({ reviews }: { reviews: ReviewRow[] }) {
 
 export function Stars({ value, className }: { value: number; className?: string }) {
   return (
-    <div className={`flex items-center gap-0.5 ${className ?? ""}`}>
+    <div
+      className={`flex items-center gap-0.5 ${className ?? ""}`}
+      role="img"
+      aria-label={`${value} out of 5 stars`}
+    >
       {[1, 2, 3, 4, 5].map((n) => (
         <Star
           key={n}
+          aria-hidden
           className={`h-3.5 w-3.5 ${
             n <= value
-              ? "fill-[var(--accent)] text-[var(--accent)]"
+              ? "fill-[var(--star)] text-[var(--star)]"
               : "text-[var(--fg-subtle)]"
           }`}
         />

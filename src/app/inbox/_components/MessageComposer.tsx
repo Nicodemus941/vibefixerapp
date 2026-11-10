@@ -44,16 +44,16 @@ export function MessageComposer({
   return (
     <div className="space-y-2">
       {draftBanner && (
-        <div className="flex items-center justify-between gap-2 rounded-xl border border-violet-400/30 bg-violet-400/[0.06] px-3 py-1.5">
-          <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-violet-300">
+        <div className="flex items-center justify-between gap-2 rounded-xl bg-[var(--shipped-bg)] px-3 py-1.5">
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--shipped-fg)]">
             <Sparkles className="h-3 w-3" />
-            Loop drafted an intro — edit before sending
+            Loop drafted an intro. Edit it before sending
           </p>
           <button
             type="button"
             onClick={discard}
             aria-label="Discard draft"
-            className="press-shrink text-violet-300/70 hover:text-violet-200"
+            className="press-shrink text-[var(--shipped-fg)] hover:text-[var(--fg)]"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -85,7 +85,7 @@ export function MessageComposer({
           onClick={submit}
           disabled={!body.trim() || pending}
           aria-label="Send message"
-          className="press-shrink shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full bg-[var(--accent)] text-[var(--bg)] disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 transition-[filter]"
+          className="press-shrink shrink-0 inline-flex items-center justify-center h-11 w-11 rounded-full bg-[var(--accent)] text-[var(--fg-on-accent)] disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 transition-[filter]"
         >
           {pending ? (
             <Loader2 className="h-4 w-4 animate-spin" />

@@ -15,11 +15,11 @@ import {
 
 const STEPS = [
   { n: 1, title: "Your profile", desc: "Tell us who you are." },
-  { n: 2, title: "What you offer", desc: "List 1–3 things you can deliver." },
+  { n: 2, title: "What you offer", desc: "List one to three things you can deliver." },
   {
     n: 3,
     title: "What you need",
-    desc: "List 1–3 things you need. Reciprocity is required.",
+    desc: "List one to three things you need. Everyone gives and gets.",
   },
 ] as const;
 
@@ -94,11 +94,11 @@ export default function OnboardingPage() {
             <li key={s.n} className="flex-1 flex items-center gap-2">
               <div
                 className={[
-                  "h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-mono tabular-nums transition-colors",
+                  "h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-xs font-semibold tabular-nums transition-colors",
                   done
-                    ? "bg-[var(--accent)] text-[var(--bg)]"
+                    ? "bg-[var(--accent)] text-[var(--fg-on-accent)]"
                     : active
-                    ? "border border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10"
+                    ? "border border-[var(--accent)] text-[var(--accent-text)] bg-[var(--accent-soft)]"
                     : "border border-[var(--border)] text-[var(--fg-subtle)] bg-[var(--surface-1)]",
                 ].join(" ")}
                 aria-current={active ? "step" : undefined}
@@ -120,20 +120,20 @@ export default function OnboardingPage() {
 
       <div>
         <p className="eyebrow mb-2">Step {step} of 3</p>
-        <h1 className="text-2xl sm:text-4xl font-semibold tracking-[-0.03em] leading-tight break-words">
+        <h1 className="text-[28px] sm:text-[40px] font-bold tracking-[-0.03em] leading-tight break-words">
           {current.title}
         </h1>
         <p className="mt-2 text-[var(--fg-muted)] text-sm sm:text-base">{current.desc}</p>
       </div>
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
+      <div className="surface-card p-5 sm:p-6">
         {step === 1 && <ProfileStep value={profile} onChange={setProfile} />}
         {step === 2 && <OffersStep value={offers} onChange={setOffers} />}
         {step === 3 && <NeedsStep value={needs} onChange={setNeeds} />}
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/[0.06] p-4 text-sm text-[var(--danger)]">
+        <div className="rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
           {error}
         </div>
       )}
@@ -161,7 +161,7 @@ export default function OnboardingPage() {
             onClick={handleSubmit}
             disabled={!canAdvance() || pending}
           >
-            {pending ? "Setting up…" : "Finish & enter Loop"}
+            {pending ? "Setting up…" : "Finish and enter Loop"}
           </Button>
         )}
       </div>

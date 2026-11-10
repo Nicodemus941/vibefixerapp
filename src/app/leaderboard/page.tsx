@@ -117,7 +117,7 @@ function Section({
             <li key={r.user_id}>
               <Link
                 href={`/u/${r.user_id}`}
-                className="flex items-center gap-3 p-4 hover:bg-white/[0.02] transition-colors"
+                className="flex items-center gap-3 p-4 hover:bg-[var(--surface-1)] transition-colors"
               >
                 <span className="w-6 font-mono text-sm text-[var(--fg-subtle)] tabular-nums">
                   {r.rank}

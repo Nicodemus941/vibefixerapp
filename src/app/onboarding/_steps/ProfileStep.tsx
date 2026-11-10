@@ -7,11 +7,11 @@ import { INDUSTRIES } from "@/lib/industries";
 import type { ProfilePayload } from "../actions";
 
 const REVENUE_BANDS: Array<{ value: ProfilePayload["revenue_band"]; label: string }> = [
-  { value: "pre-revenue", label: "Pre-revenue" },
-  { value: "0-10k", label: "$0 – $10k" },
-  { value: "10k-100k", label: "$10k – $100k" },
-  { value: "100k-1m", label: "$100k – $1M" },
-  { value: "1m-10m", label: "$1M – $10M" },
+  { value: "pre-revenue", label: "Pre revenue" },
+  { value: "0-10k", label: "$0 to $10k" },
+  { value: "10k-100k", label: "$10k to $100k" },
+  { value: "100k-1m", label: "$100k to $1M" },
+  { value: "1m-10m", label: "$1M to $10M" },
   { value: "10m+", label: "$10M+" },
 ];
 
@@ -79,7 +79,7 @@ export function ProfileStep({
             </option>
           ))}
         </Select>
-        <p className="font-mono text-[10px] text-[var(--fg-subtle)] mt-1.5">
+        <p className="text-xs text-[var(--fg-subtle)] mt-1.5">
           Used to match you with the right founders.
         </p>
       </div>

@@ -71,7 +71,7 @@ export default async function MatchesPage() {
               <form action={rerankPendingMatchesForm}>
                 <button
                   type="submit"
-                  className="press-shrink inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-xs font-mono text-violet-300 hover:bg-violet-400/15"
+                  className="press-shrink inline-flex items-center gap-1 rounded-full border border-[var(--shipped-fg)]/40 bg-[var(--shipped-bg)] px-3 py-1.5 text-xs font-mono text-[var(--shipped-fg)] hover:bg-[var(--shipped-bg)]"
                   title="Score unranked matches and draft an intro for each one"
                 >
                   <Wand2 className="h-3 w-3" />
@@ -202,8 +202,8 @@ function MatchCard({
       </div>
 
       {match.ai_rationale && (
-        <div className="mt-3 rounded-xl border border-violet-400/30 bg-violet-400/[0.05] p-3">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-violet-300 flex items-center gap-1">
+        <div className="mt-3 rounded-xl border border-[var(--shipped-fg)]/30 bg-[var(--shipped-fg)]/[0.05] p-3">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--shipped-fg)] flex items-center gap-1">
             <Wand2 className="h-3 w-3" />
             Why Loop matched you
           </p>
@@ -212,7 +212,7 @@ function MatchCard({
           </p>
           {viewerRole === "seeker" && match.ai_intro_draft && (
             <details className="mt-2">
-              <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider text-violet-300 hover:text-violet-200">
+              <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider text-[var(--shipped-fg)] hover:text-[var(--fg)]">
                 Draft intro message
               </summary>
               <p className="mt-1.5 text-xs text-[var(--fg-muted)] italic whitespace-pre-wrap">
@@ -231,7 +231,7 @@ function MatchCard({
           <form action={passMatch.bind(null, match.id)}>
             <button
               type="submit"
-              className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-2 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+              className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-2 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
             >
               Pass
             </button>

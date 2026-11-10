@@ -16,17 +16,17 @@ export function MessageBubble({
     <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
       <div
         className={[
-          "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words",
+          "max-w-[80%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap break-words",
           isMine
-            ? "bg-[var(--accent)] text-[var(--bg)] rounded-br-md"
-            : "bg-[var(--surface-2)] text-[var(--fg)] border border-[var(--border)] rounded-bl-md",
+            ? "bg-[var(--accent)] text-[var(--fg-on-accent)] rounded-br-md"
+            : "bg-[var(--surface-1)] text-[var(--fg)] border border-[var(--border)] shadow-[var(--shadow-1)] rounded-bl-md",
         ].join(" ")}
       >
         <p>{body}</p>
         <p
           className={[
-            "mt-1 font-mono text-[10px] tabular-nums",
-            isMine ? "text-[var(--bg)]/70 text-right" : "text-[var(--fg-subtle)]",
+            "mt-1 text-[11px] tabular-nums",
+            isMine ? "text-[var(--fg-on-accent)]/80 text-right" : "text-[var(--fg-subtle)]",
           ].join(" ")}
         >
           {timeShort(createdAt)}

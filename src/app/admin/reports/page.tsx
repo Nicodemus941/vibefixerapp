@@ -50,10 +50,10 @@ export default async function ReportsAdminPage() {
             {reports.map((r) => (
               <li
                 key={r.id}
-                className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.05] p-5 space-y-3"
+                className="rounded-2xl border border-[var(--need-fg)]/30 bg-[var(--need-fg)]/[0.05] p-5 space-y-3"
               >
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-amber-400">
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--need-fg)]">
                     {r.target_kind.toUpperCase()} · reported by{" "}
                     <Link
                       href={`/u/${r.reporter_id}`}

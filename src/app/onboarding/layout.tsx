@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LoopMark } from "@/components/LoopMark";
 
 export default function OnboardingLayout({
   children,
@@ -6,35 +7,23 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] relative isolate overflow-x-hidden">
-      {/* Ambient mesh — same vibe as the landing hero, dialed down */}
-      <div className="mesh-bg absolute inset-0 -z-10 opacity-50" aria-hidden />
-      <div className="grain absolute inset-0 -z-10" aria-hidden />
-      <div
-        className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[var(--bg)] to-transparent -z-10"
-        aria-hidden
-      />
-
-      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] overflow-x-hidden">
+      <header
+        className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface-1)]/90 backdrop-blur-md"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <Link
             href="/feed"
             aria-label="Loop home"
-            className="flex items-center gap-2 press-shrink"
+            className="inline-flex min-h-11 items-center gap-2 text-lg font-bold tracking-[-0.02em] rounded-lg"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/loop-mark.svg"
-              alt=""
-              width={24}
-              height={24}
-              className="h-6 w-6"
-            />
-            <span className="font-semibold tracking-tight">Loop</span>
+            <LoopMark />
+            Loop
           </Link>
           <Link
             href="/feed"
-            className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+            className="press-shrink inline-flex h-11 items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-4 text-sm font-semibold text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
           >
             Skip for now
           </Link>

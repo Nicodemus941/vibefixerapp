@@ -1,95 +1,130 @@
-import { MotionMount } from "./_components/MotionMount";
-import { LandingStats } from "./_components/LandingStats";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import {
+  Briefcase,
+  Check,
+  Inbox,
+  ListChecks,
+  Plus,
+  Sparkles,
+  Trophy,
+  UserRound,
+} from "lucide-react";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
+
+// Landing page (Fable redesign, 2026-11-10).
+// Fully static server render: the hero and its product preview are in
+// the first paint, no typewriter, no reveal animation gating content.
+// Every person shown in a preview is a fictional sample member.
 
 export default function Home() {
   return (
     <>
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-[var(--accent)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--bg)]"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-[var(--accent)] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[var(--fg-on-accent)]"
       >
         Skip to content
       </a>
-      <Nav />
+      <SiteHeader
+        sections={[
+          { href: "#how", label: "How it works" },
+          { href: "#get", label: "What you get" },
+          { href: "#free", label: "Free" },
+          { href: "#faq", label: "FAQ" },
+        ]}
+      />
       <main
         id="main-content"
-        className="relative min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--fg)]"
+        className="bg-[var(--bg)] text-[var(--fg)] overflow-x-hidden"
       >
-        <MotionMount />
         <Hero />
-        <LandingStats />
-        <Broken />
         <HowItWorks />
         <WhatYouGet />
-        <Pricing />
+        <FreeBlock />
         <Faq />
         <FinalCta />
-        <Footer />
       </main>
+      <SiteFooter />
     </>
   );
 }
 
-/* ---------------- Nav ---------------- */
+/* ---------------- shared bits ---------------- */
 
-function Nav() {
-  const links = [
-    { href: "#how", label: "How it works" },
-    { href: "#pricing", label: "Free" },
-    { href: "#faq", label: "FAQ" },
-  ];
+const WRAP = "mx-auto w-full max-w-6xl px-4 sm:px-6";
+
+function SampleAvatar({
+  initials,
+  tint,
+  size = 44,
+}: {
+  initials: string;
+  tint: 1 | 2 | 3 | 4 | 5;
+  size?: 36 | 44;
+}) {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/70 backdrop-blur-md">
-      <nav
-        aria-label="Primary"
-        className="mx-auto max-w-6xl px-5 sm:px-6 h-14 sm:h-16 flex items-center justify-between"
-      >
-        <a
-          href="/"
-          aria-label="Loop home"
-          className="flex items-center gap-2.5 press-shrink"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/loop-mark.svg"
-            alt=""
-            width={28}
-            height={28}
-            className="h-7 w-7"
-          />
-          <span className="font-semibold tracking-tight text-[var(--fg)]">
-            Loop
-          </span>
-        </a>
+    <span
+      aria-hidden
+      className={`inline-flex shrink-0 items-center justify-center rounded-full font-bold tracking-tight text-[var(--fg)] ${
+        size === 44 ? "h-11 w-11 text-[15px]" : "h-9 w-9 text-[13px]"
+      }`}
+      style={{ background: `var(--av-${tint})` }}
+    >
+      {initials}
+    </span>
+  );
+}
 
-        <div className="flex items-center gap-1 sm:gap-2">
-          <ul className="hidden md:flex items-center gap-1 mr-2">
-            {links.map((l) => (
-              <li key={l.href}>
-                <a
-                  href={l.href}
-                  className="px-3 py-2 text-sm text-[var(--fg-muted)] hover:text-[var(--fg)] rounded-full transition-colors"
-                >
-                  {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <a
-            href="/login"
-            className="press-shrink inline-flex items-center justify-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05] transition-colors"
-          >
-            Log in
-          </a>
-          <a
-            href="/login"
-            className="press-shrink inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
-          >
-            Sign up
-          </a>
-        </div>
-      </nav>
-    </header>
+function Score({ children }: { children: ReactNode }) {
+  return (
+    <span className="num shrink-0 rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--accent-text)]">
+      {children}
+    </span>
+  );
+}
+
+function PrimaryCta({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link
+      href="/login"
+      className={`press-shrink inline-flex h-14 items-center justify-center rounded-full bg-[var(--accent)] px-7 text-[17px] font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)] transition-colors ${className}`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function SectionHead({
+  label,
+  title,
+  lead,
+}: {
+  label: string;
+  title: ReactNode;
+  lead?: ReactNode;
+}) {
+  return (
+    <div className="max-w-2xl">
+      <p className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--accent-text)]">
+        {label}
+      </p>
+      <h2 className="mt-3.5 text-[32px] sm:text-[44px] font-bold leading-[1.08] tracking-[-0.03em]">
+        {title}
+      </h2>
+      {lead && (
+        <p className="mt-3.5 text-[17px] sm:text-[19px] leading-relaxed text-[var(--fg-muted)]">
+          {lead}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -97,365 +132,391 @@ function Nav() {
 
 function Hero() {
   return (
-    <section className="relative isolate min-h-[100svh] flex items-center overflow-hidden pt-20 pb-24 sm:pt-24 sm:pb-32">
-      {/* Parallax mesh background — moves at 0.3x scroll */}
-      <div
-        data-parallax="0.3"
-        className="mesh-bg absolute inset-0 -z-10"
-        aria-hidden
-      />
-      {/* Animated constellation — moves at 0.5x scroll (between mesh and
-          headline). Visible on every screen size; we step the opacity
-          and parallax intensity down slightly on phones so it stays
-          subtle behind the wrapped headline. */}
-      <div
-        data-parallax="0.4"
-        className="absolute inset-0 -z-10 opacity-50 sm:opacity-70"
-        aria-hidden
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/hero-constellation.svg"
-          alt=""
-          className="w-full h-full object-cover"
-          loading="eager"
-          fetchPriority="high"
-        />
-      </div>
-      {/* Subtle grain over mesh */}
-      <div className="grain absolute inset-0 -z-10" aria-hidden />
-      {/* Top + bottom vignette for legibility */}
-      <div
-        className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[var(--bg)] to-transparent -z-10"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[var(--bg)] to-transparent -z-10"
-        aria-hidden
-      />
-
-      <div
-        data-reveal
-        className="reveal mx-auto max-w-5xl px-6 text-center"
-      >
-        <div
-          data-parallax="0.85"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/[0.03] backdrop-blur-sm px-3 py-1 mb-8 reveal-child"
-          style={{ ["--stagger-delay" as string]: "0ms" }}
-        >
-          <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-          <span className="eyebrow !text-[var(--fg-muted)]">
-            Free for founders
-          </span>
-        </div>
-
+    <section
+      aria-labelledby="hero-title"
+      className={`${WRAP} grid items-center gap-12 lg:gap-16 pt-10 pb-16 sm:pt-16 sm:pb-24 lg:grid-cols-[minmax(0,540px)_1fr]`}
+    >
+      <div>
+        <span className="inline-flex h-[30px] items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-1)] pl-2.5 pr-3 text-[13px] font-semibold text-[var(--fg-muted)] shadow-[var(--shadow-1)]">
+          <span className="h-2 w-2 rounded-full bg-[var(--ring)]" aria-hidden />
+          Free for founders and builders
+        </span>
         <h1
-          data-parallax="0.85"
-          className="text-[clamp(2.75rem,8vw,6.5rem)] font-semibold tracking-[-0.04em] leading-[0.95]"
+          id="hero-title"
+          className="mt-5 text-[44px] sm:text-[64px] font-bold leading-[1.02] tracking-[-0.035em]"
         >
-          <span
-            className="reveal-child inline-block"
-            style={{ ["--stagger-delay" as string]: "60ms" }}
-          >
-            Stop
-          </span>{" "}
-          <span
-            className="reveal-child inline-block"
-            style={{ ["--stagger-delay" as string]: "130ms" }}
-          >
-            networking.
-          </span>
+          Real work.
           <br />
-          <span className="bg-gradient-to-r from-[var(--fg)] to-[var(--fg-muted)] bg-clip-text text-transparent">
-            <span
-              className="reveal-child inline-block"
-              style={{ ["--stagger-delay" as string]: "210ms" }}
-            >
-              Start
-            </span>{" "}
-            <span
-              className="reveal-child inline-block"
-              style={{ ["--stagger-delay" as string]: "290ms" }}
-            >
-              building.
-            </span>
-          </span>
-          <span
-            className="reveal-child cursor-blink ml-1 text-[var(--accent)] align-baseline"
-            style={{ ["--stagger-delay" as string]: "380ms" }}
-            aria-hidden
-          >
-            ▌
-          </span>
+          Real deals.
+          <br />
+          <span className="text-[var(--accent-text)]">No noise.</span>
         </h1>
-
-        <p
-          className="reveal-child mt-8 text-lg sm:text-xl text-[var(--fg-muted)] max-w-2xl mx-auto leading-relaxed"
-          style={{ ["--stagger-delay" as string]: "160ms" }}
-        >
-          The first platform where every founder must give AND receive. AI
-          matches your needs to another founder&apos;s services in under 24 hours.
+        <p className="mt-5 max-w-[520px] text-[17px] sm:text-[19px] leading-relaxed text-[var(--fg-muted)]">
+          Loop is a free professional network for people who build. Say what
+          you need and what you offer, see your matches every day, and agree
+          on the deal in your inbox. Loop takes no fee.
         </p>
-
-        <div
-          className="reveal-child mt-12 flex flex-col sm:flex-row gap-3 justify-center"
-          style={{ ["--stagger-delay" as string]: "240ms" }}
-        >
-          <a
-            href="/login"
-            className="press-shrink glow-ring inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-7 py-4 text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter] duration-200"
-          >
-            Claim Your Spot — Free
-          </a>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <PrimaryCta>Join free</PrimaryCta>
           <a
             href="#how"
-            className="press-shrink inline-flex items-center justify-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-7 py-4 text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05] transition-colors"
+            className="press-shrink inline-flex h-14 items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-7 text-[17px] font-semibold text-[var(--fg)] hover:bg-[var(--surface-2)] transition-colors"
           >
-            See How It Works ↓
+            See how it works
           </a>
         </div>
-
-        <p
-          className="reveal-child mt-6 text-sm text-[var(--fg-muted)]"
-          style={{ ["--stagger-delay" as string]: "320ms" }}
-        >
-          Already on Loop?{" "}
-          <a
+        <p className="mt-4 text-[13px] text-[var(--fg-subtle)]">
+          No card needed. Already on Loop?{" "}
+          <Link
             href="/login"
-            className="font-medium text-[var(--accent)] hover:underline underline-offset-4"
+            className="font-semibold text-[var(--accent-text)] hover:underline"
           >
-            Log in →
-          </a>
+            Log in
+          </Link>
         </p>
       </div>
+
+      <HeroPreview />
     </section>
   );
 }
 
-/* ---------------- LinkedIn is broken ---------------- */
-
-function Broken() {
-  const items = [
-    'Another connection request from a "growth hacker"',
-    "A feed of motivational posts from people who've never shipped",
-    "To pay for InMail to people who'll never reply",
+function HeroPreview() {
+  const matches = [
+    {
+      name: "Tomás Ferreira",
+      initials: "TF",
+      tint: 3 as const,
+      score: 92,
+      why: "Offers cold email infrastructure. You need outbound set up before Q1.",
+    },
+    {
+      name: "Priya Natarajan",
+      initials: "PN",
+      tint: 2 as const,
+      score: 88,
+      why: "Needs a fractional COO. You offer ops for early stage teams.",
+    },
+    {
+      name: "Daniel Okafor",
+      initials: "DO",
+      tint: 4 as const,
+      score: 81,
+      why: "Offers brand systems in 3 weeks. You need a rebrand before launch.",
+    },
   ];
   return (
-    <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
-      <div data-reveal className="reveal max-w-3xl mx-auto">
-        <p className="eyebrow mb-4">The problem</p>
-        <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] leading-[1.05]">
-          LinkedIn is broken for founders.
-        </h2>
-        <p className="mt-6 text-[var(--fg-muted)]">You don&apos;t need:</p>
-        <ul className="mt-8 space-y-4">
-          {items.map((t, i) => (
-            <li
-              key={t}
-              className="reveal-child flex items-start gap-4 font-mono text-[var(--fg)] text-base"
-              style={{ ["--stagger-delay" as string]: `${i * 80}ms` }}
+    <figure className="relative" aria-label="Preview of Loop with sample members">
+      <div className="relative xl:h-[540px]">
+        {/* Today's matches */}
+        <div className="surface-card p-5 xl:absolute xl:left-7 xl:top-0 xl:w-[468px]">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="eyebrow">Today&apos;s matches</p>
+              <p className="mt-0.5 text-[17px] font-semibold tracking-[-0.01em]">
+                3 founders fit what you need
+              </p>
+            </div>
+            <span className="chip chip-neutral num">Tue 6:00 AM</span>
+          </div>
+          <ul className="mt-2">
+            {matches.map((m, i) => (
+              <li
+                key={m.name}
+                className={`flex items-center gap-3 py-3.5 ${
+                  i > 0 ? "border-t border-[var(--border)]" : ""
+                }`}
+              >
+                <SampleAvatar initials={m.initials} tint={m.tint} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <strong className="truncate text-[13px] sm:text-sm font-semibold">
+                      {m.name}
+                    </strong>
+                    <Score>{m.score} fit</Score>
+                  </div>
+                  <p className="mt-0.5 text-[13px] leading-snug text-[var(--fg-muted)]">
+                    {m.why}
+                  </p>
+                </div>
+                <span className="hidden sm:inline-flex h-8 shrink-0 items-center rounded-full bg-[var(--accent-soft)] px-3 text-[13px] font-semibold text-[var(--accent-text)]">
+                  Say hi
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:mt-0 xl:block">
+          {/* A need */}
+          <div className="surface-card p-4 shadow-[var(--shadow-2)] xl:absolute xl:left-0 xl:bottom-0 xl:w-[230px]">
+            <span className="chip chip-need">Need</span>
+            <p className="mt-2.5 text-[13px] font-semibold">
+              Fractional CFO for a seed round
+            </p>
+            <p className="mt-1 text-xs text-[var(--fg-muted)]">
+              <span className="num">$4k</span> to <span className="num">$6k</span> a
+              month. Starts in 2 weeks.
+            </p>
+            <p className="mt-3 flex gap-1.5 num text-xs text-[var(--accent-text)]">
+              <span>#cfo</span>
+              <span>#saas</span>
+            </p>
+          </div>
+
+          {/* A closed deal */}
+          <div className="surface-card flex items-start gap-2.5 p-4 shadow-[var(--shadow-2)] xl:absolute xl:right-0 xl:bottom-0 xl:w-[256px]">
+            <span
+              aria-hidden
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--offer-bg)] text-[var(--offer-fg)]"
             >
-              <span className="text-[var(--danger)] mt-0.5" aria-hidden>
-                ✕
-              </span>
-              <span className="line-through decoration-[var(--danger)]/60 decoration-2">{t}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-12 text-xl sm:text-2xl font-medium text-[var(--fg)] tracking-tight">
-          You need: the right person, with the right skill, ready to start
-          today.
-        </p>
+              <Check className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <div className="min-w-0">
+              <strong className="text-[13px] font-semibold">Deal closed</strong>
+              <p className="mt-1 text-[13px] text-[var(--fg-muted)]">
+                Cold email setup, <span className="num">$2,400</span>. No Loop fee.
+              </p>
+              <span className="pill-status st-released mt-2.5">Paid</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+      <figcaption className="mt-3 text-xs text-[var(--fg-subtle)] xl:text-right">
+        Sample members shown for illustration.
+      </figcaption>
+    </figure>
   );
 }
 
-/* ---------------- How it works (bento) ---------------- */
+/* ---------------- How it works ---------------- */
 
 function HowItWorks() {
   return (
     <section
       id="how"
-      className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)] scroll-mt-20"
+      aria-labelledby="how-title"
+      className="scroll-mt-20 border-y border-[var(--border)] bg-[var(--surface-1)] py-16 sm:py-24"
     >
-      <div data-reveal className="reveal max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <p className="eyebrow mb-4">How Loop works</p>
-          <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
-            Three steps. No theater.
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-12 gap-4">
-          {/* Big tile — spans 7 cols on desktop, full on mobile */}
-          <BentoTile
+      <div className={WRAP}>
+        <SectionHead
+          label="How it works"
+          title={<span id="how-title">Three steps. Then you are talking to the right person.</span>}
+          lead="Loop only works because everyone gives as well as gets. You list both sides, and matching does the searching for you."
+        />
+        <ol className="mt-10 sm:mt-12 grid gap-5 md:grid-cols-3">
+          <Step
             n="01"
-            title="List what you sell."
-            body="Web design. Cold email. Fractional CFO. Anything you actually deliver."
-            className="col-span-12 lg:col-span-7 lg:row-span-2 min-h-[18rem] lg:min-h-[24rem]"
-            delay={0}
+            title="Say what you offer"
+            body="Design, cold email, fractional finance, iOS, anything you actually deliver. Add a category and a range so matches are realistic."
           >
-            <div className="absolute bottom-6 right-6 left-6 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 font-mono text-xs text-[var(--fg-muted)]">
-              <span className="text-[var(--accent)]">offer</span>:{" "}
-              fractional-cfo-saas-seed
-              <br />
-              <span className="text-[var(--accent)]">price</span>: $4k–$8k / mo
-              <br />
-              <span className="text-[var(--accent)]">status</span>: active
+            <p className="eyebrow">Offer</p>
+            <p className="mt-1.5 text-[13px] font-semibold">Brand systems in 3 weeks</p>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              <span className="chip chip-offer">Design</span>
+              <span className="chip chip-neutral num">From $8k</span>
+              <span className="chip chip-neutral">Fixed scope</span>
             </div>
-          </BentoTile>
-
-          {/* Two medium tiles right */}
-          <BentoTile
+          </Step>
+          <Step
             n="02"
-            title="List what you need."
-            body="Required. No spectators."
-            className="col-span-12 lg:col-span-5 min-h-[11rem] lg:min-h-[11.5rem]"
-            delay={120}
-          />
-          <BentoTile
+            title="Say what you need"
+            body="Budget, timeline and the shape of the work. Specific needs get specific matches."
+          >
+            <p className="eyebrow">Need</p>
+            <p className="mt-1.5 text-[13px] font-semibold">Outbound set up before Q1</p>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              <span className="chip chip-need">Sales</span>
+              <span className="chip chip-neutral num">$2k to $3k</span>
+              <span className="chip chip-neutral">2 weeks</span>
+            </div>
+          </Step>
+          <Step
             n="03"
-            title="3 matches by morning."
-            body="Hire on the spot, or build the relationship first. Your call."
-            className="col-span-12 lg:col-span-5 min-h-[11rem] lg:min-h-[11.5rem]"
-            delay={240}
-          />
-        </div>
-
-        <p className="mt-12 text-center text-[var(--fg-subtle)]">
-          Plus a feed of real work: what people need, offer and ship.
-        </p>
+            title="See your matches every day"
+            body="Loop scores offers against needs and explains each match in a sentence. Say hi, or keep browsing."
+          >
+            <div className="flex items-center gap-2.5">
+              <SampleAvatar initials="TF" tint={3} size={36} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <strong className="text-[13px] font-semibold">Tomás Ferreira</strong>
+                  <Score>92 fit</Score>
+                </div>
+                <p className="text-xs text-[var(--fg-muted)]">
+                  Offers cold email infrastructure
+                </p>
+              </div>
+            </div>
+            <span className="mt-3 flex h-8 w-full items-center justify-center rounded-full bg-[var(--accent)] text-[13px] font-semibold text-[var(--fg-on-accent)]">
+              Say hi
+            </span>
+          </Step>
+        </ol>
       </div>
     </section>
   );
 }
 
-function BentoTile({
+function Step({
   n,
   title,
   body,
-  className,
-  delay,
   children,
 }: {
   n: string;
   title: string;
   body: string;
-  className?: string;
-  delay: number;
-  children?: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <div
-      className={`reveal-child relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] p-8 hover:border-[var(--border-strong)] transition-colors ${className ?? ""}`}
-      style={{ ["--stagger-delay" as string]: `${delay}ms` }}
-    >
-      <span className="eyebrow text-[var(--accent)]">{n}</span>
-      <h3 className="mt-3 text-2xl font-semibold tracking-tight">{title}</h3>
-      <p className="mt-2 text-[var(--fg-muted)] text-sm leading-relaxed max-w-sm">
-        {body}
-      </p>
-      {children}
-    </div>
+    <li className="surface-card flex flex-col gap-4 p-6 md:min-h-[400px]">
+      <span className="num text-[13px] font-semibold text-[var(--accent-text)]">
+        {n}
+      </span>
+      <h3 className="text-[22px] font-semibold leading-tight tracking-[-0.015em]">
+        {title}
+      </h3>
+      <p className="text-[var(--fg-muted)]">{body}</p>
+      <div
+        aria-hidden
+        className="mt-auto rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--bg)] p-3.5"
+      >
+        {children}
+      </div>
+    </li>
   );
 }
 
-/* ---------------- What you get (free) ---------------- */
+/* ---------------- What you get ---------------- */
 
 function WhatYouGet() {
-  const perks = [
-    { title: "Daily matches between what you need and what other founders offer", value: "Free" },
-    { title: "A founder network where everyone gives as well as gets", value: "Free" },
-    { title: "Unlimited messages, posts, follows and groups", value: "Free" },
-    { title: "Paid deals with no Loop fee", value: "Free" },
-    { title: "Reputation built from shipped work and real reviews", value: "Free" },
+  const features = [
+    {
+      icon: UserRound,
+      title: "A profile with receipts",
+      body: "Experience, education, certifications and the offers you want to be known for, plus deals closed and reviews from the people you worked with.",
+    },
+    {
+      icon: ListChecks,
+      title: "A feed about work",
+      body: "Needs, offers and shipped work, with comments and reactions. Follow people and companies.",
+    },
+    {
+      icon: Sparkles,
+      title: "Daily matches",
+      body: "The offers that fit your needs and the needs that fit your offers, each with a plain reason why.",
+    },
+    {
+      icon: Inbox,
+      title: "Deals in your inbox, no fee",
+      body: "Agree on scope and price in the same thread where you talk. Documents live there too. Loop takes nothing.",
+    },
+    {
+      icon: Briefcase,
+      title: "Jobs and company pages",
+      body: "Post roles from your company page and follow the companies you care about.",
+    },
+    {
+      icon: Trophy,
+      title: "Groups, leaderboard, public card",
+      body: "Rooms for your niche, a leaderboard ranked by shipped work, and a public business card you can share anywhere.",
+    },
   ];
   return (
-    <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
-      <div data-reveal className="reveal max-w-4xl mx-auto">
-        <p className="eyebrow mb-4">What you get</p>
-        <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
-          For free. While you reciprocate.
-        </h2>
-        <ul className="mt-12 divide-y divide-[var(--border)] border-y border-[var(--border)]">
-          {perks.map((p, i) => (
-            <li
-              key={p.title}
-              className="reveal-child flex items-start justify-between gap-6 py-5"
-              style={{ ["--stagger-delay" as string]: `${i * 60}ms` }}
-            >
-              <div className="flex items-start gap-4">
-                <span className="text-[var(--accent)] mt-0.5" aria-hidden>
-                  ✓
-                </span>
-                <span className="text-[var(--fg)]">{p.title}</span>
-              </div>
-              <span className="font-mono text-xs text-[var(--fg-subtle)] shrink-0 tabular-nums">
-                {p.value}
+    <section
+      id="get"
+      aria-labelledby="get-title"
+      className="scroll-mt-20 py-16 sm:py-24"
+    >
+      <div className={WRAP}>
+        <SectionHead
+          label="What you get"
+          title={
+            <span id="get-title">
+              Everything a professional network should do, built around the work.
+            </span>
+          }
+          lead="A profile that shows receipts, a feed about shipping, and an inbox where deals actually get agreed."
+        />
+        <ul className="mt-10 sm:mt-12 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((f) => (
+            <li key={f.title} className="surface-card p-6">
+              <span
+                aria-hidden
+                className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent-text)]"
+              >
+                <f.icon className="h-5 w-5" strokeWidth={1.8} />
               </span>
+              <h3 className="text-[17px] font-semibold tracking-[-0.01em]">
+                {f.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--fg-muted)]">
+                {f.body}
+              </p>
             </li>
           ))}
         </ul>
-        <div className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-8 text-center">
-          <p className="text-lg">
-            Your price: <span className="font-semibold text-[var(--accent)]">$0</span>.
-            The only rule is that you give as well as get.
-          </p>
-        </div>
       </div>
     </section>
   );
 }
 
-/* ---------------- Pricing ---------------- */
+/* ---------------- Free ---------------- */
 
-function Pricing() {
-  // Free for everyone while Loop grows (owner decision 2026-11-10). Paid
-  // options come later; nothing here may promise a price or tier.
-  const included = [
-    "Your full profile, experience and portfolio",
+function FreeBlock() {
+  const items = [
+    "Full profile, experience and portfolio",
     "Unlimited posts, comments and follows",
     "Unlimited messages",
-    "Daily matches on what you need and offer",
+    "Daily matches on needs and offers",
     "Jobs, groups and company pages",
     "Paid deals with no Loop fee",
   ];
   return (
     <section
-      id="pricing"
-      className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)] scroll-mt-20"
+      id="free"
+      aria-labelledby="free-title"
+      className="scroll-mt-20 pb-16 sm:pb-24"
     >
-      <div data-reveal className="reveal max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <p className="eyebrow mb-4">Price</p>
-          <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
-            Free. All of it.
-          </h2>
-          <p className="mt-4 text-[var(--fg-muted)]">
-            No premium tier, no paywall on messages, no card needed.
-          </p>
-        </div>
-        <div className="reveal-child rounded-2xl p-7 border border-[var(--accent)]/40 bg-[var(--surface-2)] glow-ring">
-          <div className="flex items-baseline gap-1">
-            <span className="text-5xl font-semibold tracking-[-0.03em] tabular-nums">$0</span>
+      <div className={WRAP}>
+        <div className="surface-card grid items-center gap-10 p-6 sm:p-12 md:grid-cols-[1.2fr_1fr]">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--accent-text)]">
+              Free
+            </p>
+            <h2
+              id="free-title"
+              className="mt-3.5 text-[32px] sm:text-[44px] font-bold leading-[1.08] tracking-[-0.03em]"
+            >
+              Free. All of it.
+            </h2>
+            <p className="mt-3.5 text-[17px] sm:text-[19px] leading-relaxed text-[var(--fg-muted)]">
+              No paywall on messages. No card needed. Every member gets every
+              feature.
+            </p>
+            <ul className="mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+              {items.map((t) => (
+                <li key={t} className="flex items-start gap-2.5 text-[15px]">
+                  <Check
+                    aria-hidden
+                    className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent-text)]"
+                    strokeWidth={2.2}
+                  />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <PrimaryCta className="mt-8 !h-12 !text-base">Join free</PrimaryCta>
           </div>
-          <ul className="mt-6 grid gap-2.5 text-sm sm:grid-cols-2">
-            {included.map((f) => (
-              <li key={f} className="flex items-start gap-2">
-                <span className="text-[var(--accent)]" aria-hidden>
-                  ✓
-                </span>
-                <span className="text-[var(--fg)]">{f}</span>
-              </li>
-            ))}
-          </ul>
-          <a
-            href="/login"
-            className="press-shrink mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-medium bg-[var(--accent)] text-[var(--bg)] hover:brightness-110 transition-colors"
-          >
-            Join free
-          </a>
+          <div className="hidden md:block text-center" aria-hidden>
+            <p className="text-[96px] lg:text-[120px] font-bold leading-none tracking-[-0.05em]">
+              Free
+            </p>
+            <p className="mt-2 text-lg text-[var(--fg-muted)]">
+              for every member, every feature
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -465,42 +526,58 @@ function Pricing() {
 /* ---------------- FAQ ---------------- */
 
 function Faq() {
-  const qa = [
+  const items = [
     {
-      q: "What if I only want to hire, not offer?",
-      a: "Then this isn't for you. Loop only works because everyone gives.",
+      q: "Who is Loop for?",
+      a: "Founders, operators, freelancers and anyone who builds things for other people. If you can deliver work and you sometimes need work done, Loop fits.",
     },
     {
-      q: "How is the matching actually done?",
-      a: "Loop analyzes your needs against every offer on the platform — by price, urgency, industry, and proven reputation. Not keywords. Not job titles.",
+      q: "Is it really free?",
+      a: "Yes. Every feature, every member. When you close a paid deal on Loop, Loop takes no fee.",
     },
     {
-      q: "What does it cost?",
-      a: "Nothing. Loop is free, and when you close a paid deal here, Loop takes no fee.",
+      q: "Do I have to offer something?",
+      a: "Loop works best when everyone gives as well as gets. List at least one offer and one need and matching has something to work with.",
+    },
+    {
+      q: "How does matching work?",
+      a: "Loop compares your needs with the offers on the platform by category, budget, timeline and track record, then writes a short reason for each match. Not keywords, not job titles.",
+    },
+    {
+      q: "What happens when I agree on a deal?",
+      a: "You agree on the scope and amount in your inbox thread with the other person. When the work is done, both sides can leave a review, and the deal shows up on your profile.",
+    },
+    {
+      q: "Can I bring my LinkedIn profile?",
+      a: "You rebuild it in a few minutes: experience, education, certifications, and the offers you want to be known for. Your public card is live as soon as you save.",
     },
   ];
   return (
     <section
       id="faq"
-      className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)] scroll-mt-20"
+      aria-labelledby="faq-title"
+      className="scroll-mt-20 border-t border-[var(--border)] bg-[var(--surface-1)] py-16 sm:py-24"
     >
-      <div data-reveal className="reveal max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <p className="eyebrow mb-4">Questions</p>
-          <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
-            FAQ
-          </h2>
-        </div>
-        <div className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
-          {qa.map((item) => (
-            <details key={item.q} className="group py-6">
-              <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-medium text-[var(--fg)] list-none">
-                <span>{item.q}</span>
-                <span className="text-[var(--fg-subtle)] transition-transform duration-300 group-open:rotate-45 text-2xl leading-none">
-                  +
-                </span>
+      <div className={`${WRAP} grid gap-10 lg:grid-cols-[400px_1fr] lg:gap-16`}>
+        <SectionHead
+          label="Questions"
+          title={<span id="faq-title">Straight answers.</span>}
+          lead="Anything else, message us inside Loop and a real person replies."
+        />
+        <div className="border-b border-[var(--border)]">
+          {items.map((item) => (
+            <details
+              key={item.q}
+              className="group border-t border-[var(--border)]"
+            >
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-5 text-[17px] font-semibold tracking-[-0.01em] rounded-lg [&::-webkit-details-marker]:hidden">
+                {item.q}
+                <Plus
+                  aria-hidden
+                  className="h-5 w-5 shrink-0 text-[var(--fg-subtle)] transition-transform group-open:rotate-45"
+                />
               </summary>
-              <p className="mt-3 text-[var(--fg-muted)] leading-relaxed">
+              <p className="-mt-1 pb-5 pr-9 leading-relaxed text-[var(--fg-muted)]">
                 {item.a}
               </p>
             </details>
@@ -511,55 +588,50 @@ function Faq() {
   );
 }
 
-/* ---------------- Final CTA (mirror hero) ---------------- */
+/* ---------------- Final CTA ---------------- */
 
 function FinalCta() {
   return (
-    <section className="relative isolate overflow-hidden py-24 sm:py-40 px-6 border-t border-[var(--border)]">
-      <div className="mesh-bg absolute inset-0 -z-10 opacity-60" aria-hidden />
+    <section
+      aria-labelledby="final-title"
+      className="relative isolate overflow-hidden bg-[var(--ink)] py-20 sm:py-28 text-center text-[var(--fg-on-ink)]"
+    >
       <div
-        className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[var(--bg)] to-transparent -z-10"
         aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(50% 50% at 30% 40%, rgba(63,211,154,.18), transparent 60%), radial-gradient(40% 40% at 75% 60%, rgba(63,211,154,.10), transparent 60%)",
+        }}
       />
-      <div
-        className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[var(--bg)] to-transparent -z-10"
-        aria-hidden
-      />
-      <div data-reveal className="reveal max-w-3xl mx-auto text-center">
-        <h2 className="text-4xl sm:text-6xl font-semibold tracking-[-0.04em]">
+      <div className={WRAP}>
+        <h2
+          id="final-title"
+          className="text-[40px] sm:text-[64px] font-bold leading-[1.02] tracking-[-0.035em] text-white"
+        >
           Built for founders who ship.
         </h2>
-        <div className="mt-10">
-          <a
-            href="/login"
-            className="press-shrink glow-ring inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-8 py-5 text-base font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
-          >
-            Claim Your Founder Spot — Free
-          </a>
-        </div>
-        <p className="mt-6 text-sm text-[var(--fg-muted)]">
-          Already on Loop?{" "}
-          <a
-            href="/login"
-            className="font-medium text-[var(--accent)] hover:underline underline-offset-4"
-          >
-            Log in →
-          </a>
+        <p className="mx-auto mt-5 max-w-xl text-[17px] sm:text-[19px] text-[var(--fg-on-ink-muted)]">
+          List one offer and one need. Your matches start from there.
         </p>
-        <p className="mt-6 eyebrow">Free. No card needed.</p>
+        <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href="/login"
+            className="press-shrink inline-flex h-14 w-full sm:w-auto items-center justify-center rounded-full bg-white px-7 text-[17px] font-semibold text-[#141F1B] hover:bg-[#E9EEEB] transition-colors"
+          >
+            Join free
+          </Link>
+          <Link
+            href="/login"
+            className="press-shrink inline-flex h-14 w-full sm:w-auto items-center justify-center rounded-full border border-[var(--ink-border)] px-7 text-[17px] font-semibold text-white hover:bg-white/10 transition-colors"
+          >
+            Log in
+          </Link>
+        </div>
+        <p className="mt-4 text-[13px] text-[var(--fg-on-ink-muted)]">
+          Free. No card needed.
+        </p>
       </div>
     </section>
-  );
-}
-
-/* ---------------- Footer ---------------- */
-
-function Footer() {
-  return (
-    <footer className="px-6 py-10 text-center border-t border-[var(--border)]">
-      <p className="eyebrow !text-[var(--fg-subtle)]">
-        © {new Date().getFullYear()} Loop · Reciprocity required
-      </p>
-    </footer>
   );
 }

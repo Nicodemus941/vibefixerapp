@@ -37,7 +37,7 @@ export function StripeConnectSection({ status }: { status: StripeConnectStatus }
                 Connected and ready to receive payments
               </span>
             )}
-            {s === "onboarding" && "Stripe onboarding started — finish to receive payments."}
+            {s === "onboarding" && "Stripe onboarding started. Finish it to receive payments."}
             {s === "disabled" && (
               <span className="text-[var(--danger)]">
                 Stripe disabled this account. Check requirements.
@@ -60,7 +60,7 @@ export function StripeConnectSection({ status }: { status: StripeConnectStatus }
             });
           }}
           disabled={pending}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] disabled:opacity-50"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] disabled:opacity-50"
         >
           {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
           Refresh

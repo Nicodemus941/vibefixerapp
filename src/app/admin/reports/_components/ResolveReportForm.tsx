@@ -20,7 +20,7 @@ export function ResolveReportForm({ reportId }: { reportId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2 border-t border-amber-400/20 pt-3">
+    <div className="flex items-center gap-2 border-t border-[var(--need-fg)]/20 pt-3">
       <button
         type="button"
         onClick={() => decide("reviewed")}
@@ -34,7 +34,7 @@ export function ResolveReportForm({ reportId }: { reportId: string }) {
         type="button"
         onClick={() => decide("dismissed")}
         disabled={pending}
-        className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-3)] border border-[var(--border-strong)] px-3 py-1.5 text-xs text-[var(--fg)] hover:bg-white/[0.05] disabled:opacity-40"
+        className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-3)] border border-[var(--border-strong)] px-3 py-1.5 text-xs text-[var(--fg)] hover:bg-[var(--surface-2)] disabled:opacity-40"
       >
         {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
         Dismiss

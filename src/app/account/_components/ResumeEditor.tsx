@@ -47,7 +47,7 @@ export function EducationEditor({ initial }: { initial: EducationRow[] }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-2 text-sm text-[var(--fg)] hover:bg-white/[0.05]"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-2 text-sm text-[var(--fg)] hover:bg-[var(--surface-2)]"
         >
           <Plus className="h-4 w-4" />
           Add education
@@ -87,7 +87,7 @@ function EducationItem({ row, onDelete }: { row: EducationRow; onDelete: () => v
         onClick={remove}
         disabled={pending}
         aria-label="Remove education"
-        className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full text-[var(--fg-subtle)] hover:bg-white/[0.04] hover:text-[var(--danger)]"
+        className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full text-[var(--fg-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--danger)]"
       >
         {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
       </button>
@@ -224,7 +224,7 @@ export function CertificationsEditor({ initial }: { initial: CertificationRow[] 
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-2 text-sm text-[var(--fg)] hover:bg-white/[0.05]"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-2 text-sm text-[var(--fg)] hover:bg-[var(--surface-2)]"
         >
           <Plus className="h-4 w-4" />
           Add certification
@@ -272,7 +272,7 @@ function CertItem({ row, onDelete }: { row: CertificationRow; onDelete: () => vo
         onClick={remove}
         disabled={pending}
         aria-label="Remove certification"
-        className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full text-[var(--fg-subtle)] hover:bg-white/[0.04] hover:text-[var(--danger)]"
+        className="press-shrink inline-flex items-center justify-center h-8 w-8 rounded-full text-[var(--fg-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--danger)]"
       >
         {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
       </button>
@@ -406,16 +406,16 @@ function Input({
 }
 
 function formatYearRange(start: number | null, end: number | null): string {
-  if (start && end) return `${start} — ${end}`;
-  if (start && !end) return `${start} — Present`;
+  if (start && end) return `${start} to ${end}`;
+  if (start && !end) return `${start} to now`;
   if (!start && end) return `${end}`;
-  return "—";
+  return "";
 }
 
 function formatCertDates(issued: string | null, expires: string | null): string {
   const fmt = (s: string) => new Date(s).toLocaleString(undefined, { month: "short", year: "numeric" });
-  if (issued && expires) return `${fmt(issued)} — expires ${fmt(expires)}`;
+  if (issued && expires) return `${fmt(issued)}, expires ${fmt(expires)}`;
   if (issued) return `Issued ${fmt(issued)}`;
   if (expires) return `Expires ${fmt(expires)}`;
-  return "—";
+  return "";
 }

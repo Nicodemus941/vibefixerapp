@@ -218,7 +218,7 @@ export function ReviewForm({
                 </div>
               )}
               {m.error && (
-                <div className="absolute inset-0 bg-[var(--danger)]/30 flex items-center justify-center p-1 text-[9px] text-white text-center">
+                <div className="absolute inset-0 bg-[var(--danger)]/85 flex items-center justify-center p-1 text-[9px] text-white text-center">
                   {m.error}
                 </div>
               )}
@@ -253,7 +253,7 @@ export function ReviewForm({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={pending || media.length >= MAX_MEDIA}
-            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] disabled:opacity-40"
+            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] disabled:opacity-40"
           >
             <ImageIcon className="h-3.5 w-3.5" />
             Add media

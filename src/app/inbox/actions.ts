@@ -60,8 +60,11 @@ export type InboxRow = {
   counterparty_id: string;
   counterparty_name: string;
   counterparty_company: string | null;
+  counterparty_avatar_url: string | null;
   preview: string | null;
   preview_sender_is_me: boolean;
+  /** Most recent deal with this person, if any. */
+  deal: { status: string; amount: number } | null;
 };
 
 export async function fetchInbox(): Promise<InboxRow[]> {
@@ -84,10 +87,10 @@ export async function fetchInbox(): Promise<InboxRow[]> {
     c.participant_a === user.id ? c.participant_b : c.participant_a,
   );
 
-  const [{ data: profiles }, { data: previews }] = await Promise.all([
+  const [{ data: profiles }, { data: previews }, { data: deals }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, display_name, company_name")
+      .select("id, display_name, company_name, avatar_url")
       .in("id", counterpartyIds),
     supabase
       .from("messages")
@@ -97,7 +100,22 @@ export async function fetchInbox(): Promise<InboxRow[]> {
         convs.map((c) => c.id),
       )
       .order("created_at", { ascending: false }),
+    supabase
+      .from("engagements")
+      .select("seeker_id, provider_id, amount, escrow_status, created_at")
+      .or(`seeker_id.eq.${user.id},provider_id.eq.${user.id}`)
+      .order("created_at", { ascending: false })
+      .limit(200),
   ]);
+
+  // Latest deal per counterparty (engagements are per pair, not per thread).
+  const dealMap = new Map<string, { status: string; amount: number }>();
+  for (const d of deals ?? []) {
+    const other = d.seeker_id === user.id ? d.provider_id : d.seeker_id;
+    if (!dealMap.has(other)) {
+      dealMap.set(other, { status: d.escrow_status ?? "held", amount: Number(d.amount) });
+    }
+  }
 
   const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
   const previewMap = new Map<string, { body: string; sender_id: string }>();
@@ -118,8 +136,10 @@ export async function fetchInbox(): Promise<InboxRow[]> {
       counterparty_id: otherId,
       counterparty_name: p?.display_name ?? "Unknown",
       counterparty_company: p?.company_name ?? null,
+      counterparty_avatar_url: p?.avatar_url ?? null,
       preview: pv?.body ?? null,
       preview_sender_is_me: pv?.sender_id === user.id,
+      deal: dealMap.get(otherId) ?? null,
     };
   });
 }

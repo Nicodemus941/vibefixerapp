@@ -68,7 +68,7 @@ export async function startEngagement(input: {
   await supabase.from("messages").insert({
     conversation_id: input.conversationId,
     sender_id: user.id,
-    body: `📑 Deal opened — $${input.amount} (escrow held). ${sideLabel}: ${user.id === input.otherUserId ? "you" : "them"}.`,
+    body: `📑 Deal opened: $${input.amount} (escrow held). ${sideLabel}: ${user.id === input.otherUserId ? "you" : "them"}.`,
   });
 
   await logEvent("engagement_started", user.id, {
@@ -119,7 +119,7 @@ export async function markDelivered(
   await supabase.from("messages").insert({
     conversation_id: conversationId,
     sender_id: user.id,
-    body: `✅ Escrow released — $${eng.amount} delivered to the provider.`,
+    body: `✅ Escrow released: $${eng.amount} delivered to the provider.`,
   });
 
   await logEvent("engagement_released", user.id, {
@@ -146,7 +146,7 @@ export async function refundEngagement(
     .maybeSingle();
   if (!eng) return { error: "engagement not found" };
   if (eng.escrow_status !== "held") {
-    return { error: `Cannot refund — status is ${eng.escrow_status}` };
+    return { error: `Cannot refund, status is ${eng.escrow_status}` };
   }
   // Either side can refund a held engagement (mutual cancellation).
   if (eng.seeker_id !== user.id && eng.provider_id !== user.id) {
@@ -162,7 +162,7 @@ export async function refundEngagement(
   await supabase.from("messages").insert({
     conversation_id: conversationId,
     sender_id: user.id,
-    body: `↩️ Deal refunded — $${eng.amount} returned to the seeker.`,
+    body: `↩️ Deal refunded: $${eng.amount} returned to the seeker.`,
   });
 
   await logEvent("engagement_refunded", user.id, { engagement_id: engagementId });

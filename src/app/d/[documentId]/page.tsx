@@ -43,7 +43,7 @@ export default async function DocumentPage({
           <p className="text-[var(--fg-muted)]">{error ?? "Document not found."}</p>
           <Link
             href="/inbox"
-            className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05]"
+            className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to inbox
@@ -69,7 +69,7 @@ export default async function DocumentPage({
       <main className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8 space-y-4">
         <Link
           href={`/inbox/${doc.conversation_id}`}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05]"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to conversation

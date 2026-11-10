@@ -119,7 +119,7 @@ function PersonRow({ person }: { person: SearchPerson }) {
     <li>
       <Link
         href={`/u/${person.id}`}
-        className="flex items-center gap-3 p-4 hover:bg-white/[0.02] transition-colors"
+        className="flex items-center gap-3 p-4 hover:bg-[var(--surface-1)] transition-colors"
       >
         <div className="h-10 w-10 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-sm font-mono text-[var(--fg-muted)]">
           {(person.display_name[0] ?? "?").toUpperCase()}

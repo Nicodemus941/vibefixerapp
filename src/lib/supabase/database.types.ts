@@ -195,6 +195,7 @@ export type Database = {
           id: string;
           industry: string | null;
           logo_url: string | null;
+          cover_url: string | null;
           member_count: number;
           name: string;
           size_band: string | null;
@@ -211,6 +212,7 @@ export type Database = {
           id?: string;
           industry?: string | null;
           logo_url?: string | null;
+          cover_url?: string | null;
           member_count?: number;
           name: string;
           size_band?: string | null;
@@ -227,6 +229,7 @@ export type Database = {
           id?: string;
           industry?: string | null;
           logo_url?: string | null;
+          cover_url?: string | null;
           member_count?: number;
           name?: string;
           size_band?: string | null;
@@ -736,6 +739,7 @@ export type Database = {
         Row: {
           created_at: string | null;
           created_by: string;
+          cover_url: string | null;
           description: string | null;
           id: string;
           member_count: number;
@@ -746,6 +750,7 @@ export type Database = {
         Insert: {
           created_at?: string | null;
           created_by: string;
+          cover_url?: string | null;
           description?: string | null;
           id?: string;
           member_count?: number;
@@ -756,6 +761,7 @@ export type Database = {
         Update: {
           created_at?: string | null;
           created_by?: string;
+          cover_url?: string | null;
           description?: string | null;
           id?: string;
           member_count?: number;
@@ -1191,6 +1197,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null;
+          cover_url: string | null;
           bio: string | null;
           company_name: string | null;
           company_url: string | null;
@@ -1212,6 +1219,7 @@ export type Database = {
         };
         Insert: {
           avatar_url?: string | null;
+          cover_url?: string | null;
           bio?: string | null;
           company_name?: string | null;
           company_url?: string | null;
@@ -1233,6 +1241,7 @@ export type Database = {
         };
         Update: {
           avatar_url?: string | null;
+          cover_url?: string | null;
           bio?: string | null;
           company_name?: string | null;
           company_url?: string | null;

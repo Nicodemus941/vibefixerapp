@@ -295,7 +295,7 @@ function FilterChip({
         "press-shrink inline-flex items-center rounded-full px-2.5 py-1 text-xs font-mono transition-colors",
         active
           ? "bg-[var(--accent)] text-[var(--bg)]"
-          : "border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.04]",
+          : "border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface-2)]",
       ].join(" ")}
     >
       {label}
