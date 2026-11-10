@@ -23,6 +23,9 @@ function isPublic(pathname: string) {
   // full /u/[userId] profile remains auth-gated; /c/[userId] exposes
   // only the curated subset.
   if (pathname.startsWith("/c/")) return true;
+  // Post permalinks: signed out visitors get a teaser + OG tags for link
+  // unfurls; the post itself only renders for signed in members.
+  if (pathname.startsWith("/p/")) return true;
   return false;
 }
 
