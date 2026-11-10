@@ -19,21 +19,11 @@ import { readShowcase } from "@/lib/profile-showcase-data";
 import { fetchStripeConnectStatus } from "../stripe/actions";
 import { fetchUserPositions } from "../organizations/actions";
 import { fetchCertifications, fetchEducation } from "../resume/actions";
-import type { NotificationPrefs } from "./actions";
+import { ChangePasswordSection } from "./_components/ChangePasswordSection";
+import { loadNotificationSettings } from "./notification-actions";
+import { resolvePreferences } from "@/lib/notification-kinds";
 
 export const dynamic = "force-dynamic";
-
-const DEFAULT_PREFS: NotificationPrefs = {
-  new_match: true,
-  new_message: true,
-  new_reaction: true,
-  match_accepted: true,
-  new_comment: true,
-  new_document: true,
-  document_signed: true,
-  new_review: true,
-  email_digest: "off",
-};
 
 export default async function AccountPage({
   searchParams,
@@ -58,23 +48,19 @@ export default async function AccountPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "display_name, bio, company_name, company_url, industry, revenue_band, avatar_url, role, notification_prefs",
+      "display_name, bio, company_name, company_url, industry, revenue_band, avatar_url, role",
     )
     .eq("id", user.id)
     .maybeSingle();
 
-  const prefs: NotificationPrefs = {
-    ...DEFAULT_PREFS,
-    ...((profile?.notification_prefs as Partial<NotificationPrefs> | null) ?? {}),
-  };
-
-  const [stripeStatus, positions, education, certifications, coverUrl, showcase] = await Promise.all([
+  const [stripeStatus, positions, education, certifications, coverUrl, showcase, notificationSettings] = await Promise.all([
     fetchStripeConnectStatus(),
     fetchUserPositions(user.id),
     fetchEducation(user.id),
     fetchCertifications(user.id),
     fetchCoverUrl(supabase, "profiles", user.id),
     readShowcase(supabase, user.id),
+    loadNotificationSettings(),
   ]);
 
   return (
@@ -189,8 +175,25 @@ export default async function AccountPage({
           <StripeConnectSection status={stripeStatus} />
         </Section>
 
-        <Section title="Notifications">
-          <NotificationPrefsForm initial={prefs} />
+        <Section
+          title="Notifications"
+          id="notifications"
+          intro="Choose what shows up in Loop and what we email you. Every email has a one click unsubscribe link."
+        >
+          <NotificationPrefsForm
+            initial={
+              notificationSettings ?? {
+                prefs: resolvePreferences([]),
+                digest: false,
+                paused: false,
+                unsubscribed: false,
+              }
+            }
+          />
+        </Section>
+
+        <Section title="Password" id="password">
+          <ChangePasswordSection />
         </Section>
 
         <Section title="Your data">

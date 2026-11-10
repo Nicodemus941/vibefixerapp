@@ -8,16 +8,21 @@ import {
   Repeat2,
   Sparkles,
   Check,
+  FileText,
+  Scale,
+  Star,
   UserPlus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { REACTION_ICONS } from "../feed/_components/reaction-icons";
-import { REACTION_VERBS, isReactionKind } from "@/lib/reactions";
+import { isReactionKind } from "@/lib/reactions";
+import { describeNotification } from "@/lib/notification-kinds";
 import { toDisplayText } from "@/lib/post-text";
 import { FeedHeader } from "../feed/_components/FeedHeader";
 import {
   fetchNotifications,
   markAllRead,
+  markRead,
   type NotificationRow,
 } from "./actions";
 
@@ -65,7 +70,10 @@ export default async function NotificationsPage() {
               Notifications
             </h1>
             <p className="font-mono text-xs text-[var(--fg-subtle)] mt-1">
-              What happened while you were building.
+              What happened while you were building.{" "}
+              <Link href="/account#notifications" className="font-semibold text-[var(--accent-text)] hover:underline">
+                Choose what you get
+              </Link>
             </p>
           </div>
           {unread > 0 && (
@@ -85,7 +93,7 @@ export default async function NotificationsPage() {
           <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-8 text-center">
             <Bell className="h-6 w-6 mx-auto text-[var(--fg-subtle)] mb-2" />
             <p className="text-[var(--fg-muted)]">
-              You&apos;re caught up. New matches, messages, and reactions land here.
+              You are all caught up. Messages, mentions, replies, matches and more land here.
             </p>
           </div>
         ) : (
@@ -116,45 +124,39 @@ function NotificationItem({ note }: { note: NotificationRow }) {
       ? Repeat2
       : note.kind === "new_follower"
       ? UserPlus
+      : note.kind === "new_document" || note.kind === "document_signed"
+      ? FileText
+      : note.kind === "new_review"
+      ? Star
+      : note.kind === "new_dispute" || note.kind === "dispute_resolved"
+      ? Scale
       : Bell;
 
-  const href =
-    note.kind === "new_message" && note.related_conversation_id
-      ? `/inbox/${note.related_conversation_id}`
-      : note.kind === "new_match" || note.kind === "match_accepted"
-      ? "/matches"
-      : note.related_post_id &&
-        (note.kind === "new_reaction" ||
-          note.kind === "new_comment" ||
-          note.kind === "comment_reply" ||
-          note.kind === "mention" ||
-          note.kind === "new_repost")
-      ? `/p/${note.related_post_id}`
-      : note.kind === "new_follower" && note.actor_id
-      ? `/u/${note.actor_id}`
-      : note.kind === "new_reaction" && note.actor_id
-      ? `/u/${note.actor_id}`
-      : "/feed";
-
-  const body = describe(note);
+  // The open route marks the item read, then redirects to notificationHref().
+  const href = `/notifications/open/${note.id}`;
+  const body = describeNotification(note);
   const unread = !note.read_at;
 
   return (
-    <li>
+    <li className="relative">
       <Link
         href={href}
+        prefetch={false}
         className={[
-          "flex items-start gap-3 p-4 transition-colors",
+          "flex items-start gap-3 p-4 pr-14 transition-colors",
           unread
             ? "bg-[var(--accent)]/[0.04] hover:bg-[var(--accent)]/[0.08]"
-            : "hover:bg-[var(--surface-1)]",
+            : "hover:bg-[var(--surface-2)]",
         ].join(" ")}
       >
         <div className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-[var(--fg-muted)]">
-          <Icon className="h-4 w-4" />
+          <Icon className="h-4 w-4" aria-hidden />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-[var(--fg)] leading-relaxed">{body}</p>
+          <p className="text-sm text-[var(--fg)] leading-relaxed">
+            {unread && <span className="sr-only">Unread. </span>}
+            {body}
+          </p>
           {note.payload?.preview ? (
             <p className="mt-1 text-sm text-[var(--fg-muted)] line-clamp-1">
               &ldquo;{toDisplayText(String(note.payload.preview))}&rdquo;
@@ -164,49 +166,21 @@ function NotificationItem({ note }: { note: NotificationRow }) {
             {timeAgo(note.created_at)}
           </p>
         </div>
-        {unread && (
-          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[var(--accent)]" />
-        )}
       </Link>
+      {unread && (
+        <form action={markRead.bind(null, note.id)} className="absolute right-2 top-3">
+          <button
+            type="submit"
+            aria-label="Mark as read"
+            title="Mark as read"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-[var(--surface-2)]"
+          >
+            <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)]" aria-hidden />
+          </button>
+        </form>
+      )}
     </li>
   );
-}
-
-function describe(n: NotificationRow): string {
-  const who = n.actor_name ?? "Someone";
-  switch (n.kind) {
-    case "new_match":
-      return `New match with ${who}. Open Matches to accept or pass.`;
-    case "match_accepted":
-      return `${who} accepted your match. Conversation is open.`;
-    case "new_message":
-      return `${who} sent you a message.`;
-    case "new_reaction": {
-      const r = n.payload?.reaction_kind;
-      // Rows written before the reaction migration used fire/handshake/in.
-      const legacy: Record<string, string> = { fire: "liked", handshake: "supported", in: "celebrated" };
-      const label = isReactionKind(r)
-        ? REACTION_VERBS[r]
-        : typeof r === "string" && legacy[r]
-        ? legacy[r]
-        : "reacted to";
-      return `${who} ${label} your post.`;
-    }
-    case "new_comment":
-      return `${who} commented on your post.`;
-    case "comment_reply":
-      return `${who} replied to your comment.`;
-    case "mention":
-      return n.payload?.in_comment
-        ? `${who} mentioned you in a comment.`
-        : `${who} mentioned you in a post.`;
-    case "new_repost":
-      return n.payload?.quote ? `${who} quoted your post.` : `${who} reposted your post.`;
-    case "new_follower":
-      return `${who} started following you.`;
-    default:
-      return "Something happened.";
-  }
 }
 
 function reactionIcon(kind: unknown) {

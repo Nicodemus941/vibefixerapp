@@ -6,18 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logEvent } from "@/lib/platform-events";
 
-export type NotificationPrefs = {
-  new_match: boolean;
-  new_message: boolean;
-  new_reaction: boolean;
-  match_accepted: boolean;
-  new_comment: boolean;
-  new_document: boolean;
-  document_signed: boolean;
-  new_review: boolean;
-  email_digest: "off" | "daily" | "weekly";
-};
-
 export type ProfileFormPayload = {
   display_name: string;
   company_name: string;
@@ -54,24 +42,6 @@ export async function updateOwnProfile(
 
   await logEvent("profile_updated", user.id, {});
   revalidatePath(`/u/${user.id}`);
-  revalidatePath("/account");
-  return {};
-}
-
-export async function updateNotificationPrefs(
-  prefs: NotificationPrefs,
-): Promise<{ error?: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "not signed in" };
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({ notification_prefs: prefs })
-    .eq("id", user.id);
-  if (error) return { error: error.message };
   revalidatePath("/account");
   return {};
 }
