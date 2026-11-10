@@ -3,16 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import { MessageBubble } from "./MessageBubble";
-import type { ThreadMessage } from "../actions";
+import type { ThreadMessage, ThreadOffer } from "../actions";
 
 export function ThreadStream({
   conversationId,
   viewerId,
   initial,
+  offers = {},
+  counterpartyName,
 }: {
   conversationId: string;
   viewerId: string;
   initial: ThreadMessage[];
+  offers?: Record<string, ThreadOffer>;
+  counterpartyName?: string;
 }) {
   const [messages, setMessages] = useState<ThreadMessage[]>(initial);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -70,7 +74,7 @@ export function ThreadStream({
     return (
       <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-8 text-center">
         <p className="text-[var(--fg-muted)]">
-          New conversation. Say something concrete: what you need, what you can deliver.
+          New conversation. Start with what you can do for them, then what you need.
         </p>
       </div>
     );
@@ -84,6 +88,8 @@ export function ThreadStream({
           body={m.body}
           createdAt={m.created_at}
           isMine={m.sender_id === viewerId}
+          offer={m.offer_id ? offers[m.offer_id] ?? null : null}
+          senderName={m.sender_id === viewerId ? "You" : counterpartyName ?? "They"}
         />
       ))}
       <div ref={bottomRef} />

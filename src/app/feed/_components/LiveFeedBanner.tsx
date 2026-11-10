@@ -52,7 +52,7 @@ export function LiveFeedBanner({
           setNewCount(0);
           router.refresh();
         }}
-        className="press-shrink glow-ring inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
+        className="press-shrink glow-ring inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-xs font-medium text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)] transition-[filter]"
       >
         <ArrowUp className="h-3.5 w-3.5" />
         {newCount} new post{newCount === 1 ? "" : "s"}

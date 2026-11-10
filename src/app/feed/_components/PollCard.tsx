@@ -57,7 +57,7 @@ export function PollCard({ postId, poll }: { postId: string; poll: PollState }) 
               >
                 <span
                   aria-hidden
-                  className={`absolute inset-y-0 left-0 ${mine ? "bg-[var(--accent)]/25" : "bg-white/[0.06]"}`}
+                  className={`absolute inset-y-0 left-0 ${mine ? "bg-[var(--accent)]/25" : "bg-[var(--surface-2)]"}`}
                   style={{ width: `${pct}%` }}
                 />
                 <span className="relative flex items-center justify-between gap-3">

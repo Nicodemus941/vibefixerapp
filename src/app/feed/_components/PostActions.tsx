@@ -22,10 +22,13 @@ import {
   type Reactor,
 } from "../actions";
 import { FOCUS_RING, Modal } from "./Modal";
+import { PRIMARY_SOFT_BTN } from "./styles";
 import { MentionTextarea } from "./MentionTextarea";
 import { REACTION_COLORS, REACTION_ICONS, ReactionBubble } from "./reaction-icons";
 
-const ACTION_BTN = `press-shrink inline-flex min-w-0 flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 rounded-lg px-1 sm:px-2 py-1.5 sm:py-2 text-[11px] sm:text-sm font-medium text-[var(--fg-muted)] hover:bg-white/[0.04] hover:text-[var(--fg)] transition-colors ${FOCUS_RING}`;
+// Secondary actions (react, comment, repost) are small icon buttons. The
+// card's primary action (I can help, Message, Reply) is the big one.
+const ACTION_BTN = `press-shrink inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-full px-2.5 text-[13px] font-medium text-[var(--fg-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] transition-colors ${FOCUS_RING}`;
 
 type QuoteKind = "need" | "offer" | "win";
 
@@ -39,7 +42,7 @@ export function PostActions({
   allowRepost = true,
   views,
   quotePreview,
-  messageSlot,
+  primarySlot,
 }: {
   postId: string;
   postKind: string;
@@ -50,7 +53,8 @@ export function PostActions({
   allowRepost?: boolean;
   views: number | null;
   quotePreview: React.ReactNode;
-  messageSlot?: React.ReactNode;
+  /** The card's main action. Defaults to Reply. */
+  primarySlot?: React.ReactNode;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -103,66 +107,60 @@ export function PostActions({
   const [quoteOpen, setQuoteOpen] = useState(false);
 
   const top = topReactions(reactions.counts);
-  const hasSummary = reactions.total > 0 || commentCount > 0 || reposted.count > 0 || views !== null;
+  const focusReply = () => document.getElementById(`comment-input-${postId}`)?.focus();
 
   return (
     <>
-      {hasSummary && (
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--fg-subtle)]">
+      <div className="mt-3 flex items-center gap-2 border-t border-[var(--border)] pt-3">
+        <div className="min-w-0 flex-1">
+          {primarySlot ?? (
+            <button type="button" className={PRIMARY_SOFT_BTN} onClick={focusReply}>
+              <MessageCircle className="h-4 w-4" aria-hidden />
+              Reply
+            </button>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center">
+          <ReactButton mine={reactions.mine} onReact={react} />
           {reactions.total > 0 && (
             <button
               type="button"
               onClick={() => setReactorsOpen(true)}
-              className={`inline-flex items-center gap-1.5 rounded hover:text-[var(--fg)] hover:underline ${FOCUS_RING}`}
+              className={`-ml-1 inline-flex h-11 items-center gap-1 rounded-full px-1.5 text-xs text-[var(--fg-subtle)] hover:text-[var(--fg)] hover:underline ${FOCUS_RING}`}
               aria-label={`${reactions.total} reaction${reactions.total === 1 ? "" : "s"}. See who reacted`}
             >
-              <span className="flex -space-x-1">
-                {top.map((k) => (
+              <span className="hidden xs:flex -space-x-1" aria-hidden>
+                {top.slice(0, 2).map((k) => (
                   <ReactionBubble key={k} kind={k} />
                 ))}
               </span>
-              <span className="font-mono tabular-nums">{reactions.total}</span>
+              <span className="num">{reactions.total}</span>
             </button>
           )}
-          <span className="ml-auto flex items-center gap-3">
-            {commentCount > 0 && (
-              <Link href={`/p/${postId}`} className={`rounded hover:text-[var(--fg)] hover:underline ${FOCUS_RING}`}>
-                <span className="font-mono tabular-nums">{commentCount}</span> comment{commentCount === 1 ? "" : "s"}
-              </Link>
-            )}
-            {reposted.count > 0 && (
-              <span>
-                <span className="font-mono tabular-nums">{reposted.count}</span> repost{reposted.count === 1 ? "" : "s"}
-              </span>
-            )}
-            {views !== null && (
-              <span className="inline-flex items-center gap-1" title="People who saw this post. Only you can see this.">
-                <Eye className="h-3.5 w-3.5" aria-hidden />
-                <span className="font-mono tabular-nums">{views}</span> view{views === 1 ? "" : "s"}
-              </span>
-            )}
-          </span>
+          <Link
+            href={`/p/${postId}`}
+            className={ACTION_BTN}
+            aria-label={commentCount > 0 ? `${commentCount} comment${commentCount === 1 ? "" : "s"}` : "Comments"}
+          >
+            <MessageCircle className="h-4 w-4" aria-hidden />
+            {commentCount > 0 && <span className="num text-xs">{commentCount}</span>}
+          </Link>
+          {allowRepost && (
+            <RepostMenu
+              reposted={reposted.mine}
+              count={reposted.count}
+              onToggle={toggleRepost}
+              onQuote={() => setQuoteOpen(true)}
+            />
+          )}
+          {views !== null && (
+            <span className="ml-1 inline-flex items-center gap-1 text-xs text-[var(--fg-subtle)]" title="People who saw this post. Only you can see this.">
+              <Eye className="h-3.5 w-3.5" aria-hidden />
+              <span className="num">{views}</span>
+              <span className="sr-only">views</span>
+            </span>
+          )}
         </div>
-      )}
-
-      <div className="mt-2 flex items-stretch gap-1 border-t border-[var(--border)] pt-1.5">
-        <ReactButton mine={reactions.mine} onReact={react} />
-        <button
-          type="button"
-          className={ACTION_BTN}
-          onClick={() => document.getElementById(`comment-input-${postId}`)?.focus()}
-        >
-          <MessageCircle className="h-4 w-4" aria-hidden />
-          Comment
-        </button>
-        {allowRepost && (
-          <RepostMenu
-            reposted={reposted.mine}
-            onToggle={toggleRepost}
-            onQuote={() => setQuoteOpen(true)}
-          />
-        )}
-        {messageSlot}
       </div>
       {error && (
         <p role="alert" className="mt-1 text-xs text-[var(--danger)]">
@@ -240,7 +238,7 @@ function ReactButton({
   return (
     <div
       ref={wrapRef}
-      className="relative flex flex-1"
+      className="relative flex"
       onPointerEnter={(e) => {
         if (e.pointerType !== "mouse") return;
         clearTimers();
@@ -283,9 +281,9 @@ function ReactButton({
         }}
         className={`${ACTION_BTN} select-none ${mine ? REACTION_COLORS[mine] : ""}`}
         style={{ WebkitTouchCallout: "none" }}
+        title={label}
       >
         <Icon className="h-4 w-4" aria-hidden />
-        {label}
       </button>
       <button
         ref={toggleRef}
@@ -297,7 +295,7 @@ function ReactButton({
           setFocusPicker(true);
           setOpen((o) => !o);
         }}
-        className={`press-shrink hidden sm:inline-flex items-center justify-center rounded-lg px-1 text-[var(--fg-subtle)] hover:bg-white/[0.04] hover:text-[var(--fg)] ${FOCUS_RING}`}
+        className={`press-shrink hidden sm:inline-flex items-center justify-center rounded-full px-0.5 text-[var(--fg-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] ${FOCUS_RING}`}
       >
         <ChevronUp className="h-3.5 w-3.5" aria-hidden />
       </button>
@@ -305,7 +303,7 @@ function ReactButton({
         <div
           role="menu"
           aria-label="Reactions"
-          className="absolute bottom-full left-0 z-50 mb-2 flex items-center gap-0.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-2)] p-1 shadow-xl"
+          className="absolute bottom-full right-0 z-50 mb-2 flex items-center gap-0.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] p-1 shadow-[var(--shadow-2)]"
           onKeyDown={(e) => {
             const items = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
             const i = items.indexOf(document.activeElement as HTMLButtonElement);
@@ -336,7 +334,7 @@ function ReactButton({
                 aria-label={REACTION_LABELS[k]}
                 title={REACTION_LABELS[k]}
                 onClick={() => pick(k)}
-                className={`press-shrink inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-0.5 hover:scale-110 hover:bg-white/[0.06] ${REACTION_COLORS[k]} ${mine === k ? "bg-white/[0.08]" : ""} ${FOCUS_RING}`}
+                className={`press-shrink inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-0.5 hover:scale-110 hover:bg-[var(--surface-2)] ${REACTION_COLORS[k]} ${mine === k ? "bg-[var(--surface-3)]" : ""} ${FOCUS_RING}`}
               >
                 <KIcon className="h-5 w-5" aria-hidden />
               </button>
@@ -350,10 +348,12 @@ function ReactButton({
 
 function RepostMenu({
   reposted,
+  count,
   onToggle,
   onQuote,
 }: {
   reposted: boolean;
+  count: number;
   onToggle: () => void;
   onQuote: () => void;
 }) {
@@ -374,7 +374,7 @@ function RepostMenu({
   return (
     <div
       ref={wrapRef}
-      className="relative flex flex-1"
+      className="relative flex"
       onKeyDown={(e) => {
         if (e.key === "Escape" && open) {
           e.stopPropagation();
@@ -388,14 +388,16 @@ function RepostMenu({
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         className={`${ACTION_BTN} ${reposted ? "text-[var(--accent)]" : ""}`}
+        aria-label={`${reposted ? "Reposted" : "Repost"}${count > 0 ? `, ${count} repost${count === 1 ? "" : "s"}` : ""}`}
+        title={reposted ? "Reposted" : "Repost"}
       >
         <Repeat2 className="h-4 w-4" aria-hidden />
-        {reposted ? "Reposted" : "Repost"}
+        {count > 0 && <span className="num text-xs">{count}</span>}
       </button>
       {open && (
         <div
           role="menu"
-          className="absolute bottom-full right-0 z-50 mb-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 shadow-xl"
+          className="absolute bottom-full right-0 z-50 mb-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-1.5 shadow-[var(--shadow-2)]"
         >
           <button
             ref={firstRef}
@@ -405,7 +407,7 @@ function RepostMenu({
               setOpen(false);
               onToggle();
             }}
-            className={`press-shrink flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-[var(--fg)] hover:bg-white/[0.04] ${FOCUS_RING}`}
+            className={`press-shrink flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-[var(--fg)] hover:bg-[var(--surface-2)] ${FOCUS_RING}`}
           >
             <Repeat2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <span>
@@ -422,7 +424,7 @@ function RepostMenu({
               setOpen(false);
               onQuote();
             }}
-            className={`press-shrink flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-[var(--fg)] hover:bg-white/[0.04] ${FOCUS_RING}`}
+            className={`press-shrink flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-[var(--fg)] hover:bg-[var(--surface-2)] ${FOCUS_RING}`}
           >
             <PenLine className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <span>
@@ -489,7 +491,7 @@ function ReactorsDialog({
               onClick={() => setFilter(t.key)}
               className={[
                 "press-shrink inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
-                selected ? "bg-[var(--accent)] text-[var(--bg)]" : "text-[var(--fg-muted)] hover:bg-white/[0.04] hover:text-[var(--fg)]",
+                selected ? "bg-[var(--accent)] text-[var(--fg-on-accent)]" : "text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]",
                 FOCUS_RING,
               ].join(" ")}
             >
@@ -515,7 +517,7 @@ function ReactorsDialog({
             <li key={r.user_id}>
               <Link
                 href={`/u/${r.user_id}`}
-                className={`flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-white/[0.04] ${FOCUS_RING}`}
+                className={`flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-[var(--surface-2)] ${FOCUS_RING}`}
               >
                 <span className="relative">
                   <Avatar name={r.display_name} url={r.avatar_url} size="sm" />
@@ -589,12 +591,12 @@ function QuoteDialog({
               className={[
                 "press-shrink rounded-full px-3 py-1.5 text-xs font-medium capitalize",
                 kind === k
-                  ? "bg-[var(--accent)] text-[var(--bg)]"
+                  ? "bg-[var(--accent)] text-[var(--fg-on-accent)]"
                   : "border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)]",
                 FOCUS_RING,
               ].join(" ")}
             >
-              {k}
+              {k === "win" ? "Shipped" : k}
             </button>
           ))}
         </div>
@@ -626,7 +628,7 @@ function QuoteDialog({
             type="button"
             onClick={submit}
             disabled={!text.trim() || pending || remaining < 0}
-            className={`press-shrink inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] disabled:opacity-40 hover:brightness-110 ${FOCUS_RING}`}
+            className={`press-shrink inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--fg-on-accent)] disabled:opacity-40 hover:bg-[var(--accent-hover)] ${FOCUS_RING}`}
           >
             {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />}
             Post

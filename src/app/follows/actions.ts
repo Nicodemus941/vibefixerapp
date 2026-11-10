@@ -4,10 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logEvent } from "@/lib/platform-events";
 
+// Only ever filled in for your own profile. The database returns NULLs
+// for anyone else, so follower counts never show as status.
 export type SocialCounts = {
-  followers: number;
-  following: number;
-  connections: number;
+  followers: number | null;
+  following: number | null;
+  connections: number | null;
 };
 
 export type FollowState = {
@@ -21,13 +23,14 @@ export async function fetchSocialCounts(userId: string): Promise<SocialCounts> {
     target_user: userId,
   });
   if (error || !data || data.length === 0) {
-    return { followers: 0, following: 0, connections: 0 };
+    return { followers: null, following: null, connections: null };
   }
   const row = data[0];
+  const n = (v: number | null) => (v === null || v === undefined ? null : Number(v));
   return {
-    followers: Number(row.followers ?? 0),
-    following: Number(row.following ?? 0),
-    connections: Number(row.connections ?? 0),
+    followers: n(row.followers),
+    following: n(row.following),
+    connections: n(row.connections),
   };
 }
 
@@ -115,7 +118,6 @@ export async function viewerConnectionsAtOrg(orgId: string): Promise<number> {
 
 export type OrgFollowState = {
   isFollowing: boolean;
-  followerCount: number;
 };
 
 export async function fetchOrgFollowState(orgId: string): Promise<OrgFollowState> {
@@ -124,22 +126,16 @@ export async function fetchOrgFollowState(orgId: string): Promise<OrgFollowState
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data }, { data: countData }] = await Promise.all([
-    user
-      ? supabase
-          .from("org_follows")
-          .select("follower_id")
-          .eq("follower_id", user.id)
-          .eq("organization_id", orgId)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-    supabase.rpc("org_follower_count", { target_org: orgId }),
-  ]);
+  const { data } = user
+    ? await supabase
+        .from("org_follows")
+        .select("follower_id")
+        .eq("follower_id", user.id)
+        .eq("organization_id", orgId)
+        .maybeSingle()
+    : { data: null };
 
-  return {
-    isFollowing: Boolean(data),
-    followerCount: Number(countData ?? 0),
-  };
+  return { isFollowing: Boolean(data) };
 }
 
 export async function followOrg(orgId: string): Promise<{ error?: string }> {

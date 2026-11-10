@@ -91,7 +91,7 @@ export default async function OrganizationPage({
     .join("");
 
   // Open jobs at this org + how many of your connections work here
-  // + the org's follower count + whether the viewer follows it
+  // + whether the viewer follows it
   const [{ data: orgJobs }, connectionCount, orgFollow] = await Promise.all([
     supabase
       .from("job_listings")
@@ -202,7 +202,6 @@ export default async function OrganizationPage({
                 orgId={org.id}
                 orgSlug={org.slug}
                 initiallyFollowing={orgFollow.isFollowing}
-                initialFollowerCount={orgFollow.followerCount}
                 isAuthenticated={Boolean(user)}
               />
               <ShareButton

@@ -12,12 +12,12 @@ export const REACTION_ICONS: Record<ReactionKind, typeof ThumbsUp> = {
 
 // Text color per reaction, used for the chosen state and summary bubbles.
 export const REACTION_COLORS: Record<ReactionKind, string> = {
-  like: "text-sky-400",
+  like: "text-[var(--accent)]",
   celebrate: "text-[var(--accent)]",
-  support: "text-violet-400",
-  insightful: "text-amber-300",
-  love: "text-rose-400",
-  funny: "text-cyan-300",
+  support: "text-[var(--shipped)]",
+  insightful: "text-[var(--need)]",
+  love: "text-[var(--danger)]",
+  funny: "text-[var(--job)]",
 };
 
 export function ReactionBubble({ kind, className = "" }: { kind: ReactionKind; className?: string }) {

@@ -14,7 +14,8 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { createPost } from "../actions";
+import { createPost, fetchMyReleasedDeals, type ReleasedDeal } from "../actions";
+import { DETAIL_MAX, detailFieldsFor } from "@/lib/post-details";
 import { createClient } from "@/lib/supabase/browser";
 import {
   IMAGE_TYPES,
@@ -60,7 +61,7 @@ const KIND_OPTIONS: Array<{
   },
   {
     value: "win",
-    label: "Win",
+    label: "Shipped",
     icon: Trophy,
     hint: "Receipts only. A thing you actually shipped or closed.",
     placeholder:
@@ -87,7 +88,17 @@ type DocDraft = {
 
 type PollDraft = { options: string[]; days: 1 | 3 | 7 };
 
-const TOOL_BTN = `press-shrink inline-flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.04] hover:text-[var(--fg)] disabled:opacity-40 disabled:cursor-not-allowed ${FOCUS_RING}`;
+const TOOL_BTN = `press-shrink inline-flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] disabled:opacity-40 disabled:cursor-not-allowed ${FOCUS_RING}`;
+
+const KIND_CHIP_ACTIVE: Record<PostKind, string> = {
+  need: "bg-[var(--need-bg)] text-[var(--need-fg)] border-[var(--need)]",
+  offer: "bg-[var(--offer-bg)] text-[var(--offer-fg)] border-[var(--offer)]",
+  win: "bg-[var(--shipped-bg)] text-[var(--shipped-fg)] border-[var(--shipped)]",
+};
+
+function money(n: number): string {
+  return `$${n.toLocaleString("en-US")}`;
+}
 
 async function imageSize(file: File): Promise<{ width: number | null; height: number | null }> {
   try {
@@ -107,11 +118,29 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
   const [images, setImages] = useState<ImageDraft[]>([]);
   const [doc, setDoc] = useState<DocDraft | null>(null);
   const [poll, setPoll] = useState<PollDraft | null>(null);
+  const [details, setDetails] = useState<Record<string, string>>({});
+  const [deals, setDeals] = useState<ReleasedDeal[] | null>(null);
+  const [dealId, setDealId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const imageInput = useRef<HTMLInputElement>(null);
   const docInput = useRef<HTMLInputElement>(null);
+
+  // Released deals load the first time Shipped is picked.
+  useEffect(() => {
+    if (kind !== "win" || deals !== null) return;
+    let alive = true;
+    fetchMyReleasedDeals()
+      .then((d) => alive && setDeals(d))
+      .catch(() => alive && setDeals([]));
+    return () => {
+      alive = false;
+    };
+  }, [kind, deals]);
+
+  const detailFields = detailFieldsFor(kind);
+  const detailsTooLong = detailFields.some((f) => (details[f.key] ?? "").trim().length > DETAIL_MAX);
 
   // Free preview object URLs when images are removed or on unmount.
   const previews = useRef(new Set<string>());
@@ -135,6 +164,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
     !hasFailed &&
     remaining >= 0 &&
     pollValid &&
+    !detailsTooLong &&
     (poll ? stored.length > 0 : stored.length > 0 || images.length > 0 || doc !== null);
 
   async function upload(file: File, ext: string): Promise<string | null> {
@@ -230,6 +260,8 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
     setImages([]);
     setDoc(null);
     setPoll(null);
+    setDetails({});
+    setDealId("");
   }
 
   function submit() {
@@ -244,6 +276,8 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
         poll: poll
           ? { options: poll.options.map((o) => o.trim()).filter(Boolean), durationDays: poll.days }
           : null,
+        details: detailFields.length > 0 ? details : null,
+        engagementId: kind === "win" && dealId ? dealId : null,
       });
       if (res.error) setError(res.error);
       else {
@@ -254,7 +288,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 sm:p-5">
+    <div className="rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface-1)] p-4 sm:p-5 shadow-[var(--shadow-1)]">
       <div role="tablist" aria-label="Post kind" className="flex items-center gap-1.5 mb-3">
         {KIND_OPTIONS.map((opt) => {
           const Icon = opt.icon;
@@ -267,10 +301,10 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
               aria-selected={isActive}
               onClick={() => setKind(opt.value)}
               className={[
-                "press-shrink inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                "press-shrink inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors",
                 isActive
-                  ? "bg-[var(--accent)] text-[var(--bg)]"
-                  : "border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.04]",
+                  ? KIND_CHIP_ACTIVE[opt.value]
+                  : "border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface-2)]",
                 FOCUS_RING,
               ].join(" ")}
             >
@@ -279,7 +313,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
             </button>
           );
         })}
-        <p className="ml-auto hidden sm:block font-mono text-[10px] text-[var(--fg-subtle)] truncate">
+        <p className="ml-auto hidden sm:block text-xs text-[var(--fg-subtle)] truncate">
           {active.hint}
         </p>
       </div>
@@ -306,12 +340,54 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
               {tags.map((t) => (
                 <span
                   key={t}
-                  className="font-mono text-xs px-2 py-0.5 rounded-full bg-[var(--accent)]/12 text-[var(--accent)] border border-[var(--accent)]/30"
+                  className="num text-xs px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent-text)]"
                 >
                   #{t}
                 </span>
               ))}
             </div>
+          )}
+
+          {detailFields.length > 0 && (
+            <fieldset className="mt-3">
+              <legend className="sr-only">Details (optional)</legend>
+              <div className="grid grid-cols-1 xs:grid-cols-3 gap-2">
+                {detailFields.map((f) => (
+                  <label key={f.key} className="block rounded-[var(--r-md)] bg-[var(--surface-2)] px-3 py-2">
+                    <span className="block text-[11px] font-semibold text-[var(--fg-subtle)]">{f.label}</span>
+                    <input
+                      type="text"
+                      value={details[f.key] ?? ""}
+                      maxLength={DETAIL_MAX}
+                      onChange={(e) => setDetails((d) => ({ ...d, [f.key]: e.target.value }))}
+                      placeholder={f.placeholder}
+                      disabled={pending}
+                      className="mt-0.5 w-full bg-transparent text-sm font-medium text-[var(--fg)] placeholder:text-[var(--fg-subtle)] placeholder:font-normal focus:outline-none"
+                    />
+                  </label>
+                ))}
+              </div>
+              <p className="mt-1 text-[11px] text-[var(--fg-subtle)]">Optional. Specific details get specific help.</p>
+            </fieldset>
+          )}
+
+          {kind === "win" && deals && deals.length > 0 && (
+            <label className="mt-3 block text-xs text-[var(--fg-muted)]">
+              <span className="font-semibold text-[var(--fg)]">Attach a released deal</span> (optional)
+              <select
+                value={dealId}
+                onChange={(e) => setDealId(e.target.value)}
+                disabled={pending}
+                className="mt-1 block h-11 w-full rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--surface-1)] px-3 text-sm text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+              >
+                <option value="">No deal</option>
+                {deals.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {money(d.amount)} {d.as_provider ? "for" : "with"} {d.counterparty_name}
+                  </option>
+                ))}
+              </select>
+            </label>
           )}
 
           {images.length > 0 && (
@@ -370,7 +446,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
                 type="button"
                 onClick={removeDoc}
                 aria-label="Remove document"
-                className={`press-shrink inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--fg-muted)] hover:bg-white/[0.06] hover:text-[var(--fg)] ${FOCUS_RING}`}
+                className={`press-shrink inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] ${FOCUS_RING}`}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -379,7 +455,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
 
           {poll && (
             <fieldset className="mt-3 space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3">
-              <legend className="px-1 font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)]">
+              <legend className="px-1 text-[11px] font-semibold text-[var(--fg-subtle)]">
                 Poll
               </legend>
               {poll.options.map((opt, i) => (
@@ -402,7 +478,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
                       type="button"
                       onClick={() => setPoll((p) => (p ? { ...p, options: p.options.filter((_, j) => j !== i) } : p))}
                       aria-label={`Remove option ${i + 1}`}
-                      className={`press-shrink inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--fg-muted)] hover:bg-white/[0.06] ${FOCUS_RING}`}
+                      className={`press-shrink inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--fg-muted)] hover:bg-[var(--surface-2)] ${FOCUS_RING}`}
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -414,7 +490,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
                   <button
                     type="button"
                     onClick={() => setPoll((p) => (p ? { ...p, options: [...p.options, ""] } : p))}
-                    className={`press-shrink inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs text-[var(--accent)] hover:bg-[var(--accent)]/10 ${FOCUS_RING}`}
+                    className={`press-shrink inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs text-[var(--accent)] hover:bg-[var(--accent-soft)] ${FOCUS_RING}`}
                   >
                     <Plus className="h-3.5 w-3.5" aria-hidden /> Add option
                   </button>
@@ -514,7 +590,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
         <div className="ml-auto flex items-center gap-3">
           <span
             className={[
-              "font-mono text-xs tabular-nums shrink-0",
+              "num text-xs shrink-0",
               remaining < 100 ? "text-[var(--danger)]" : "text-[var(--fg-subtle)]",
             ].join(" ")}
             aria-label={`${remaining} characters left`}
@@ -525,7 +601,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
             type="button"
             onClick={submit}
             disabled={!canSubmit}
-            className={`press-shrink inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 transition-[filter] ${FOCUS_RING}`}
+            className={`press-shrink inline-flex h-11 items-center gap-2 rounded-full bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--fg-on-accent)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--accent-hover)] transition-colors ${FOCUS_RING}`}
           >
             {pending ? (
               <>
@@ -535,7 +611,7 @@ export function Composer({ displayName, userId }: { displayName: string; userId:
             ) : (
               <>
                 <Send className="h-4 w-4" />
-                Post {active.label.toLowerCase()}
+                Post {kind === "win" ? "it" : active.label.toLowerCase()}
               </>
             )}
           </button>

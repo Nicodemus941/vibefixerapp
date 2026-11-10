@@ -4,6 +4,7 @@ import type { Database, Json } from "@/lib/supabase/database.types";
 import type {
   CommentRow,
   CommentSummary,
+  DealStrip,
   FeedBundle,
   FeedPost,
   LinkPreview,
@@ -11,6 +12,7 @@ import type {
   PostExtras,
   PostMedia,
   ReactionState,
+  TrackRecord,
 } from "@/lib/feed-types";
 import { emptyReactionCounts, isReactionKind } from "@/lib/reactions";
 
@@ -46,6 +48,7 @@ type PostRowLike = {
   repost_of_id?: string | null;
   quoted_post_id?: string | null;
   similarity?: number | null;
+  rank_reason?: string | null;
   author_display_name?: string;
   author_company_name?: string | null;
   author_industry?: string | null;
@@ -78,6 +81,7 @@ export function toFeedPost(
     link_preview: asPreview(row.link_preview),
     repost_of_id: row.repost_of_id ?? null,
     quoted_post_id: row.quoted_post_id ?? null,
+    rank_reason: row.rank_reason ?? null,
   };
 }
 
@@ -136,13 +140,20 @@ export async function hydrateFeed(
     ),
   );
 
-  const [reactions, comments, extras] = await Promise.all([
+  const offerAuthors = Array.from(
+    new Set(ids.map((id) => byId[id]).filter((p) => p && p.kind === "offer").map((p) => p!.user_id)),
+  );
+  const winIds = ids.filter((id) => byId[id]?.kind === "win");
+
+  const [reactions, comments, extras, deals, tracks] = await Promise.all([
     loadReactions(supabase, viewerId, ids),
     loadComments(supabase, viewerId, ids, opts.commentMode ?? "preview"),
     loadExtras(supabase, viewerId, ids, byId),
+    loadDeals(supabase, winIds),
+    loadTracks(supabase, offerAuthors),
   ]);
 
-  return { posts: byId, reactions, comments, extras };
+  return { posts: byId, reactions, comments, extras, deals, tracks };
 }
 
 async function loadReactions(
@@ -271,12 +282,15 @@ async function loadExtras(
   for (const id of ids) out[id] = { repostCount: 0, myRepostId: null, saved: false, views: null, poll: null };
   if (ids.length === 0) return out;
 
-  const [counts, mine, saves, polls] = await Promise.all([
+  const [counts, mine, saves, polls, details] = await Promise.all([
     supabase.rpc("post_repost_counts", { post_ids: ids }),
     supabase.from("posts").select("id, repost_of_id").eq("user_id", viewerId).in("repost_of_id", ids),
     supabase.from("post_saves").select("post_id").eq("user_id", viewerId).in("post_id", ids),
     supabase.rpc("poll_results", { post_ids: ids }),
+    supabase.from("posts").select("id, details").in("id", ids),
   ]);
+  // details is new (20261110300700); an error just means no wells.
+  for (const r of details.data ?? []) if (out[r.id] && r.details) out[r.id].details = r.details;
 
   for (const r of counts.data ?? []) if (out[r.post_id]) out[r.post_id].repostCount = Number(r.reposts);
   for (const r of mine.data ?? []) if (r.repost_of_id && out[r.repost_of_id]) out[r.repost_of_id].myRepostId = r.id;
@@ -290,6 +304,43 @@ async function loadExtras(
       total_votes: Number(r.total_votes),
       counts: r.counts ? r.counts.map(Number) : null,
       show_results: r.show_results,
+    };
+  }
+  return out;
+}
+
+// Deal strips for Shipped posts that point at a released deal.
+async function loadDeals(supabase: Client, ids: string[]): Promise<Record<string, DealStrip>> {
+  const out: Record<string, DealStrip> = {};
+  if (ids.length === 0) return out;
+  const { data, error } = await supabase.rpc("post_deal_strips", { post_ids: ids });
+  if (error) return out;
+  for (const r of data ?? []) {
+    out[r.post_id] = {
+      amount: Number(r.amount),
+      delivered_days: Number(r.delivered_days ?? 0),
+      provider_id: r.provider_id,
+      provider_name: r.provider_name,
+      seeker_id: r.seeker_id,
+      seeker_name: r.seeker_name,
+      review_rating: r.review_rating === null ? null : Number(r.review_rating),
+      review_body: r.review_body,
+    };
+  }
+  return out;
+}
+
+// "Track record" well on offers: deals delivered and rating, no amounts.
+async function loadTracks(supabase: Client, userIds: string[]): Promise<Record<string, TrackRecord>> {
+  const out: Record<string, TrackRecord> = {};
+  if (userIds.length === 0) return out;
+  const { data, error } = await supabase.rpc("member_track_records", { user_ids: userIds });
+  if (error) return out;
+  for (const r of data ?? []) {
+    out[r.user_id] = {
+      deals_delivered: Number(r.deals_delivered ?? 0),
+      avg_rating: r.avg_rating === null ? null : Number(r.avg_rating),
+      review_count: Number(r.review_count ?? 0),
     };
   }
   return out;

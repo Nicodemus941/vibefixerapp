@@ -518,6 +518,7 @@ export type Database = {
       };
       reports: {
         Row: {
+          category: string;
           created_at: string | null;
           id: string;
           reason: string;
@@ -529,6 +530,7 @@ export type Database = {
           target_kind: string;
         };
         Insert: {
+          category?: string;
           created_at?: string | null;
           id?: string;
           reason: string;
@@ -540,6 +542,7 @@ export type Database = {
           target_kind: string;
         };
         Update: {
+          category?: string;
           created_at?: string | null;
           id?: string;
           reason?: string;
@@ -552,27 +555,57 @@ export type Database = {
         };
         Relationships: [];
       };
-      cold_dm_quota: {
+      help_offers: {
         Row: {
-          limit_count: number;
-          month_year: string;
-          updated_at: string | null;
-          used: number | null;
-          user_id: string;
+          id: string;
+          helper_id: string;
+          post_id: string;
+          need_author_id: string;
+          conversation_id: string;
+          created_at: string;
         };
         Insert: {
-          limit_count?: number;
-          month_year: string;
-          updated_at?: string | null;
-          used?: number | null;
-          user_id: string;
+          id?: string;
+          helper_id: string;
+          post_id: string;
+          need_author_id: string;
+          conversation_id: string;
+          created_at?: string;
         };
         Update: {
-          limit_count?: number;
-          month_year?: string;
-          updated_at?: string | null;
-          used?: number | null;
+          id?: string;
+          helper_id?: string;
+          post_id?: string;
+          need_author_id?: string;
+          conversation_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      human_verifications: {
+        Row: { user_id: string; method: string; verified_at: string };
+        Insert: { user_id: string; method?: string; verified_at?: string };
+        Update: { user_id?: string; method?: string; verified_at?: string };
+        Relationships: [];
+      };
+      cold_dm_quota: {
+        Row: {
+          user_id: string;
+          day: string;
+          used: number;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          day: string;
+          used?: number;
+          updated_at?: string;
+        };
+        Update: {
           user_id?: string;
+          day?: string;
+          used?: number;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -926,6 +959,8 @@ export type Database = {
           created_at: string | null;
           id: string;
           is_ai_drafted: boolean | null;
+          is_cold: boolean;
+          offer_id: string | null;
           sender_id: string;
         };
         Insert: {
@@ -935,6 +970,8 @@ export type Database = {
           created_at?: string | null;
           id?: string;
           is_ai_drafted?: boolean | null;
+          is_cold?: boolean;
+          offer_id?: string | null;
           sender_id: string;
         };
         Update: {
@@ -944,6 +981,8 @@ export type Database = {
           created_at?: string | null;
           id?: string;
           is_ai_drafted?: boolean | null;
+          is_cold?: boolean;
+          offer_id?: string | null;
           sender_id?: string;
         };
         Relationships: [];
@@ -1126,7 +1165,9 @@ export type Database = {
         Row: {
           body: string;
           created_at: string | null;
+          details: Json | null;
           document: Json | null;
+          engagement_id: string | null;
           embedding: string | null;
           group_id: string | null;
           hashtags: string[];
@@ -1141,7 +1182,9 @@ export type Database = {
         Insert: {
           body: string;
           created_at?: string | null;
+          details?: Json | null;
           document?: Json | null;
+          engagement_id?: string | null;
           embedding?: string | null;
           group_id?: string | null;
           hashtags?: string[];
@@ -1156,7 +1199,9 @@ export type Database = {
         Update: {
           body?: string;
           created_at?: string | null;
+          details?: Json | null;
           document?: Json | null;
+          engagement_id?: string | null;
           embedding?: string | null;
           group_id?: string | null;
           hashtags?: string[];
@@ -1516,6 +1561,7 @@ export type Database = {
           link_preview: Json | null;
           repost_of_id: string | null;
           quoted_post_id: string | null;
+          rank_reason: "can_help" | "fits_needs" | "following" | null;
         }>;
       };
       blocked_with_viewer: {
@@ -1611,7 +1657,7 @@ export type Database = {
       };
       profile_social_counts: {
         Args: { target_user: string };
-        Returns: Array<{ followers: number; following: number; connections: number }>;
+        Returns: Array<{ followers: number | null; following: number | null; connections: number | null }>;
       };
       viewer_connections_at_org: {
         Args: { viewer_id: string; target_org: string };
@@ -1688,6 +1734,70 @@ export type Database = {
           person_company_name: string | null;
           person_industry: string | null;
           person_role: string | null;
+        }>;
+      };
+      member_reply_stats: {
+        Args: { target: string };
+        Returns: Array<{
+          eligible: number;
+          replied: number;
+          reply_rate: number | null;
+          median_reply_seconds: number | null;
+        }>;
+      };
+      viewer_dm_status: {
+        Args: { other: string };
+        Returns: Array<{ is_cold: boolean; has_offer: boolean; cold_left_today: number }>;
+      };
+      offer_help: {
+        Args: { target_post: string };
+        Returns: string;
+      };
+      leaderboard_most_helpful: {
+        Args: { limit_count?: number };
+        Returns: Array<{
+          user_id: string;
+          display_name: string;
+          company_name: string | null;
+          avatar_url: string | null;
+          deals_delivered: number;
+          needs_helped: number;
+          reviews_received: number;
+          avg_rating: number | null;
+          score: number;
+        }>;
+      };
+      post_deal_strips: {
+        Args: { post_ids: string[] };
+        Returns: Array<{
+          post_id: string;
+          amount: number;
+          delivered_days: number;
+          provider_id: string;
+          provider_name: string;
+          seeker_id: string;
+          seeker_name: string;
+          review_rating: number | null;
+          review_body: string | null;
+        }>;
+      };
+      member_track_records: {
+        Args: { user_ids: string[] };
+        Returns: Array<{
+          user_id: string;
+          deals_delivered: number;
+          avg_rating: number | null;
+          review_count: number;
+        }>;
+      };
+      people_to_follow: {
+        Args: { limit_count?: number };
+        Returns: Array<{
+          user_id: string;
+          display_name: string;
+          company_name: string | null;
+          avatar_url: string | null;
+          offer_title: string;
         }>;
       };
       pending_matches_for: {

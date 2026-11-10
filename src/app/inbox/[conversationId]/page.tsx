@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/Avatar";
-import { fetchThread } from "../actions";
+import { fetchDmStatus, fetchNeedsHumanCheck, fetchThread } from "../actions";
 import { fetchEngagementsBetween } from "../engagement-actions";
 import { fetchDocumentsForConversation } from "@/app/documents/actions";
 import { fetchPendingReviews } from "@/app/reviews/actions";
@@ -21,10 +21,10 @@ export default async function ThreadPage({
   searchParams,
 }: {
   params: Promise<{ conversationId: string }>;
-  searchParams: Promise<{ draft?: string }>;
+  searchParams: Promise<{ draft?: string; help?: string }>;
 }) {
   const { conversationId } = await params;
-  const { draft: draftMatchId } = await searchParams;
+  const { draft: draftMatchId, help: helpPostId } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -50,7 +50,27 @@ export default async function ThreadPage({
     .eq("id", user.id)
     .maybeSingle();
 
-  const { header, messages, error } = await fetchThread(conversationId);
+  const { header, messages, offers, error } = await fetchThread(conversationId);
+  // Before the first message the composer may need the give first rules.
+  // Turnstile is needed before the member's first message anywhere, which
+  // can also be a reply in a thread someone else started.
+  const [dmStatus, humanCheck] = header
+    ? await Promise.all([
+        messages.length === 0 ? fetchDmStatus(header.counterparty_id) : Promise.resolve(null),
+        fetchNeedsHumanCheck(),
+      ])
+    : [null, false];
+  // Arrived from "I can help": show the need being answered.
+  const { data: helpPost } =
+    header && helpPostId && /^[0-9a-f-]{36}$/i.test(helpPostId)
+      ? await supabase
+          .from("posts")
+          .select("id, body, kind, user_id")
+          .eq("id", helpPostId)
+          .eq("user_id", header.counterparty_id)
+          .eq("kind", "need")
+          .maybeSingle()
+      : { data: null };
   const [engagements, documents, pendingReviews] = header
     ? await Promise.all([
         fetchEngagementsBetween(header.counterparty_id),
@@ -147,14 +167,25 @@ export default async function ThreadPage({
           conversationId={conversationId}
           viewerId={user.id}
           initial={messages}
+          offers={offers}
+          counterpartyName={header.counterparty_name}
         />
       </main>
 
       <div className="sticky bottom-0 border-t border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur-md safe-bottom">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 pt-3">
+          {helpPost && messages.length === 0 && (
+            <p className="mb-2 rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--need-bg)] px-3 py-2 text-[13px] text-[var(--need-fg)] line-clamp-2">
+              <span className="font-semibold">Their need: </span>
+              {helpPost.body}
+            </p>
+          )}
           <MessageComposer
             conversationId={conversationId}
             initialDraft={initialDraft}
+            dm={dmStatus}
+            humanCheck={humanCheck}
+            counterpartyName={header.counterparty_name}
           />
         </div>
       </div>

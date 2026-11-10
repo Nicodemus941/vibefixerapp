@@ -29,6 +29,7 @@ export default function Home() {
       </a>
       <SiteHeader
         sections={[
+          { href: "#why", label: "Why Loop" },
           { href: "#how", label: "How it works" },
           { href: "#get", label: "What you get" },
           { href: "#free", label: "Free" },
@@ -40,6 +41,7 @@ export default function Home() {
         className="bg-[var(--bg)] text-[var(--fg)] overflow-x-hidden"
       >
         <Hero />
+        <Mission />
         <HowItWorks />
         <WhatYouGet />
         <FreeBlock />
@@ -286,6 +288,74 @@ function HeroPreview() {
         Sample members shown for illustration.
       </figcaption>
     </figure>
+  );
+}
+
+/* ---------------- Mission ---------------- */
+
+// Why Loop exists. About the company and the network, never a person.
+function Mission() {
+  const broken = [
+    "Messages go unanswered.",
+    "Comments chase status.",
+    "Half the activity is bots.",
+  ];
+  const different = [
+    {
+      title: "Every member gives as well as gets.",
+      body: "You list what you can do for others, not just what you want.",
+    },
+    {
+      title: "People who reply and deliver rise to the top.",
+      body: "Not people with the biggest following.",
+    },
+  ];
+  return (
+    <section
+      id="why"
+      aria-labelledby="why-title"
+      className="scroll-mt-20 bg-[var(--ink)] text-[var(--fg-on-ink)] py-16 sm:py-24"
+    >
+      <div className={`${WRAP} grid gap-10 lg:gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start`}>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.06em] text-[var(--fg-on-ink-muted)]">
+            Why Loop
+          </p>
+          <h2
+            id="why-title"
+            className="mt-3.5 text-[32px] sm:text-[44px] font-bold leading-[1.08] tracking-[-0.03em]"
+          >
+            Networking stopped being about people.
+          </h2>
+          <ul className="mt-6 space-y-2 text-[19px] sm:text-[22px] leading-snug text-[var(--fg-on-ink-muted)]">
+            {broken.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-[var(--r-xl)] border border-[var(--ink-border)] bg-[var(--ink-2)] p-6 sm:p-8">
+          <p className="text-[24px] sm:text-[28px] font-bold tracking-[-0.02em]">Loop is different.</p>
+          <ul className="mt-5 space-y-5">
+            {different.map((d) => (
+              <li key={d.title} className="flex gap-3">
+                <span
+                  className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--fg-on-accent)]"
+                  aria-hidden
+                >
+                  <Check className="h-3.5 w-3.5" />
+                </span>
+                <span>
+                  <span className="block text-[17px] font-semibold">{d.title}</span>
+                  <span className="mt-0.5 block text-[15px] leading-relaxed text-[var(--fg-on-ink-muted)]">
+                    {d.body}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
   );
 }
 

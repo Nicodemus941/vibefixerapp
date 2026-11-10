@@ -111,7 +111,7 @@ export function Modal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className={`press-shrink ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--fg-muted)] hover:bg-white/[0.06] hover:text-[var(--fg)] ${variant === "fullscreen" ? "bg-black/50" : ""} ${FOCUS_RING}`}
+            className={`press-shrink ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] ${variant === "fullscreen" ? "bg-black/50" : ""} ${FOCUS_RING}`}
           >
             <X className="h-4 w-4" />
           </button>

@@ -44,6 +44,8 @@ export async function fileReport(input: {
   targetKind: "post" | "comment" | "user" | "message";
   targetId: string;
   reason: string;
+  /** "bot_spam" for the one tap "Report as bot or spam". */
+  category?: "general" | "bot_spam";
 }): Promise<{ error?: string; reportId?: string }> {
   const supabase = await createClient();
   const {
@@ -60,6 +62,7 @@ export async function fileReport(input: {
       target_kind: input.targetKind,
       target_id: input.targetId,
       reason: input.reason.trim(),
+      category: input.category === "bot_spam" ? "bot_spam" : "general",
     })
     .select("id")
     .single();
@@ -68,6 +71,7 @@ export async function fileReport(input: {
   await logEvent("report_filed", user.id, {
     target_kind: input.targetKind,
     target_id: input.targetId,
+    category: input.category ?? "general",
   });
   return { reportId: data.id };
 }
@@ -79,6 +83,7 @@ export type ReportRow = {
   target_kind: string;
   target_id: string;
   reason: string;
+  category: string;
   status: string;
   created_at: string;
 };
@@ -99,8 +104,10 @@ export async function fetchOpenReports(): Promise<ReportRow[]> {
 
   const { data: reports } = await supabase
     .from("reports")
-    .select("id, reporter_id, target_kind, target_id, reason, status, created_at")
+    .select("id, reporter_id, target_kind, target_id, reason, category, status, created_at")
     .eq("status", "open")
+    // Bot and spam reports first: they are the fastest to act on.
+    .order("category", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(100);
   if (!reports || reports.length === 0) return [];
@@ -119,6 +126,7 @@ export async function fetchOpenReports(): Promise<ReportRow[]> {
     target_kind: r.target_kind,
     target_id: r.target_id,
     reason: r.reason,
+    category: r.category ?? "general",
     status: r.status,
     created_at: r.created_at as string,
   }));

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Award, Briefcase, Link2, MessageSquare, Star, Target, Trophy } from "lucide-react";
+import { ArrowRight, Award, Briefcase, Link2, MessageCircleReply, MessageSquare, Star, Target, Trophy } from "lucide-react";
+import { fetchReplyRateLine } from "@/lib/reply-rate-data";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/Avatar";
 import { CoverBand } from "@/components/CoverBand";
@@ -90,9 +91,13 @@ export default async function PublicCardPage({
       data: { user },
     },
     coverUrl,
+    replyRateLine,
   ] = await Promise.all([
     supabase.auth.getUser(),
     fetchCoverUrl(admin, "profiles", userId),
+    // Called with the visitor's own session (or anon) so the function's
+    // block check applies.
+    fetchReplyRateLine(supabase, userId),
   ]);
 
   // The card is public, so its sections are read with the service role
@@ -188,6 +193,12 @@ export default async function PublicCardPage({
               )}
               {card.industry && (
                 <p className="mt-1 text-[13px] text-[var(--fg-subtle)]">{card.industry}</p>
+              )}
+              {replyRateLine && !hidden && (
+                <p className="mt-2 flex items-center gap-1.5 text-[13px] font-medium text-[var(--accent-text)]">
+                  <MessageCircleReply className="h-4 w-4 shrink-0" aria-hidden />
+                  {replyRateLine}
+                </p>
               )}
               {card.review_count > 0 && (
                 <p className="mt-2 inline-flex items-center gap-1.5 text-[13px] text-[var(--fg-muted)]">

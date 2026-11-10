@@ -144,7 +144,7 @@ function CommentItem({
             disabled={pending}
             aria-pressed={liked}
             aria-label={liked ? "Unlike comment" : "Like comment"}
-            className={`press-shrink inline-flex items-center gap-1 rounded hover:text-[var(--fg)] ${liked ? "text-rose-400" : ""} ${FOCUS_RING}`}
+            className={`press-shrink inline-flex items-center gap-1 rounded hover:text-[var(--fg)] ${liked ? "text-[var(--danger)]" : ""} ${FOCUS_RING}`}
           >
             <Heart className={`h-3 w-3 ${liked ? "fill-current" : ""}`} aria-hidden />
             Like
@@ -238,7 +238,7 @@ function CommentForm({
           onClick={submit}
           disabled={!text.trim() || pending}
           aria-label={replyingTo ? "Send reply" : "Send comment"}
-          className={`press-shrink shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-full bg-[var(--accent)] text-[var(--bg)] disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 transition-[filter] ${FOCUS_RING}`}
+          className={`press-shrink shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-full bg-[var(--accent)] text-[var(--fg-on-accent)] disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 transition-[filter] ${FOCUS_RING}`}
         >
           {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Send className="h-3.5 w-3.5" aria-hidden />}
         </button>

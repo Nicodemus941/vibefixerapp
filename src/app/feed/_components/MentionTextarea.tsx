@@ -178,7 +178,7 @@ export const MentionTextarea = forwardRef<MentionTextareaHandle, Props>(function
             onMouseEnter={() => setActive(i)}
             className={[
               "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm",
-              i === active ? "bg-white/[0.06] text-[var(--fg)]" : "text-[var(--fg-muted)]",
+              i === active ? "bg-[var(--surface-2)] text-[var(--fg)]" : "text-[var(--fg-muted)]",
             ].join(" ")}
           >
             <Avatar name={c.display_name} url={c.avatar_url} size="xs" />

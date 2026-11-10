@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { redirect, notFound } from "next/navigation";
-import { Building2, MessageSquare, Pencil } from "lucide-react";
+import { Building2, MessageCircleReply, MessageSquare, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { FeedItem } from "@/app/feed/_components/PostCard";
@@ -18,6 +18,7 @@ import { fetchCertifications, fetchEducation } from "@/app/resume/actions";
 import { fetchFollowState, fetchSocialCounts } from "@/app/follows/actions";
 import { FollowButton } from "./_components/FollowButton";
 import { readShowcase } from "@/lib/profile-showcase-data";
+import { fetchReplyRateLine } from "@/lib/reply-rate-data";
 import {
   AchievementsList,
   CredentialsList,
@@ -139,6 +140,7 @@ export default async function ProfilePage({
     socialCounts,
     followState,
     showcase,
+    replyRateLine,
   ] = await Promise.all([
     hydrateFeed(supabase, user.id, feedPosts),
     fetchReviewsForUser(profile.id, 20),
@@ -149,6 +151,7 @@ export default async function ProfilePage({
     fetchFollowState(profile.id),
     // RLS hides these across a block in either direction.
     readShowcase(supabase, profile.id),
+    fetchReplyRateLine(supabase, profile.id),
   ]);
 
   const { data: blockRow } = !isOwn
@@ -232,6 +235,12 @@ export default async function ProfilePage({
                 {headline && (
                   <p className="mt-1 text-[15px] text-[var(--fg)] break-words">{headline}</p>
                 )}
+                {replyRateLine && (
+                  <p className="mt-1.5 inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--accent-text)]">
+                    <MessageCircleReply className="h-4 w-4 shrink-0" aria-hidden />
+                    {replyRateLine}
+                  </p>
+                )}
                 <p className="mt-1 text-[13px] text-[var(--fg-subtle)] break-words">
                   {joined && <>On Loop since {joined}</>}
                   {profile.company_url && (
@@ -300,8 +309,8 @@ export default async function ProfilePage({
                   : undefined
               }
             />
-            <Stat label="Followers" value={String(socialCounts.followers)} />
-            <Stat label="Following" value={String(socialCounts.following)} />
+            <Stat label="Can help with" value={String(offers?.length ?? 0)} suffix={(offers?.length ?? 0) === 1 ? "offer" : "offers"} />
+            <Stat label="Looking for" value={String(needs?.length ?? 0)} suffix={(needs?.length ?? 0) === 1 ? "need" : "needs"} />
           </dl>
         </header>
 
@@ -603,15 +612,20 @@ export default async function ProfilePage({
               </div>
             )}
 
-            <div className="surface-card p-5">
-              <p className="eyebrow">Network</p>
-              <p className="mt-2 text-sm">
-                <span className="num font-semibold">{socialCounts.connections}</span>{" "}
-                <span className="text-[var(--fg-muted)]">
-                  connection{socialCounts.connections === 1 ? "" : "s"}
-                </span>
-              </p>
-            </div>
+            {isOwn && socialCounts.followers !== null && (
+              <div className="surface-card p-5">
+                <p className="eyebrow">Your network</p>
+                <p className="mt-2 text-sm text-[var(--fg-muted)]">
+                  <span className="num font-semibold text-[var(--fg)]">{socialCounts.followers}</span>{" "}
+                  follower{socialCounts.followers === 1 ? "" : "s"},{" "}
+                  <span className="num font-semibold text-[var(--fg)]">{socialCounts.following ?? 0}</span>{" "}
+                  following
+                </p>
+                <p className="mt-1 text-xs text-[var(--fg-subtle)]">
+                  Only you can see this. Loop never shows follower counts to anyone else.
+                </p>
+              </div>
+            )}
           </aside>
         </div>
       </main>
