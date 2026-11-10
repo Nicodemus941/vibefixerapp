@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Bot,
   Bookmark,
   BookmarkCheck,
   Check,
@@ -116,6 +117,23 @@ export function PostMenu({
     });
   }
 
+  function onReportBot() {
+    setError(null);
+    startTransition(async () => {
+      const r = await fileReport({
+        targetKind: "post",
+        targetId: postId,
+        reason: "Reported as bot or spam",
+        category: "bot_spam",
+      });
+      if (r.error) setError(r.error);
+      else {
+        setSent(true);
+        setTimeout(close, 1200);
+      }
+    });
+  }
+
   function onToggleSave() {
     const next = !isSaved;
     setIsSaved(next);
@@ -206,6 +224,18 @@ export function PostMenu({
                 >
                   <Flag className="h-3.5 w-3.5" />
                   Report
+                </button>
+              )}
+              {!isOwn && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={onReportBot}
+                  disabled={pending}
+                  className={`${ITEM} text-[var(--fg)]`}
+                >
+                  <Bot className="h-3.5 w-3.5" />
+                  Report as bot or spam
                 </button>
               )}
               {!isOwn && canModerate && (

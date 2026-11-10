@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Flag, Loader2, MoreHorizontal, ShieldOff, X } from "lucide-react";
+import { Bot, Flag, Loader2, MoreHorizontal, ShieldOff, X } from "lucide-react";
 import { blockUser, unblockUser, fileReport } from "@/app/moderation/actions";
 
 export function ProfileModerationMenu({
@@ -55,6 +55,23 @@ export function ProfileModerationMenu({
     });
   }
 
+  function reportBot() {
+    setError(null);
+    startTransition(async () => {
+      const r = await fileReport({
+        targetKind: "user",
+        targetId,
+        reason: "Reported as bot or spam",
+        category: "bot_spam",
+      });
+      if (r.error) setError(r.error);
+      else {
+        setSent(true);
+        setOpen(false);
+      }
+    });
+  }
+
   return (
     <div className="relative">
       <button
@@ -90,6 +107,15 @@ export function ProfileModerationMenu({
               >
                 <Flag className="h-3.5 w-3.5" />
                 Report
+              </button>
+              <button
+                type="button"
+                onClick={reportBot}
+                disabled={pending}
+                className="press-shrink w-full text-left flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-[var(--fg)] hover:bg-[var(--surface-2)]"
+              >
+                <Bot className="h-3.5 w-3.5" />
+                Report as bot or spam
               </button>
             </div>
           ) : (

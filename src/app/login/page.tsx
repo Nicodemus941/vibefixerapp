@@ -6,6 +6,8 @@ import { Loader2, Mail, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/browser";
 import { LoopMark } from "@/components/LoopMark";
+import { Turnstile, TURNSTILE_SITE_KEY } from "@/components/Turnstile";
+import { checkHuman } from "@/app/auth/actions";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -24,6 +26,9 @@ function LoginInner() {
   const [magicSent, setMagicSent] = useState(false);
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Turnstile on sign up and sign in. Without a site key it is skipped.
+  const [humanToken, setHumanToken] = useState<string | null>(null);
+  const [humanReset, setHumanReset] = useState(0);
 
   // Remember the last email the user signed in with. Renders the page
   // as a one-tap "Continue as <you>" for returning visitors instead of
@@ -47,9 +52,30 @@ function LoginInner() {
 
   const returning = Boolean(rememberedEmail);
 
+  // Verifies the Turnstile token on the server. Tokens are single use, so
+  // the widget is reset after every attempt.
+  async function passHumanCheck(): Promise<boolean> {
+    if (!TURNSTILE_SITE_KEY) return true;
+    if (!humanToken) {
+      setError("Please confirm you are a person first.");
+      return false;
+    }
+    const r = await checkHuman(humanToken);
+    setHumanReset((k) => k + 1);
+    if (!r.ok) {
+      setError(r.error ?? "That check did not go through. Please try it again.");
+      return false;
+    }
+    return true;
+  }
+
   async function signInWithGithub() {
     setLoading("github");
     setError(null);
+    if (!(await passHumanCheck())) {
+      setLoading(null);
+      return;
+    }
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
@@ -68,6 +94,10 @@ function LoginInner() {
     if (!trimmed) return;
     setLoading("magic");
     setError(null);
+    if (!(await passHumanCheck())) {
+      setLoading(null);
+      return;
+    }
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
       email: trimmed,
@@ -266,6 +296,12 @@ function LoginInner() {
               )}
             </button>
           </>
+        )}
+
+        {!magicSent && TURNSTILE_SITE_KEY && (
+          <div className="mt-5">
+            <Turnstile onToken={setHumanToken} resetKey={humanReset} />
+          </div>
         )}
 
         {error && (

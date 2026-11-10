@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HandHeart, Loader2, Send, Sparkles, X } from "lucide-react";
 import { HELP_LINE_MIN, validateHelpLine } from "@/lib/cold-dm";
+import { Turnstile } from "@/components/Turnstile";
 import { sendMessage, type DmStatus } from "../actions";
 
 const MAX = 4000;
@@ -14,17 +15,23 @@ export function MessageComposer({
   initialDraft,
   dm,
   counterpartyName,
+  humanCheck = false,
 }: {
   conversationId: string;
   initialDraft?: string | null;
   /** Set only before the first message to someone new. */
   dm?: DmStatus | null;
   counterpartyName?: string;
+  /** Show Turnstile before the member's first message ever. */
+  humanCheck?: boolean;
 }) {
   const [body, setBody] = useState(initialDraft ?? "");
   const [helpLine, setHelpLine] = useState("");
   const [draftBanner, setDraftBanner] = useState(Boolean(initialDraft));
   const [error, setError] = useState<string | null>(null);
+  const [humanToken, setHumanToken] = useState<string | null>(null);
+  const [humanDone, setHumanDone] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
   const [pending, startTransition] = useTransition();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const helpRef = useRef<HTMLInputElement>(null);
@@ -65,7 +72,8 @@ export function MessageComposer({
   }
 
   const helpProblem = cold ? validateHelpLine(helpLine) : null;
-  const canSend = cold ? !helpProblem : Boolean(body.trim());
+  const needToken = humanCheck && !humanDone;
+  const canSend = (cold ? !helpProblem : Boolean(body.trim())) && (!needToken || Boolean(humanToken));
 
   function submit() {
     if (pending) return;
@@ -80,6 +88,7 @@ export function MessageComposer({
     const fd = new FormData();
     fd.set("conversation_id", conversationId);
     fd.set("body", text);
+    if (needToken && humanToken) fd.set("turnstile_token", humanToken);
     if (cold) {
       fd.set("help_line", helpLine);
       if (dm?.topOffer) fd.set("offer_id", dm.topOffer.id);
@@ -88,8 +97,11 @@ export function MessageComposer({
       const r = await sendMessage(fd);
       if (r.error) {
         setError(r.error);
+        // A Turnstile token works once. Get a fresh one for the retry.
+        if (needToken) setResetKey((k) => k + 1);
         return;
       }
+      if (needToken) setHumanDone(true);
       setBody("");
       setHelpLine("");
       setDraftBanner(false);
@@ -152,6 +164,15 @@ export function MessageComposer({
             <span className="num">{dm?.coldLeftToday ?? 0}</span> new conversation
             {dm?.coldLeftToday === 1 ? "" : "s"} left today.
           </p>
+        </div>
+      )}
+
+      {needToken && (
+        <div className="space-y-1">
+          <p className="text-xs text-[var(--fg-subtle)]">
+            One quick check before your first message, to keep Loop free of bots.
+          </p>
+          <Turnstile onToken={setHumanToken} resetKey={resetKey} />
         </div>
       )}
 

@@ -518,6 +518,7 @@ export type Database = {
       };
       reports: {
         Row: {
+          category: string;
           created_at: string | null;
           id: string;
           reason: string;
@@ -529,6 +530,7 @@ export type Database = {
           target_kind: string;
         };
         Insert: {
+          category?: string;
           created_at?: string | null;
           id?: string;
           reason: string;
@@ -540,6 +542,7 @@ export type Database = {
           target_kind: string;
         };
         Update: {
+          category?: string;
           created_at?: string | null;
           id?: string;
           reason?: string;
@@ -577,6 +580,12 @@ export type Database = {
           conversation_id?: string;
           created_at?: string;
         };
+        Relationships: [];
+      };
+      human_verifications: {
+        Row: { user_id: string; method: string; verified_at: string };
+        Insert: { user_id: string; method?: string; verified_at?: string };
+        Update: { user_id?: string; method?: string; verified_at?: string };
         Relationships: [];
       };
       cold_dm_quota: {

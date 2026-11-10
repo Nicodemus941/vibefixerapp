@@ -79,8 +79,8 @@ export const MESSAGE_GUARD_ERRORS = [
   "That conversation no longer exists.",
   "Confirm your email",
   "Please confirm you are a person",
-  "You have posted 20 times today.",
-  "You have commented 100 times today.",
+  "You have reached 20 posts in 24 hours.",
+  "You have reached 100 comments in 24 hours.",
 ];
 
 export function friendlyMessageError(message: string | undefined | null): string {

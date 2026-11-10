@@ -54,6 +54,7 @@ export default async function ReportsAdminPage() {
               >
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--need-fg)]">
+                    {r.category === "bot_spam" ? "BOT OR SPAM · " : ""}
                     {r.target_kind.toUpperCase()} · reported by{" "}
                     <Link
                       href={`/u/${r.reporter_id}`}

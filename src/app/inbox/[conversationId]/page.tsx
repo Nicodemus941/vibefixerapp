@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/Avatar";
-import { fetchDmStatus, fetchThread } from "../actions";
+import { fetchDmStatus, fetchNeedsHumanCheck, fetchThread } from "../actions";
 import { fetchEngagementsBetween } from "../engagement-actions";
 import { fetchDocumentsForConversation } from "@/app/documents/actions";
 import { fetchPendingReviews } from "@/app/reviews/actions";
@@ -52,8 +52,14 @@ export default async function ThreadPage({
 
   const { header, messages, offers, error } = await fetchThread(conversationId);
   // Before the first message the composer may need the give first rules.
-  const dmStatus =
-    header && messages.length === 0 ? await fetchDmStatus(header.counterparty_id) : null;
+  // Turnstile is needed before the member's first message anywhere, which
+  // can also be a reply in a thread someone else started.
+  const [dmStatus, humanCheck] = header
+    ? await Promise.all([
+        messages.length === 0 ? fetchDmStatus(header.counterparty_id) : Promise.resolve(null),
+        fetchNeedsHumanCheck(),
+      ])
+    : [null, false];
   // Arrived from "I can help": show the need being answered.
   const { data: helpPost } =
     header && helpPostId && /^[0-9a-f-]{36}$/i.test(helpPostId)
@@ -178,6 +184,7 @@ export default async function ThreadPage({
             conversationId={conversationId}
             initialDraft={initialDraft}
             dm={dmStatus}
+            humanCheck={humanCheck}
             counterpartyName={header.counterparty_name}
           />
         </div>

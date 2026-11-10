@@ -5,6 +5,30 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logEvent } from "@/lib/platform-events";
 import { composeColdMessage, friendlyMessageError, validateHelpLine } from "@/lib/cold-dm";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { turnstileEnabled, verifyTurnstile } from "@/lib/turnstile";
+
+type Supa = Awaited<ReturnType<typeof createClient>>;
+
+// Turnstile runs once, before a member's first message ever. True when this
+// member still needs it (and Turnstile is configured).
+async function needsHumanCheck(supabase: Supa, userId: string): Promise<boolean> {
+  if (!turnstileEnabled()) return false;
+  const [{ data: verified }, { count }] = await Promise.all([
+    supabase.from("human_verifications").select("user_id").eq("user_id", userId).maybeSingle(),
+    supabase.from("messages").select("id", { count: "exact", head: true }).eq("sender_id", userId),
+  ]);
+  return !verified && (count ?? 0) === 0;
+}
+
+export async function fetchNeedsHumanCheck(): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  return needsHumanCheck(supabase, user.id);
+}
 
 export async function startDmAndRedirect(otherUserId: string, origin: "post" | "profile" = "post") {
   const supabase = await createClient();
@@ -67,6 +91,16 @@ export async function sendMessage(formData: FormData): Promise<{ error?: string 
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sign in to send messages." };
+
+  if (await needsHumanCheck(supabase, user.id)) {
+    const check = await verifyTurnstile(String(formData.get("turnstile_token") ?? "") || null);
+    if (!check.ok) return { error: check.error };
+    if (!check.skipped) {
+      await createAdminClient()
+        .from("human_verifications")
+        .upsert({ user_id: user.id, method: "turnstile" }, { onConflict: "user_id" });
+    }
+  }
 
   const { error } = await supabase.from("messages").insert({
     conversation_id: conversationId,
