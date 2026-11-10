@@ -8,6 +8,10 @@ const PUBLIC_PATHS = new Set([
   "/auth/callback",
   "/jobs",
   "/discover",
+  "/about",
+  "/terms",
+  "/privacy",
+  "/manifest.webmanifest",
   "/sitemap.xml",
   "/robots.txt",
 ]);
