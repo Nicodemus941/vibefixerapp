@@ -9,9 +9,12 @@ import { MobileTabBar } from "./MobileTabBar";
 export async function FeedHeader({
   displayName,
   role,
+  wide = false,
 }: {
   displayName: string;
   role: string;
+  /** Match the three column feed shell on desktop. */
+  wide?: boolean;
 }) {
   const supabase = await createClient();
   const {
@@ -32,7 +35,7 @@ export async function FeedHeader({
         className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="mx-auto max-w-2xl px-3 sm:px-6 h-14 flex items-center justify-between gap-2 min-w-0">
+        <div className={`mx-auto ${wide ? "max-w-6xl" : "max-w-2xl"} px-3 sm:px-6 h-14 flex items-center justify-between gap-2 min-w-0`}>
           <Link
             href="/feed"
             aria-label="Loop home"
@@ -99,7 +102,7 @@ function HeaderIconLink({
     <Link
       href={href}
       aria-label={label}
-      className="press-shrink inline-flex items-center justify-center gap-1.5 h-10 min-w-10 rounded-full border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors px-2.5 md:px-3"
+      className="press-shrink inline-flex items-center justify-center gap-1.5 h-10 min-w-10 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] transition-colors px-2.5 md:px-3"
     >
       {children}
     </Link>

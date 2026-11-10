@@ -11,6 +11,7 @@ import { FeedHeader } from "./_components/FeedHeader";
 import { ReciprocityBanner } from "./_components/ReciprocityBanner";
 import { LiveFeedBanner } from "./_components/LiveFeedBanner";
 import { SponsoredCard } from "./_components/SponsoredCard";
+import { LeftRail, RightRail, loadRailData } from "./_components/FeedRails";
 
 type SearchParams = Promise<{ tag?: string | string[]; view?: string | string[] }>;
 
@@ -67,13 +68,20 @@ export default async function FeedPage({
     fetchTrendingTags(),
   ]);
 
-  const bundle = await hydrateFeed(supabase, user.id, posts);
+  const [bundle, rails] = await Promise.all([
+    hydrateFeed(supabase, user.id, posts),
+    loadRailData(supabase, user.id),
+  ]);
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-      <FeedHeader displayName={displayName} role={role} />
+      <FeedHeader displayName={displayName} role={role} wide />
 
-      <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-5">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-6 lg:grid lg:grid-cols-[232px_minmax(0,1fr)_288px] lg:gap-6 lg:items-start">
+      <aside className="hidden lg:block lg:sticky lg:top-20" aria-label="Your profile and sections">
+        <LeftRail data={rails} />
+      </aside>
+      <main className="mx-auto w-full max-w-2xl lg:max-w-none space-y-5 min-w-0">
         {/* Personalization header */}
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -87,22 +95,22 @@ export default async function FeedPage({
                 <>Loop&apos;s pulse.</>
               )}
             </h1>
-            <p className="font-mono text-xs text-[var(--fg-subtle)] mt-1">
+            <p className="text-sm text-[var(--fg-subtle)] mt-1">
               {tag
-                ? "Needs, offers, and wins tagged this."
+                ? "Needs, offers and shipped work tagged this."
                 : view === "recent"
-                ? "Everything founders are asking for, offering, and shipping. Newest first."
+                ? "Everything founders are asking for, offering and shipping. Newest first."
                 : view === "following"
                 ? "Posts and reposts from founders you follow. Newest first."
                 : onboardingDone
-                ? "Needs, offers, and wins matched to what you said you need."
-                : "Needs, offers, and wins from across Loop."}
+                ? "Needs you can help with first, then offers that fit what you need, then people you follow."
+                : "Needs, offers and shipped work from across Loop."}
             </p>
           </div>
           {tag && (
             <Link
               href="/feed"
-              className="press-shrink shrink-0 inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs font-mono text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+              className="press-shrink shrink-0 inline-flex h-11 items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-4 text-xs font-semibold text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
             >
               Clear
             </Link>
@@ -113,7 +121,7 @@ export default async function FeedPage({
         {!tag && (
           <nav
             aria-label="Feed view"
-            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-1)] p-1"
+            className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-2)] p-1"
           >
             <FeedViewTab href="/feed" active={view === "personalized"} label="For you" />
             <FeedViewTab href="/feed?view=following" active={view === "following"} label="Following" />
@@ -132,7 +140,7 @@ export default async function FeedPage({
             so a partial-onboarded user gets the right next step instead
             of a generic "finish profile" call. */}
         {isColdStart && !tag && (
-          <div className="rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent)]/[0.05] p-4 sm:p-5">
+          <div className="rounded-[var(--r-lg)] border border-[var(--accent)]/30 bg-[var(--accent-soft)] p-4 sm:p-5">
             <div className="flex items-start gap-3">
               <div className="shrink-0 mt-0.5 text-[var(--accent)]">
                 <Sparkles className="h-5 w-5" />
@@ -155,13 +163,13 @@ export default async function FeedPage({
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Link
                     href="/onboarding"
-                    className="press-shrink inline-flex items-center rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110"
+                    className="press-shrink inline-flex h-11 items-center rounded-full bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)]"
                   >
                     Finish setup
                   </Link>
                   <Link
                     href="/discover"
-                    className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+                    className="press-shrink inline-flex h-11 items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-4 text-sm font-semibold text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
                   >
                     Browse founders
                   </Link>
@@ -183,16 +191,16 @@ export default async function FeedPage({
         {/* Trending hashtags */}
         {trending.length > 0 && (
           <div>
-            <p className="eyebrow mb-2">Trending this week</p>
+            <p className="mb-2 text-xs font-semibold text-[var(--fg-subtle)]">Trending this week</p>
             <div className="flex flex-wrap gap-1.5">
               {trending.map((t) => (
                 <Link
                   key={t.tag}
                   href={`/feed?tag=${encodeURIComponent(t.tag)}`}
                   className={[
-                    "press-shrink font-mono text-xs px-2.5 py-1 rounded-full border transition-colors",
+                    "press-shrink num text-xs px-2.5 py-1 rounded-full border transition-colors",
                     tag === t.tag
-                      ? "border-[var(--accent)]/50 bg-[var(--accent)]/15 text-[var(--accent)]"
+                      ? "border-[var(--accent)]/50 bg-[var(--accent-soft)] text-[var(--accent-text)]"
                       : "border-[var(--border)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:border-[var(--border-strong)] hover:text-[var(--fg)]",
                   ].join(" ")}
                 >
@@ -209,7 +217,7 @@ export default async function FeedPage({
         {/* Feed */}
         <section aria-label="Feed posts" className="space-y-4">
           {feedError && (
-            <p className="rounded-lg border border-[var(--danger)]/40 bg-[var(--danger)]/[0.06] p-3 text-sm text-[var(--danger)]">
+            <p className="rounded-[var(--r-md)] border border-[var(--danger)]/40 bg-[var(--danger-bg)] p-3 text-sm text-[var(--danger)]">
               Couldn&apos;t load the feed: {feedError}
             </p>
           )}
@@ -227,6 +235,10 @@ export default async function FeedPage({
           </div>
         </section>
       </main>
+      <aside className="hidden lg:block lg:sticky lg:top-20" aria-label="Matches, people and groups">
+        <RightRail data={rails} />
+      </aside>
+      </div>
     </div>
   );
 }
@@ -245,10 +257,10 @@ function FeedViewTab({
       href={href}
       aria-current={active ? "page" : undefined}
       className={[
-        "press-shrink inline-flex items-center justify-center h-8 px-3 xs:px-4 rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]",
+        "press-shrink inline-flex items-center justify-center h-9 px-3 xs:px-4 rounded-full text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]",
         active
-          ? "bg-[var(--accent)] text-[var(--bg)]"
-          : "text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.04]",
+          ? "bg-[var(--surface-1)] text-[var(--fg)] shadow-[var(--shadow-1)]"
+          : "text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface-1)]",
       ].join(" ")}
     >
       {label}
@@ -258,18 +270,18 @@ function FeedViewTab({
 
 function EmptyState({ tag, view }: { tag: string | null; view: FeedView }) {
   return (
-    <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-8 text-center">
+    <div className="rounded-[var(--r-lg)] border border-dashed border-[var(--border-strong)] bg-[var(--surface-1)] p-8 text-center">
       <p className="text-[var(--fg-muted)]">
         {tag
-          ? `No needs, offers, or wins tagged #${tag} yet.`
+          ? `Nothing tagged #${tag} yet.`
           : view === "following"
           ? "Nothing from people you follow yet. Follow founders from their profile or Browse."
-          : "Quiet right now. Post a need, an offer, or a win to get things moving."}
+          : "Quiet right now. Post a need, an offer or something you shipped to get things moving."}
       </p>
       {view === "following" && !tag && (
         <Link
           href="/discover"
-          className="press-shrink mt-3 inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+          className="press-shrink mt-3 inline-flex items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
         >
           Browse founders
         </Link>

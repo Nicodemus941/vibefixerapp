@@ -76,7 +76,7 @@ export function HeaderAvatarMenu({
               </p>
             )}
             {role === "admin" && (
-              <p className="font-mono text-[10px] uppercase tracking-wider text-amber-400 mt-0.5">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--need-fg)] mt-0.5">
                 Admin
               </p>
             )}
@@ -137,7 +137,7 @@ export function HeaderAvatarMenu({
             <button
               type="submit"
               role="menuitem"
-              className="w-full text-left flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-[var(--danger)] hover:bg-white/[0.04]"
+              className="w-full text-left flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-[var(--danger)] hover:bg-[var(--surface-2)]"
             >
               <LogOut className="h-4 w-4" />
               Sign out
@@ -170,8 +170,8 @@ function MenuLink({
       role="menuitem"
       onClick={onSelect}
       className={[
-        "flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm hover:bg-white/[0.04]",
-        tone === "amber" ? "text-amber-400" : "text-[var(--fg)]",
+        "flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm hover:bg-[var(--surface-2)]",
+        tone === "amber" ? "text-[var(--need-fg)]" : "text-[var(--fg)]",
         className,
       ].join(" ")}
     >

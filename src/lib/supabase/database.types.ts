@@ -1165,7 +1165,9 @@ export type Database = {
         Row: {
           body: string;
           created_at: string | null;
+          details: Json | null;
           document: Json | null;
+          engagement_id: string | null;
           embedding: string | null;
           group_id: string | null;
           hashtags: string[];
@@ -1180,7 +1182,9 @@ export type Database = {
         Insert: {
           body: string;
           created_at?: string | null;
+          details?: Json | null;
           document?: Json | null;
+          engagement_id?: string | null;
           embedding?: string | null;
           group_id?: string | null;
           hashtags?: string[];
@@ -1195,7 +1199,9 @@ export type Database = {
         Update: {
           body?: string;
           created_at?: string | null;
+          details?: Json | null;
           document?: Json | null;
+          engagement_id?: string | null;
           embedding?: string | null;
           group_id?: string | null;
           hashtags?: string[];
@@ -1759,6 +1765,39 @@ export type Database = {
           reviews_received: number;
           avg_rating: number | null;
           score: number;
+        }>;
+      };
+      post_deal_strips: {
+        Args: { post_ids: string[] };
+        Returns: Array<{
+          post_id: string;
+          amount: number;
+          delivered_days: number;
+          provider_id: string;
+          provider_name: string;
+          seeker_id: string;
+          seeker_name: string;
+          review_rating: number | null;
+          review_body: string | null;
+        }>;
+      };
+      member_track_records: {
+        Args: { user_ids: string[] };
+        Returns: Array<{
+          user_id: string;
+          deals_delivered: number;
+          avg_rating: number | null;
+          review_count: number;
+        }>;
+      };
+      people_to_follow: {
+        Args: { limit_count?: number };
+        Returns: Array<{
+          user_id: string;
+          display_name: string;
+          company_name: string | null;
+          avatar_url: string | null;
+          offer_title: string;
         }>;
       };
       pending_matches_for: {

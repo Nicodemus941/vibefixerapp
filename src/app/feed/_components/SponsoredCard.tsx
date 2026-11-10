@@ -10,16 +10,16 @@ export async function SponsoredCard() {
   if (!ad) return null;
 
   return (
-    <article className="rounded-2xl border border-violet-400/30 bg-violet-400/[0.04] p-4 sm:p-5">
+    <article className="rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface-1)] shadow-[var(--shadow-1)] p-4 sm:p-5">
       <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="font-mono text-[9px] uppercase tracking-wider text-violet-300/80 inline-flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
+        <span className="text-[11px] font-semibold text-[var(--fg-subtle)] inline-flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--fg-subtle)]" />
           Sponsored
         </span>
         {ad.organization_slug && (
           <Link
             href={`/o/${ad.organization_slug}`}
-            className="font-mono text-[10px] text-violet-300/80 hover:text-violet-200 truncate"
+            className="num text-[11px] text-[var(--fg-subtle)] hover:text-[var(--fg)] truncate"
           >
             {ad.organization_name}
           </Link>
@@ -49,7 +49,7 @@ export async function SponsoredCard() {
         href={`/api/ads/click/${ad.id}`}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full bg-violet-500 px-4 py-2 text-sm font-medium text-white hover:brightness-110"
+        className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] h-11 px-4 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)]"
       >
         {ad.cta_label}
         <ExternalLink className="h-3.5 w-3.5" />

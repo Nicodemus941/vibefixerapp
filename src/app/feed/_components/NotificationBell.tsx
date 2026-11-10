@@ -62,12 +62,12 @@ export function NotificationBell({
   return (
     <Link
       href="/notifications"
-      className="press-shrink relative inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+      className="press-shrink relative inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] transition-colors"
       aria-label={unread > 0 ? `Notifications (${unread} unread)` : "Notifications"}
     >
       <Bell className="h-3.5 w-3.5" />
       {unread > 0 && (
-        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--accent)] text-[var(--bg)] text-[10px] font-mono font-semibold tabular-nums flex items-center justify-center">
+        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--accent)] text-[var(--fg-on-accent)] text-[10px] font-mono font-semibold tabular-nums flex items-center justify-center">
           {label}
         </span>
       )}

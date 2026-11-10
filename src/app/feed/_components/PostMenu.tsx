@@ -21,7 +21,7 @@ import { POST_BODY_MAX, toEditable, toStoredText, type MentionPick } from "@/lib
 import { FOCUS_RING } from "./Modal";
 import { MentionTextarea } from "./MentionTextarea";
 
-const ITEM = `press-shrink w-full text-left flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm hover:bg-white/[0.04] ${FOCUS_RING}`;
+const ITEM = `press-shrink w-full text-left flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm hover:bg-[var(--surface-2)] ${FOCUS_RING}`;
 
 export function PostMenu({
   postId,
@@ -172,7 +172,7 @@ export function PostMenu({
         aria-label="Post menu"
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`press-shrink inline-flex items-center justify-center h-9 w-9 -mr-1.5 rounded-full text-[var(--fg-subtle)] hover:bg-white/[0.04] hover:text-[var(--fg)] ${FOCUS_RING}`}
+        className={`press-shrink inline-flex items-center justify-center h-9 w-9 -mr-1.5 rounded-full text-[var(--fg-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] ${FOCUS_RING}`}
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>
@@ -288,7 +288,7 @@ export function PostMenu({
                   type="button"
                   onClick={onEditSave}
                   disabled={pending || storedDraft.length > POST_BODY_MAX}
-                  className={`press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110 disabled:opacity-40 ${FOCUS_RING}`}
+                  className={`press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)] disabled:opacity-40 ${FOCUS_RING}`}
                 >
                   {pending && <Loader2 className="h-3 w-3 animate-spin" />}
                   Save
@@ -324,7 +324,7 @@ export function PostMenu({
                 type="button"
                 onClick={onReport}
                 disabled={pending || !reason.trim()}
-                className={`press-shrink w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110 disabled:opacity-40 ${FOCUS_RING}`}
+                className={`press-shrink w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)] disabled:opacity-40 ${FOCUS_RING}`}
               >
                 {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Flag className="h-3 w-3" />}
                 Send report

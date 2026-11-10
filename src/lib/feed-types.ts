@@ -69,6 +69,26 @@ export type PostExtras = {
   saved: boolean;
   views: number | null;
   poll: PollState | null;
+  /** Need and offer wells (posts.details). */
+  details?: unknown;
+};
+
+/** Public facts of the released deal behind a Shipped post. */
+export type DealStrip = {
+  amount: number;
+  delivered_days: number;
+  provider_id: string;
+  provider_name: string;
+  seeker_id: string;
+  seeker_name: string;
+  review_rating: number | null;
+  review_body: string | null;
+};
+
+export type TrackRecord = {
+  deals_delivered: number;
+  avg_rating: number | null;
+  review_count: number;
 };
 
 // Everything a list of posts needs to render, keyed by post id.
@@ -77,6 +97,10 @@ export type FeedBundle = {
   reactions: Record<string, ReactionState>;
   comments: Record<string, CommentSummary>;
   extras: Record<string, PostExtras>;
+  /** Keyed by post id. */
+  deals?: Record<string, DealStrip>;
+  /** Keyed by author id, for offer authors. */
+  tracks?: Record<string, TrackRecord>;
 };
 
 export type FeedView = "personalized" | "following" | "recent";

@@ -19,6 +19,7 @@ import { POST_MEDIA_BUCKET, sanitizeDocument, sanitizeMedia } from "@/lib/post-m
 import { isReactionKind, type ReactionKind } from "@/lib/reactions";
 import type { FeedPost, FeedView } from "@/lib/feed-types";
 import { toFeedPost } from "./data";
+import { DETAIL_MAX, sanitizeDetails } from "@/lib/post-details";
 import { compareFeedRank } from "@/lib/feed-rank";
 
 export type {
@@ -114,6 +115,10 @@ export async function createPost(input: {
   document?: unknown;
   quotedPostId?: string | null;
   poll?: { options: string[]; durationDays: number } | null;
+  /** Need or offer wells: budget, timeline, price, model, category. */
+  details?: unknown;
+  /** Shipped posts: a released deal the author was part of. */
+  engagementId?: string | null;
 }): Promise<{ error?: string; postId?: string }> {
   const body = (input.body ?? "").trim();
   if (body.length > POST_BODY_MAX) return { error: `Keep it under ${POST_BODY_MAX} characters.` };
@@ -148,6 +153,9 @@ export async function createPost(input: {
 
   const hashtags = extractHashtagsFromBody(body);
   const kind = input.kind ?? "update";
+  const details = sanitizeDetails(kind, input.details);
+  if (details === "invalid") return { error: `Keep each detail under ${DETAIL_MAX} characters.` };
+  const engagementId = kind === "win" && input.engagementId ? input.engagementId : null;
 
   // Link preview: only when there is no other attachment, like LinkedIn.
   const firstUrl = media.length === 0 && !document && !quotedPostId ? extractFirstUrl(body) : null;
@@ -172,6 +180,8 @@ export async function createPost(input: {
       document: (document ?? null) as unknown as Json,
       link_preview: (linkPreview ?? null) as unknown as Json,
       quoted_post_id: quotedPostId,
+      ...(details ? { details: details as unknown as Json } : {}),
+      ...(engagementId ? { engagement_id: engagementId } : {}),
     })
     .select("id")
     .single();
@@ -598,3 +608,41 @@ export async function votePoll(input: {
   return {};
 }
 
+
+export type ReleasedDeal = {
+  id: string;
+  amount: number;
+  completed_at: string | null;
+  counterparty_name: string;
+  as_provider: boolean;
+};
+
+// Deals the viewer can attach to a Shipped post.
+export async function fetchMyReleasedDeals(): Promise<ReleasedDeal[]> {
+  const { supabase, user } = await requireUser();
+  if (!user) return [];
+  const { data: deals } = await supabase
+    .from("engagements")
+    .select("id, amount, completed_at, seeker_id, provider_id")
+    .eq("escrow_status", "released")
+    .or(`seeker_id.eq.${user.id},provider_id.eq.${user.id}`)
+    .order("completed_at", { ascending: false })
+    .limit(20);
+  const list = deals ?? [];
+  const others = Array.from(new Set(list.map((d) => (d.seeker_id === user.id ? d.provider_id : d.seeker_id))));
+  const { data: people } =
+    others.length > 0
+      ? await supabase.from("profiles").select("id, display_name").in("id", others)
+      : { data: [] as Array<{ id: string; display_name: string }> };
+  const names = new Map((people ?? []).map((p) => [p.id, p.display_name]));
+  return list.map((d) => {
+    const other = d.seeker_id === user.id ? d.provider_id : d.seeker_id;
+    return {
+      id: d.id,
+      amount: Number(d.amount),
+      completed_at: d.completed_at,
+      counterparty_name: names.get(other) ?? "a member",
+      as_provider: d.provider_id === user.id,
+    };
+  });
+}
