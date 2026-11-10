@@ -3,8 +3,9 @@ import { redirect, notFound } from "next/navigation";
 import { Award, Briefcase, Building2, GraduationCap, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
-import { PostCard } from "@/app/feed/_components/PostCard";
-import { fetchReactionState, fetchCommentSummaries } from "@/app/feed/actions";
+import { FeedItem } from "@/app/feed/_components/PostCard";
+import { ImpressionTracker } from "@/app/feed/_components/ImpressionTracker";
+import { POST_COLUMNS, hydrateFeed, toFeedPost } from "@/app/feed/data";
 import { startDmAndRedirect } from "@/app/inbox/actions";
 import { fetchReviewsForUser } from "@/app/reviews/actions";
 import { ReviewList, Stars } from "@/app/reviews/_components/ReviewList";
@@ -66,8 +67,9 @@ export default async function ProfilePage({
   const [{ data: posts }, { data: offers }, { data: needs }, { count: dealCount }] = await Promise.all([
     supabase
       .from("posts")
-      .select("id, user_id, body, hashtags, kind, created_at")
+      .select(POST_COLUMNS)
       .eq("user_id", profile.id)
+      .is("group_id", null)
       .order("created_at", { ascending: false })
       .limit(20),
     supabase
@@ -91,10 +93,9 @@ export default async function ProfilePage({
       .eq("escrow_status", "released"),
   ]);
 
-  const postIds = (posts ?? []).map((p) => p.id);
+  const feedPosts = (posts ?? []).map((p) => toFeedPost(p, profile));
   const [
-    reactionState,
-    commentSummaries,
+    feedBundle,
     reviews,
     positions,
     education,
@@ -102,8 +103,7 @@ export default async function ProfilePage({
     socialCounts,
     followState,
   ] = await Promise.all([
-    fetchReactionState(postIds),
-    fetchCommentSummaries(postIds),
+    hydrateFeed(supabase, user.id, feedPosts),
     fetchReviewsForUser(profile.id, 20),
     fetchUserPositions(profile.id),
     fetchEducation(profile.id),
@@ -452,30 +452,17 @@ export default async function ProfilePage({
         <section aria-label="Posts" className="space-y-3">
           <p className="eyebrow">Posts</p>
           {posts && posts.length > 0 ? (
-            <div className="space-y-4">
-              {posts.map((p) => (
-                <PostCard
+            <ImpressionTracker className="space-y-4">
+              {feedPosts.map((p) => (
+                <FeedItem
                   key={p.id}
+                  post={p}
+                  bundle={feedBundle}
                   viewerId={user.id}
                   viewerRole={viewerProfile?.role ?? "user"}
-                  reactionState={reactionState[p.id]}
-                  commentSummary={commentSummaries[p.id]}
-                  post={{
-                    id: p.id,
-                    user_id: p.user_id,
-                    body: p.body,
-                    hashtags: p.hashtags,
-                    kind: p.kind,
-                    created_at: p.created_at as string,
-                    similarity: null,
-                    author_display_name: profile.display_name,
-                    author_company_name: profile.company_name,
-                    author_industry: profile.industry,
-                    author_avatar_url: profile.avatar_url,
-                  }}
                 />
               ))}
-            </div>
+            </ImpressionTracker>
           ) : (
             <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center text-sm text-[var(--fg-muted)]">
               {isOwn ? (

@@ -7,7 +7,12 @@ export type NotificationKind =
   | "new_match"
   | "new_message"
   | "new_reaction"
-  | "match_accepted";
+  | "match_accepted"
+  | "new_comment"
+  | "comment_reply"
+  | "mention"
+  | "new_repost"
+  | "new_follower";
 
 export type NotificationRow = {
   id: string;

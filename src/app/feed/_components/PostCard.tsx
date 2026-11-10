@@ -1,11 +1,18 @@
 import Link from "next/link";
-import { MessageCircle, MessageSquare } from "lucide-react";
+import { MessageSquare, Repeat2 } from "lucide-react";
 import { startDmAndRedirect } from "@/app/inbox/actions";
 import { Avatar } from "@/components/Avatar";
-import type { FeedPost, ReactionKind, CommentSummary } from "../actions";
-import { ReactionBar } from "./ReactionBar";
+import type { FeedBundle, FeedPost } from "@/lib/feed-types";
+import { emptyReactionCounts } from "@/lib/reactions";
 import { CommentThread } from "./CommentThread";
 import { PostMenu } from "./PostMenu";
+import { PostBody } from "./PostBody";
+import { MediaGrid } from "./MediaGrid";
+import { DocumentCard, LinkPreviewCard, QuotedPost, UnavailablePost } from "./Attachments";
+import { PollCard } from "./PollCard";
+import { PostActions } from "./PostActions";
+
+const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -32,31 +39,89 @@ function kindLabel(kind: string): { label: string; color: string } | null {
   }
 }
 
-// Render the body with #hashtags as links to /feed?tag=…
-function renderBody(body: string) {
-  const parts: Array<string | { tag: string }> = [];
-  const rx = /#([a-z0-9_]{2,32})/gi;
-  let last = 0;
-  for (const m of body.matchAll(rx)) {
-    const start = m.index ?? 0;
-    if (start > last) parts.push(body.slice(last, start));
-    parts.push({ tag: m[1].toLowerCase() });
-    last = start + m[0].length;
-  }
-  if (last < body.length) parts.push(body.slice(last));
+const EMPTY_BUNDLE: FeedBundle = { posts: {}, reactions: {}, comments: {}, extras: {} };
 
-  return parts.map((p, i) =>
-    typeof p === "string" ? (
-      <span key={i}>{p}</span>
-    ) : (
-      <Link
-        key={i}
-        href={`/feed?tag=${encodeURIComponent(p.tag)}`}
-        className="text-[var(--accent)] hover:underline font-medium"
-      >
-        #{p.tag}
-      </Link>
-    ),
+// A feed entry. Plain reposts render the original with a "X reposted"
+// line; buttons on it act on the original.
+export function FeedItem({
+  post,
+  bundle,
+  viewerId,
+  viewerRole,
+  commentMode = "preview",
+  allowRepost = true,
+}: {
+  post: FeedPost;
+  bundle: FeedBundle;
+  viewerId: string;
+  viewerRole?: string;
+  commentMode?: "preview" | "full";
+  allowRepost?: boolean;
+}) {
+  if (!post.repost_of_id) {
+    return (
+      <PostCard
+        post={post}
+        bundle={bundle}
+        viewerId={viewerId}
+        viewerRole={viewerRole}
+        commentMode={commentMode}
+        allowRepost={allowRepost}
+      />
+    );
+  }
+  const original = bundle.posts[post.repost_of_id];
+  const header = (
+    <RepostHeader
+      userId={post.user_id}
+      name={post.user_id === viewerId ? "You" : post.author_display_name}
+      avatarUrl={post.author_avatar_url}
+      createdAt={post.created_at}
+    />
+  );
+  if (!original) {
+    return (
+      <article className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5">
+        {header}
+        <UnavailablePost />
+      </article>
+    );
+  }
+  return (
+    <PostCard
+      post={original}
+      bundle={bundle}
+      viewerId={viewerId}
+      viewerRole={viewerRole}
+      header={header}
+      commentMode={commentMode}
+    />
+  );
+}
+
+function RepostHeader({
+  userId,
+  name,
+  avatarUrl,
+  createdAt,
+}: {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  createdAt: string;
+}) {
+  return (
+    <p className="-mt-1 mb-3 flex items-center gap-2 border-b border-[var(--border)] pb-2.5 text-xs text-[var(--fg-muted)]">
+      <Repeat2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+      <Avatar name={name} url={avatarUrl} size="xs" />
+      <span className="min-w-0 truncate">
+        <Link href={`/u/${userId}`} className="font-medium text-[var(--fg)] hover:underline underline-offset-2">
+          {name}
+        </Link>{" "}
+        reposted this
+      </span>
+      <span className="ml-auto shrink-0 font-mono text-[10px] text-[var(--fg-subtle)]">{timeAgo(createdAt)}</span>
+    </p>
   );
 }
 
@@ -64,23 +129,42 @@ export function PostCard({
   post,
   viewerId,
   viewerRole,
-  reactionState,
-  commentSummary,
+  bundle = EMPTY_BUNDLE,
+  header,
+  commentMode = "preview",
+  allowRepost = true,
 }: {
   post: FeedPost;
   viewerId: string;
   viewerRole?: string;
-  reactionState?: { fire: number; handshake: number; in: number; mine: ReactionKind[] };
-  commentSummary?: CommentSummary;
+  bundle?: FeedBundle;
+  header?: React.ReactNode;
+  commentMode?: "preview" | "full";
+  allowRepost?: boolean;
 }) {
   const k = kindLabel(post.kind);
   const isOwn = viewerId === post.user_id;
-  const initial = reactionState ?? { fire: 0, handshake: 0, in: 0, mine: [] };
-  const comments = commentSummary ?? { count: 0, recent: [] };
+  const reactions = bundle.reactions[post.id] ?? { counts: emptyReactionCounts(), total: 0, mine: null };
+  const comments = bundle.comments[post.id] ?? { count: 0, top_level_count: 0, recent: [] };
+  const extras = bundle.extras[post.id] ?? {
+    repostCount: 0,
+    myRepostId: null,
+    saved: false,
+    views: null,
+    poll: null,
+  };
+  const media = post.media ?? [];
+  const quoted = post.quoted_post_id ? bundle.posts[post.quoted_post_id] : undefined;
+
   return (
-    <article className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 hover:border-[var(--border-strong)] transition-colors">
+    <article
+      className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 sm:p-5 hover:border-[var(--border-strong)] transition-colors"
+      data-impression-id={isOwn ? undefined : post.id}
+      aria-label={`Post by ${post.author_display_name}`}
+    >
+      {header}
       <header className="flex items-start gap-3">
-        <Link href={`/u/${post.user_id}`} aria-label={`View ${post.author_display_name}`}>
+        <Link href={`/u/${post.user_id}`} aria-label={`View ${post.author_display_name}`} className={`rounded-full ${FOCUS}`}>
           <Avatar name={post.author_display_name} url={post.author_avatar_url} size="md" />
         </Link>
         <div className="flex-1 min-w-0">
@@ -96,15 +180,25 @@ export function PostCard({
                 · {post.author_company_name}
               </span>
             )}
-            <span className="font-mono text-xs text-[var(--fg-subtle)]">
+            <Link
+              href={`/p/${post.id}`}
+              className={`rounded font-mono text-xs text-[var(--fg-subtle)] hover:underline ${FOCUS}`}
+              title={new Date(post.created_at).toLocaleString()}
+            >
               · {timeAgo(post.created_at)}
-            </span>
+            </Link>
           </div>
-          {post.author_industry && (
-            <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)]">
-              {post.author_industry}
-            </p>
-          )}
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)]">
+            {post.author_industry}
+            {post.similarity !== null && (
+              <span
+                className="normal-case tracking-normal tabular-nums"
+                title="How closely this matches what you said you need"
+              >
+                {post.author_industry ? " · " : ""}match {(post.similarity * 100).toFixed(0)}%
+              </span>
+            )}
+          </p>
         </div>
         {k && (
           <span
@@ -118,49 +212,54 @@ export function PostCard({
           body={post.body}
           isOwn={isOwn}
           canModerate={viewerRole === "owner" || viewerRole === "admin"}
+          canEdit={!post.repost_of_id}
+          saved={extras.saved}
         />
       </header>
-      <p className="mt-3 text-[var(--fg)] leading-relaxed whitespace-pre-wrap break-words">
-        {renderBody(post.body)}
-      </p>
-      <footer className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-3">
-        <div className="flex items-center gap-1">
-          <ReactionBar postId={post.id} initial={initial} />
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.02] border border-[var(--border)] px-2.5 py-1 text-xs text-[var(--fg-muted)]">
-            <MessageCircle className="h-3.5 w-3.5" />
-            {comments.count > 0 && (
-              <span className="font-mono tabular-nums">{comments.count}</span>
-            )}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 ml-auto">
-          {post.similarity !== null && (
-            <span
-              className="font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums"
-              title="Cosine similarity to the average of your need embeddings"
-            >
-              match {(post.similarity * 100).toFixed(0)}%
-            </span>
-          )}
-          {!isOwn && (
-            <form action={startDmAndRedirect.bind(null, post.user_id, "post")}>
+
+      <PostBody body={post.body} className="mt-3" lines={commentMode === "full" ? 40 : 5} />
+
+      {media.length > 0 && <MediaGrid media={media} authorName={post.author_display_name} />}
+      {post.document && <DocumentCard doc={post.document} />}
+      {media.length === 0 && !post.document && !post.quoted_post_id && post.link_preview && (
+        <LinkPreviewCard preview={post.link_preview} />
+      )}
+      {post.quoted_post_id && <QuotedPost post={quoted} />}
+      {extras.poll && <PollCard postId={post.id} poll={extras.poll} />}
+
+      <PostActions
+        postId={post.id}
+        postKind={post.kind}
+        initialReactions={reactions}
+        commentCount={comments.count}
+        repostCount={extras.repostCount}
+        myRepostId={extras.myRepostId}
+        allowRepost={allowRepost}
+        views={isOwn ? extras.views ?? 0 : null}
+        quotePreview={<QuotedPost post={post} />}
+        messageSlot={
+          !isOwn ? (
+            <form action={startDmAndRedirect.bind(null, post.user_id, "post")} className="flex flex-1">
               <button
                 type="submit"
-                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] transition-colors"
+                className={`press-shrink inline-flex min-w-0 flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 rounded-lg px-1 sm:px-2 py-1.5 sm:py-2 text-[11px] sm:text-sm font-medium text-[var(--fg-muted)] hover:bg-white/[0.04] hover:text-[var(--fg)] transition-colors ${FOCUS}`}
               >
-                <MessageSquare className="h-3.5 w-3.5" />
+                <MessageSquare className="h-4 w-4" aria-hidden />
                 Message
               </button>
             </form>
-          )}
-        </div>
-      </footer>
+          ) : undefined
+        }
+      />
 
       <CommentThread
         postId={post.id}
         totalCount={comments.count}
+        topLevelCount={comments.top_level_count}
         recent={comments.recent}
+        showAllLink={commentMode === "preview"}
       />
     </article>
   );
 }
+
