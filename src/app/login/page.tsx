@@ -192,7 +192,7 @@ function LoginInner() {
               type="button"
               onClick={signInWithGithub}
               disabled={loading !== null}
-              className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-white/[0.03] px-5 py-3 text-sm font-medium text-[var(--fg)] disabled:opacity-40 hover:bg-white/[0.06] transition-colors"
+              className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-5 py-3 text-sm font-medium text-[var(--fg)] disabled:opacity-40 hover:bg-[var(--surface-2)] transition-colors"
             >
               {loading === "github" ? (
                 <>
@@ -257,7 +257,7 @@ function LoginInner() {
               type="button"
               onClick={signInWithGithub}
               disabled={loading !== null}
-              className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-white/[0.03] px-5 py-3 text-sm font-medium text-[var(--fg)] disabled:opacity-40 hover:bg-white/[0.06] transition-colors"
+              className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-5 py-3 text-sm font-medium text-[var(--fg)] disabled:opacity-40 hover:bg-[var(--surface-2)] transition-colors"
             >
               {loading === "github" ? (
                 <>

@@ -1,31 +1,156 @@
 @import "tailwindcss";
 
 /* ============================================
-   Loop — Dark futuristic theme tokens
+   Loop design tokens (Fable redesign, 2026-11-10)
+   Light first "paper and ink". Dark theme is a pure token swap:
+   it follows prefers-color-scheme unless the page sets
+   data-theme="light" or data-theme="dark" on <html>.
+
+   Variable NAMES are stable on purpose (--bg, --fg, --surface-1/2/3,
+   --fg-muted, --fg-subtle, --border, --border-strong, --accent,
+   --danger): every existing component reads them. New tokens are
+   added alongside.
+
+   Contrast (WCAG AA) on the light theme:
+     --fg        on --surface-1  16.4:1
+     --fg-muted  on --surface-1   7.3:1
+     --fg-subtle on --surface-1   5.0:1  (12px+ labels)
+     --fg-subtle on --bg          4.6:1
+     --accent    on --surface-1   6.4:1  (green text / links)
+     --bg        on --accent      5.8:1  (button labels)
+     --need-fg / --offer-fg / --shipped-fg / --job-fg on their bg  6:1+
    ============================================ */
 
 :root {
-  /* Surfaces — layered darks */
-  --bg: #0a0a0a;
-  --surface-1: #111111;
-  --surface-2: #181818;
-  --surface-3: #1f1f1f;
+  color-scheme: light;
+
+  /* Surfaces */
+  --paper: #F6F5F0;
+  --bg: #F6F5F0;           /* warm paper page background */
+  --surface-1: #FFFFFF;    /* cards, bars */
+  --surface-2: #EFEDE6;    /* inset wells, inputs, hover */
+  --surface-3: #E6E3DA;    /* pressed wells, avatar fallback */
 
   /* Foregrounds */
-  --fg: #fafafa;
-  --fg-muted: #a1a1aa;     /* AA on --bg: 7.4:1 */
-  --fg-subtle: #71717a;    /* labels, eyebrows */
+  --fg: #141F1B;           /* ink */
+  --fg-muted: #4F5C56;
+  --fg-subtle: #6B7772;
+  --fg-on-accent: #FFFFFF;
+  --fg-on-ink: #F4F6F4;
+  --fg-on-ink-muted: #B9C4BE;
 
   /* Borders */
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
+  --border: #E2DFD6;
+  --border-strong: #C9C5B9;
 
-  /* Accent — emerald continues from launch palette */
-  --accent: #10b981;
-  --accent-glow: rgba(16, 185, 129, 0.35);
+  /* Brand: Loop green, reserved for actions, released deals, matches */
+  --accent: #0E6B4F;
+  --accent-hover: #0B5940;
+  --accent-soft: #E1F3EA;
+  --accent-text: #0A5B43;
+  --accent-glow: rgba(14, 107, 79, 0.22);
+  --ring: #19A974;
 
-  /* Critical */
-  --danger: #f43f5e;
+  /* Ink: dark hero bands, footer */
+  --ink: #141F1B;
+  --ink-2: #1E2C27;
+  --ink-border: #2F3F39;
+
+  /* Post kinds */
+  --need-bg: #FCEFD9;    --need-fg: #8A4B00;    --need: #B86A00;
+  --offer-bg: #E1F3EA;   --offer-fg: #0A5B43;   --offer: #0E6B4F;
+  --shipped-bg: #ECE7FA; --shipped-fg: #4E3399; --shipped: #6A4BC4;
+  --job-bg: #E0F1F2;     --job-fg: #0B5E63;     --job: #0F7A80;
+
+  /* Critical / warning */
+  --danger: #B42339;
+  --danger-bg: #FBE8EB;
+  --warn: #8A4B00;
+  --warn-bg: #FCEFD9;
+  --star: #B07800;
+
+  /* Initials avatars (ink text on all of these, 7:1+) */
+  --av-1: #CDE8D8; --av-2: #F6DDB4; --av-3: #DED4F5; --av-4: #BFE3E5; --av-5: #F4D4DA;
+
+  /* Cover fallback: brand gradient */
+  --cover-gradient:
+    radial-gradient(60% 120% at 80% 0%, rgba(63, 211, 154, 0.55) 0%, transparent 60%),
+    linear-gradient(135deg, #0B4D3A 0%, #0E6B4F 55%, #136F55 100%);
+
+  /* Shape, elevation */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px;
+  --shadow-1: 0 1px 2px rgba(20, 31, 27, 0.06), 0 0 0 1px rgba(20, 31, 27, 0.02);
+  --shadow-2: 0 8px 24px -12px rgba(20, 31, 27, 0.18), 0 1px 2px rgba(20, 31, 27, 0.06);
+}
+
+/* Dark theme tokens. Duplicated in two selectors so the OS
+   preference works with no JS, and an explicit data-theme wins. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #0F1412;
+    --bg: #0F1412;
+    --surface-1: #171D1A;
+    --surface-2: #1F2724;
+    --surface-3: #27312D;
+    --fg: #F1F4F2;
+    --fg-muted: #AEB8B2;
+    --fg-subtle: #8E9994;
+    --fg-on-accent: #0F1412;
+    --border: #2A342F;
+    --border-strong: #3B4842;
+    --accent: #3FD39A;
+    --accent-hover: #5ADDAB;
+    --accent-soft: #16302A;
+    --accent-text: #5FDDAD;
+    --accent-glow: rgba(63, 211, 154, 0.3);
+    --ink: #0B0F0E; --ink-2: #141A18; --ink-border: #27312D;
+    --need-bg: #3A2A12;    --need-fg: #F3C27C;    --need: #F3C27C;
+    --offer-bg: #16302A;   --offer-fg: #7CE4B9;   --offer: #7CE4B9;
+    --shipped-bg: #2A2340; --shipped-fg: #C7B8F5; --shipped: #C7B8F5;
+    --job-bg: #142F31;     --job-fg: #8BD9DE;     --job: #8BD9DE;
+    --danger: #F28B9B;
+    --danger-bg: #3A1B22;
+    --warn: #F3C27C;
+    --warn-bg: #3A2A12;
+    --star: #F3C27C;
+    --av-1: #2E5A47; --av-2: #6A4A1C; --av-3: #4A3A78; --av-4: #1F5457; --av-5: #6A3540;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    --shadow-2: 0 8px 24px -12px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0F1412;
+  --bg: #0F1412;
+  --surface-1: #171D1A;
+  --surface-2: #1F2724;
+  --surface-3: #27312D;
+  --fg: #F1F4F2;
+  --fg-muted: #AEB8B2;
+  --fg-subtle: #8E9994;
+  --fg-on-accent: #0F1412;
+  --border: #2A342F;
+  --border-strong: #3B4842;
+  --accent: #3FD39A;
+  --accent-hover: #5ADDAB;
+  --accent-soft: #16302A;
+  --accent-text: #5FDDAD;
+  --accent-glow: rgba(63, 211, 154, 0.3);
+  --ink: #0B0F0E; --ink-2: #141A18; --ink-border: #27312D;
+  --need-bg: #3A2A12;    --need-fg: #F3C27C;    --need: #F3C27C;
+  --offer-bg: #16302A;   --offer-fg: #7CE4B9;   --offer: #7CE4B9;
+  --shipped-bg: #2A2340; --shipped-fg: #C7B8F5; --shipped: #C7B8F5;
+  --job-bg: #142F31;     --job-fg: #8BD9DE;     --job: #8BD9DE;
+  --danger: #F28B9B;
+  --danger-bg: #3A1B22;
+  --warn: #F3C27C;
+  --warn-bg: #3A2A12;
+  --star: #F3C27C;
+  --av-1: #2E5A47; --av-2: #6A4A1C; --av-3: #4A3A78; --av-4: #1F5457; --av-5: #6A3540;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-2: 0 8px 24px -12px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
@@ -38,6 +163,12 @@
   --color-fg-subtle: var(--fg-subtle);
   --color-border: var(--border);
   --color-accent: var(--accent);
+  --color-ink: var(--ink);
+  --color-need: var(--need-fg);
+  --color-offer: var(--offer-fg);
+  --color-shipped: var(--shipped-fg);
+  --color-job: var(--job-fg);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -66,13 +197,68 @@ html, body {
    ============================================ */
 
 @layer utilities {
-  /* Mono eyebrow label */
+  /* Section label. Sans, not mono: mono is reserved for money,
+     scores and URLs. Name kept so existing components restyle. */
   .eyebrow {
-    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
     font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    font-weight: 600;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--fg-subtle);
+  }
+
+  /* Post kind chips and deal status pills */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.5rem;
+    padding: 0 0.625rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .chip-need { background: var(--need-bg); color: var(--need-fg); }
+  .chip-offer { background: var(--offer-bg); color: var(--offer-fg); }
+  .chip-shipped { background: var(--shipped-bg); color: var(--shipped-fg); }
+  .chip-job { background: var(--job-bg); color: var(--job-fg); }
+  .chip-neutral { background: var(--surface-2); color: var(--fg-muted); }
+  .pill-status {
+    display: inline-flex;
+    align-items: center;
+    height: 1.375rem;
+    padding: 0 0.5625rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .st-held { background: var(--need-bg); color: var(--need-fg); }
+  .st-released { background: var(--offer-bg); color: var(--offer-fg); }
+  .st-disputed { background: var(--danger-bg); color: var(--danger); }
+  .st-open { background: var(--surface-2); color: var(--fg-muted); }
+
+  /* Numbers: money, scores, counts */
+  .num {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Card surface */
+  .surface-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-1);
+  }
+
+  /* Brand gradient used when no cover image is set */
+  .cover-fallback {
+    background: var(--cover-gradient);
   }
 
   /* Reveal-on-enter (driven by IntersectionObserver in lib/motion.ts) */
@@ -140,17 +326,16 @@ html, body {
   /* Animated gradient mesh background — for hero */
   .mesh-bg {
     background:
-      radial-gradient(60% 60% at 20% 30%, rgba(16, 185, 129, 0.18) 0%, transparent 60%),
-      radial-gradient(50% 50% at 80% 20%, rgba(56, 189, 248, 0.14) 0%, transparent 60%),
-      radial-gradient(70% 70% at 70% 80%, rgba(139, 92, 246, 0.16) 0%, transparent 60%),
+      radial-gradient(60% 60% at 20% 30%, var(--accent-glow) 0%, transparent 60%),
+      radial-gradient(50% 50% at 80% 20%, var(--accent-soft) 0%, transparent 60%),
       var(--bg);
     background-size: 200% 200%;
     animation: mesh-drift 28s ease-in-out infinite alternate;
   }
 
   @keyframes mesh-drift {
-    0%   { background-position: 0% 0%, 100% 0%, 50% 100%; }
-    100% { background-position: 100% 50%, 0% 60%, 80% 0%; }
+    0%   { background-position: 0% 0%, 100% 0%; }
+    100% { background-position: 100% 50%, 0% 60%; }
   }
 
   /* Slow pulse for status dots */
@@ -207,13 +392,13 @@ html, body {
 
 /* Focus rings (skill rule: focus-states) */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--ring);
   outline-offset: 3px;
   border-radius: 2px;
 }
 
 /* Selection */
 ::selection {
-  background: var(--accent);
-  color: var(--bg);
+  background: var(--accent-soft);
+  color: var(--fg);
 }

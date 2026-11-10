@@ -77,7 +77,7 @@ function Nav() {
           </ul>
           <a
             href="/login"
-            className="press-shrink inline-flex items-center justify-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05] transition-colors"
+            className="press-shrink inline-flex items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-[var(--surface-2)] transition-colors"
           >
             Log in
           </a>
@@ -140,7 +140,7 @@ function Hero() {
       >
         <div
           data-parallax="0.85"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/[0.03] backdrop-blur-sm px-3 py-1 mb-8 reveal-child"
+          className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-1)] backdrop-blur-sm px-3 py-1 mb-8 reveal-child"
           style={{ ["--stagger-delay" as string]: "0ms" }}
         >
           <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
@@ -209,7 +209,7 @@ function Hero() {
           </a>
           <a
             href="#how"
-            className="press-shrink inline-flex items-center justify-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-7 py-4 text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05] transition-colors"
+            className="press-shrink inline-flex items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-7 py-4 text-sm font-medium text-[var(--fg)] hover:bg-[var(--surface-2)] transition-colors"
           >
             See How It Works ↓
           </a>

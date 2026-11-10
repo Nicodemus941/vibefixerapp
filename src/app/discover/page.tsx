@@ -196,7 +196,7 @@ export default async function DiscoverPage({
                   {!user && (
                     <Link
                       href={`/login?next=/c/${p.user_id}`}
-                      className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+                      className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
                     >
                       Sign in to message
                     </Link>
@@ -241,7 +241,7 @@ function FilterChip({ href, active, label }: { href: string; active: boolean; la
         "press-shrink inline-flex items-center rounded-full px-2.5 py-1 text-xs font-mono transition-colors",
         active
           ? "bg-[var(--accent)] text-[var(--bg)]"
-          : "border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.04]",
+          : "border border-[var(--border)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface-2)]",
       ].join(" ")}
     >
       {label}

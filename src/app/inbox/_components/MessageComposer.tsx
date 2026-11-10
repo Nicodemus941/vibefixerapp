@@ -44,8 +44,8 @@ export function MessageComposer({
   return (
     <div className="space-y-2">
       {draftBanner && (
-        <div className="flex items-center justify-between gap-2 rounded-xl border border-violet-400/30 bg-violet-400/[0.06] px-3 py-1.5">
-          <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-violet-300">
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-[var(--shipped-fg)]/30 bg-[var(--shipped-fg)]/[0.06] px-3 py-1.5">
+          <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[var(--shipped-fg)]">
             <Sparkles className="h-3 w-3" />
             Loop drafted an intro — edit before sending
           </p>
@@ -53,7 +53,7 @@ export function MessageComposer({
             type="button"
             onClick={discard}
             aria-label="Discard draft"
-            className="press-shrink text-violet-300/70 hover:text-violet-200"
+            className="press-shrink text-[var(--shipped-fg)] hover:text-[var(--fg)]"
           >
             <X className="h-3.5 w-3.5" />
           </button>

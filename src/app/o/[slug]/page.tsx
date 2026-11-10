@@ -216,9 +216,9 @@ export default async function OrganizationPage({
           </div>
 
           {connectionCount > 0 && (
-            <div className="mb-3 rounded-xl border border-sky-400/30 bg-sky-400/[0.05] px-3 py-2 inline-flex items-center gap-2">
-              <Network className="h-3.5 w-3.5 text-sky-300" />
-              <p className="text-xs text-sky-100">
+            <div className="mb-3 rounded-xl border border-[var(--job-fg)]/30 bg-[var(--job-fg)]/[0.05] px-3 py-2 inline-flex items-center gap-2">
+              <Network className="h-3.5 w-3.5 text-[var(--job-fg)]" />
+              <p className="text-xs text-[var(--fg)]">
                 <span className="font-mono tabular-nums">{connectionCount}</span>{" "}
                 of your connection{connectionCount === 1 ? "" : "s"} work{connectionCount === 1 ? "s" : ""} here.
               </p>
@@ -245,7 +245,7 @@ export default async function OrganizationPage({
                   <li key={j.id}>
                     <Link
                       href={`/jobs/${j.id}`}
-                      className="press-shrink flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 hover:bg-white/[0.04]"
+                      className="press-shrink flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 hover:bg-[var(--surface-2)]"
                     >
                       <span className="text-sm text-[var(--fg)] truncate">{j.title}</span>
                       <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)] shrink-0">

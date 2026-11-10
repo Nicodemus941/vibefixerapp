@@ -153,7 +153,7 @@ export default async function AccountPage({
           <a
             href="/api/export"
             download
-            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-4 py-2 text-sm text-[var(--fg)] hover:bg-white/[0.05]"
+            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-4 py-2 text-sm text-[var(--fg)] hover:bg-[var(--surface-2)]"
           >
             <Download className="h-4 w-4" />
             Export my data

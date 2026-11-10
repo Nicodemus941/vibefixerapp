@@ -21,21 +21,21 @@ export function ResolveForm({ disputeId }: { disputeId: string }) {
   }
 
   return (
-    <div className="space-y-2 border-t border-amber-400/20 pt-3">
+    <div className="space-y-2 border-t border-[var(--need-fg)]/20 pt-3">
       <textarea
         value={note}
         onChange={(e) => setNote(e.target.value.slice(0, 2000))}
         placeholder="Resolution note (optional, both parties see it)…"
         rows={2}
         disabled={pending}
-        className="w-full rounded-lg border border-amber-400/30 bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-amber-400"
+        className="w-full rounded-lg border border-[var(--need-fg)]/30 bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--need-fg)]"
       />
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => decide("resolved_for_seeker")}
           disabled={pending}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-3)] border border-[var(--border-strong)] px-3 py-1.5 text-xs text-[var(--fg)] hover:bg-white/[0.05]"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-3)] border border-[var(--border-strong)] px-3 py-1.5 text-xs text-[var(--fg)] hover:bg-[var(--surface-2)]"
         >
           {pending && <Loader2 className="h-3 w-3 animate-spin" />}
           Refund seeker

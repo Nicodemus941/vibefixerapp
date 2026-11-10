@@ -66,7 +66,7 @@ export default async function InboxPage() {
               <li key={r.id}>
                 <Link
                   href={`/inbox/${r.id}`}
-                  className="flex items-start gap-3 p-4 hover:bg-white/[0.02] transition-colors"
+                  className="flex items-start gap-3 p-4 hover:bg-[var(--surface-1)] transition-colors"
                 >
                   <div className="h-10 w-10 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-sm font-mono text-[var(--fg-muted)]">
                     {(r.counterparty_name[0] ?? "?").toUpperCase()}

@@ -159,7 +159,7 @@ export default async function ProfilePage({
                   </span>
                 )}
                 {profile.role === "admin" && (
-                  <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-400 border border-amber-400/40">
+                  <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--need-bg)] text-[var(--need-fg)] border border-[var(--need-fg)]/40">
                     Admin
                   </span>
                 )}
@@ -291,7 +291,7 @@ export default async function ProfilePage({
             {isOwn && (
               <Link
                 href="/account"
-                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
               >
                 <Briefcase className="h-3 w-3" />
                 Manage experience
@@ -421,7 +421,7 @@ export default async function ProfilePage({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <p className="font-medium text-[var(--fg)]">{n.title}</p>
-                    <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-amber-400/40 text-amber-400 bg-amber-400/10">
+                    <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-[var(--need-fg)]/40 text-[var(--need-fg)] bg-[var(--need-bg)]">
                       {(n.urgency ?? "?").replace("_", " ")}
                     </span>
                   </div>

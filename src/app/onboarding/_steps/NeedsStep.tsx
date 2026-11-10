@@ -47,7 +47,7 @@ export function NeedsStep({
           className="rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-5 space-y-4"
         >
           <div className="flex items-center justify-between">
-            <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-amber-400">
+            <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--need-fg)]">
               Need {i + 1}
             </div>
             {value.length > 1 && (

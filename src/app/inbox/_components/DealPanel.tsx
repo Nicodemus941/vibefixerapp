@@ -31,11 +31,11 @@ function timeAgo(iso: string): string {
 function statusPill(s: Engagement["escrow_status"]) {
   switch (s) {
     case "held":
-      return "border-amber-400/40 text-amber-400 bg-amber-400/10";
+      return "border-[var(--need-fg)]/40 text-[var(--need-fg)] bg-[var(--need-bg)]";
     case "released":
       return "border-[var(--accent)]/40 text-[var(--accent)] bg-[var(--accent)]/10";
     case "refunded":
-      return "border-[var(--border-strong)] text-[var(--fg-muted)] bg-white/[0.02]";
+      return "border-[var(--border-strong)] text-[var(--fg-muted)] bg-[var(--surface-1)]";
     default:
       return "border-[var(--danger)]/40 text-[var(--danger)] bg-[var(--danger)]/10";
   }
@@ -154,7 +154,7 @@ export function DealPanel({
             <button
               type="button"
               onClick={() => setAsProvider(false)}
-              className={`press-shrink rounded-full px-3 py-1 border ${!asProvider ? "border-[var(--accent)]/60 bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] bg-white/[0.02]"}`}
+              className={`press-shrink rounded-full px-3 py-1 border ${!asProvider ? "border-[var(--accent)]/60 bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] bg-[var(--surface-1)]"}`}
             >
               I&apos;m paying
             </button>
@@ -162,7 +162,7 @@ export function DealPanel({
             <button
               type="button"
               onClick={() => setAsProvider(true)}
-              className={`press-shrink rounded-full px-3 py-1 border ${asProvider ? "border-[var(--accent)]/60 bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] bg-white/[0.02]"}`}
+              className={`press-shrink rounded-full px-3 py-1 border ${asProvider ? "border-[var(--accent)]/60 bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] bg-[var(--surface-1)]"}`}
             >
               I&apos;m delivering
             </button>
@@ -233,7 +233,7 @@ export function DealPanel({
                       type="button"
                       onClick={() => refund(e.id)}
                       disabled={pending}
-                      className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05]"
+                      className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
                     >
                       Refund
                     </button>

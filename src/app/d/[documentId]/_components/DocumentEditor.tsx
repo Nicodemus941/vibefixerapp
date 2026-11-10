@@ -242,7 +242,7 @@ export function DocumentEditor({
               <button
                 type="button"
                 onClick={startAmendment}
-                className="press-shrink mt-3 inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg)] hover:bg-white/[0.05]"
+                className="press-shrink mt-3 inline-flex items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg)] hover:bg-[var(--surface-2)]"
               >
                 Propose amendment
               </button>
@@ -252,8 +252,8 @@ export function DocumentEditor({
       )}
 
       {isLocked && doc.status === "amended" && (
-        <div className="rounded-2xl border border-sky-400/30 bg-sky-400/[0.06] p-4 flex items-start gap-3">
-          <FileText className="h-4 w-4 mt-0.5 text-sky-400 shrink-0" />
+        <div className="rounded-2xl border border-[var(--job-fg)]/30 bg-[var(--job-fg)]/[0.06] p-4 flex items-start gap-3">
+          <FileText className="h-4 w-4 mt-0.5 text-[var(--job-fg)] shrink-0" />
           <p className="text-sm text-[var(--fg)]">
             This document has been amended. View the latest amendment instead.
           </p>
@@ -300,7 +300,7 @@ export function DocumentEditor({
             href={fileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05]"
+            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
           >
             <FileText className="h-3.5 w-3.5" />
             Download attached file
@@ -334,7 +334,7 @@ export function DocumentEditor({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={pending}
-              className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05]"
+              className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
             >
               <Upload className="h-3.5 w-3.5" />
               {fileUrl ? "Replace file" : "Attach file"}
@@ -369,7 +369,7 @@ export function DocumentEditor({
 
       {/* Amendment authoring mode */}
       {isAmending && (
-        <div className="rounded-2xl border border-sky-400/30 bg-sky-400/[0.06] p-5 space-y-3">
+        <div className="rounded-2xl border border-[var(--job-fg)]/30 bg-[var(--job-fg)]/[0.06] p-5 space-y-3">
           <p className="text-sm text-[var(--fg)] font-medium">
             Drafting an amendment to this signed document
           </p>
@@ -383,7 +383,7 @@ export function DocumentEditor({
               type="button"
               onClick={submitAmendment}
               disabled={pending}
-              className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-sky-400 px-3.5 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110 disabled:opacity-50"
+              className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--job-fg)] px-3.5 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110 disabled:opacity-50"
             >
               {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Submit amendment"}
             </button>
@@ -391,7 +391,7 @@ export function DocumentEditor({
               type="button"
               onClick={() => setIsAmending(false)}
               disabled={pending}
-              className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05]"
+              className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
             >
               Cancel
             </button>
@@ -413,10 +413,10 @@ function StatusPill({ status }: { status: DocumentRow["status"] }) {
     status === "signed"
       ? "border-[var(--accent)]/40 text-[var(--accent)] bg-[var(--accent)]/10"
       : status === "amended"
-      ? "border-sky-400/40 text-sky-400 bg-sky-400/10"
+      ? "border-[var(--job-fg)]/40 text-[var(--job-fg)] bg-[var(--job-bg)]"
       : status === "void"
       ? "border-[var(--danger)]/40 text-[var(--danger)] bg-[var(--danger)]/10"
-      : "border-[var(--border-strong)] text-[var(--fg-muted)] bg-white/[0.02]";
+      : "border-[var(--border-strong)] text-[var(--fg-muted)] bg-[var(--surface-1)]";
   return (
     <span
       className={`shrink-0 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${styles}`}

@@ -51,11 +51,11 @@ export default async function DisputesAdminPage() {
             {disputes.map((d) => (
               <li
                 key={d.id}
-                className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.05] p-5 space-y-3"
+                className="rounded-2xl border border-[var(--need-fg)]/30 bg-[var(--need-fg)]/[0.05] p-5 space-y-3"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-amber-400">
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--need-fg)]">
                       ${d.amount.toLocaleString()} · opened by{" "}
                       <Link
                         href={`/u/${d.opener_id}`}

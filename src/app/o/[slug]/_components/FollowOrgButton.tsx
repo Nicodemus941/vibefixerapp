@@ -29,7 +29,7 @@ export function FollowOrgButton({
     return (
       <Link
         href={`/login?next=/o/${orgSlug}`}
-        className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05]"
+        className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-[var(--surface-2)]"
       >
         <Bell className="h-3.5 w-3.5" />
         Sign in to follow
@@ -96,7 +96,7 @@ export function FollowOrgButton({
       type="button"
       onClick={toggle}
       disabled={pending}
-      className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-white/[0.05]"
+      className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--fg)] hover:bg-[var(--surface-2)]"
     >
       {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
       Follow

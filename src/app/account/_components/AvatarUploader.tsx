@@ -88,7 +88,7 @@ export function AvatarUploader({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={pending}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)] disabled:opacity-50"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)] disabled:opacity-50"
         >
           {pending ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -102,7 +102,7 @@ export function AvatarUploader({
             type="button"
             onClick={remove}
             disabled={pending}
-            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:text-[var(--danger)] hover:bg-white/[0.05]"
+            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:text-[var(--danger)] hover:bg-[var(--surface-2)]"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Remove

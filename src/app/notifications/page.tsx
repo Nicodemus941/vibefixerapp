@@ -68,7 +68,7 @@ export default async function NotificationsPage() {
             <form action={markAllRead}>
               <button
                 type="submit"
-                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
               >
                 <Check className="h-3.5 w-3.5" />
                 Mark all read
@@ -126,7 +126,7 @@ function NotificationItem({ note }: { note: NotificationRow }) {
           "flex items-start gap-3 p-4 transition-colors",
           unread
             ? "bg-[var(--accent)]/[0.04] hover:bg-[var(--accent)]/[0.08]"
-            : "hover:bg-white/[0.02]",
+            : "hover:bg-[var(--surface-1)]",
         ].join(" ")}
       >
         <div className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-[var(--fg-muted)]">

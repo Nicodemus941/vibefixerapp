@@ -18,11 +18,11 @@ import {
 function statusPill(s: DocumentRow["status"]) {
   switch (s) {
     case "draft":
-      return "border-[var(--border-strong)] text-[var(--fg-muted)] bg-white/[0.02]";
+      return "border-[var(--border-strong)] text-[var(--fg-muted)] bg-[var(--surface-1)]";
     case "signed":
       return "border-[var(--accent)]/40 text-[var(--accent)] bg-[var(--accent)]/10";
     case "amended":
-      return "border-sky-400/40 text-sky-400 bg-sky-400/10";
+      return "border-[var(--job-fg)]/40 text-[var(--job-fg)] bg-[var(--job-bg)]";
     case "void":
       return "border-[var(--danger)]/40 text-[var(--danger)] bg-[var(--danger)]/10";
   }
@@ -83,7 +83,7 @@ export function DocumentsPanel({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05] hover:text-[var(--fg)]"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
         >
           {open ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
           {open ? "Close" : "New"}

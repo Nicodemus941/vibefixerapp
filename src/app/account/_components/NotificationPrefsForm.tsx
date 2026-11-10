@@ -91,7 +91,7 @@ export function NotificationPrefsForm({ initial }: { initial: NotificationPrefs 
               className={`press-shrink px-3 py-1.5 rounded-full text-xs border transition-colors ${
                 prefs.email_digest === o.value
                   ? "border-[var(--accent)]/60 bg-[var(--accent)]/15 text-[var(--accent)]"
-                  : "border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:text-[var(--fg)]"
+                  : "border-[var(--border-strong)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:text-[var(--fg)]"
               }`}
             >
               {o.label}
@@ -141,7 +141,7 @@ function Toggle({
       }`}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-[var(--surface-1)] shadow transition-transform ${
           checked ? "translate-x-[22px]" : "translate-x-0.5"
         }`}
       />

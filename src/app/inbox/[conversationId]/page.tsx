@@ -81,7 +81,7 @@ export default async function ThreadPage({
           <p className="text-[var(--fg-muted)]">{error ?? "Conversation not found."}</p>
           <Link
             href="/inbox"
-            className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-white/[0.02] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-white/[0.05]"
+            className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to inbox
@@ -104,7 +104,7 @@ export default async function ThreadPage({
           <Link
             href="/inbox"
             aria-label="Back to inbox"
-            className="press-shrink h-8 w-8 rounded-full border border-[var(--border)] flex items-center justify-center hover:bg-white/[0.05]"
+            className="press-shrink h-8 w-8 rounded-full border border-[var(--border)] flex items-center justify-center hover:bg-[var(--surface-2)]"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>

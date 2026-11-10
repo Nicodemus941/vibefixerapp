@@ -44,7 +44,7 @@ export function JoinLeaveButton({
       className={[
         "press-shrink shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs sm:text-sm font-medium transition-colors",
         isMember
-          ? "border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-white/[0.05]"
+          ? "border border-[var(--border-strong)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface-2)]"
           : "bg-[var(--accent)] text-[var(--bg)] hover:brightness-110",
       ].join(" ")}
     >
