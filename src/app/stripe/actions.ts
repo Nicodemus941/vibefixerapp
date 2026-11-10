@@ -173,13 +173,15 @@ export async function payEngagement(input: {
           unit_amount: amountCents,
           product_data: {
             name: `Loop deal — ${providerProfile.display_name}`,
-            description: `Loop platform fee 7% included. Held in escrow until release.`,
+            description: feeCents > 0
+              ? `Includes a Loop fee of $${(feeCents / 100).toFixed(2)}. Held in escrow until release.`
+              : `No Loop fee. Held in escrow until release.`,
           },
         },
       },
     ],
     payment_intent_data: {
-      application_fee_amount: feeCents,
+      ...(feeCents > 0 ? { application_fee_amount: feeCents } : {}),
       transfer_data: { destination: providerProfile.stripe_account_id },
       // Capture immediately so funds are held by the platform until release
       // (Stripe Connect "Separate charges and transfers" pattern).

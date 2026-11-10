@@ -168,9 +168,8 @@ export function DealPanel({
             </button>
           </div>
           <p className="font-mono text-[10px] text-[var(--fg-subtle)]">
-            Loop fee: 7% on closed deals. Funds are conceptually held in escrow
-            until the seeker marks delivered. (Real Stripe payments wire into
-            this same flow later.)
+            No Loop fee. Funds are held until the seeker marks the work
+            delivered.
           </p>
           <button
             type="button"
@@ -207,7 +206,7 @@ export function DealPanel({
                       </span>
                     </p>
                     <p className="font-mono text-[10px] text-[var(--fg-subtle)]">
-                      fee ${Number(e.platform_fee).toLocaleString()} · opened {timeAgo(e.created_at)} ago
+                      {Number(e.platform_fee) > 0 ? `fee $${Number(e.platform_fee).toLocaleString()} · ` : "no fee · "}opened {timeAgo(e.created_at)} ago
                       {e.delivery_due_at && ` · due ${new Date(e.delivery_due_at).toLocaleDateString()}`}
                     </p>
                   </div>

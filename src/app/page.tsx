@@ -35,7 +35,7 @@ export default function Home() {
 function Nav() {
   const links = [
     { href: "#how", label: "How it works" },
-    { href: "#pricing", label: "Pricing" },
+    { href: "#pricing", label: "Free" },
     { href: "#faq", label: "FAQ" },
   ];
   return (
@@ -145,7 +145,7 @@ function Hero() {
         >
           <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
           <span className="eyebrow !text-[var(--fg-muted)]">
-            Founding Cohort · 500 spots left
+            Free for founders
           </span>
         </div>
 
@@ -413,91 +413,51 @@ function WhatYouGet() {
 /* ---------------- Pricing ---------------- */
 
 function Pricing() {
-  const tiers = [
-    {
-      name: "Free Forever",
-      price: "$0",
-      period: "",
-      features: ["3 matches/week", "Reciprocity required"],
-      cta: "Start Free",
-      featured: false,
-    },
-    {
-      name: "Pro",
-      price: "$49",
-      period: "/mo",
-      features: ["Unlimited matches", "Priority queue", "AI deal scout"],
-      cta: "Go Pro",
-      featured: true,
-    },
-    {
-      name: "Vault",
-      price: "$499",
-      period: "/mo",
-      features: ["Verified $1M+ revenue founders only", "White-glove curation"],
-      cta: "Apply to Vault",
-      featured: false,
-    },
+  // Free for everyone while Loop grows (owner decision 2026-11-10). Paid
+  // options come later; nothing here may promise a price or tier.
+  const included = [
+    "Your full profile, experience and portfolio",
+    "Unlimited posts, comments and follows",
+    "Unlimited messages",
+    "Daily matches on what you need and offer",
+    "Jobs, groups and company pages",
+    "Paid deals with no Loop fee",
   ];
   return (
     <section
       id="pricing"
       className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)] scroll-mt-20"
     >
-      <div data-reveal className="reveal max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <p className="eyebrow mb-4">Pricing</p>
+      <div data-reveal className="reveal max-w-3xl mx-auto">
+        <div className="text-center mb-12">
+          <p className="eyebrow mb-4">Price</p>
           <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
-            Pick a lane.
+            Free. All of it.
           </h2>
+          <p className="mt-4 text-[var(--fg-muted)]">
+            No premium tier, no paywall on messages, no card needed.
+          </p>
         </div>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {tiers.map((t, i) => (
-            <div
-              key={t.name}
-              className={[
-                "reveal-child relative rounded-2xl p-7 flex flex-col transition-transform duration-300",
-                t.featured
-                  ? "border border-[var(--accent)]/40 bg-[var(--surface-2)] glow-ring sm:scale-[1.05]"
-                  : "border border-[var(--border)] bg-[var(--surface-1)] hover:border-[var(--border-strong)]",
-              ].join(" ")}
-              style={{ ["--stagger-delay" as string]: `${i * 100}ms` }}
-            >
-              {t.featured && (
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[var(--accent)] px-3 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wider text-[var(--bg)]">
-                  Most loved
+        <div className="reveal-child rounded-2xl p-7 border border-[var(--accent)]/40 bg-[var(--surface-2)] glow-ring">
+          <div className="flex items-baseline gap-1">
+            <span className="text-5xl font-semibold tracking-[-0.03em] tabular-nums">$0</span>
+          </div>
+          <ul className="mt-6 grid gap-2.5 text-sm sm:grid-cols-2">
+            {included.map((f) => (
+              <li key={f} className="flex items-start gap-2">
+                <span className="text-[var(--accent)]" aria-hidden>
+                  ✓
                 </span>
-              )}
-              <h3 className="text-lg font-semibold">{t.name}</h3>
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-5xl font-semibold tracking-[-0.03em] tabular-nums">
-                  {t.price}
-                </span>
-                <span className="text-[var(--fg-subtle)]">{t.period}</span>
-              </div>
-              <ul className="mt-6 space-y-2.5 text-sm flex-1">
-                {t.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2">
-                    <span className="text-[var(--accent)]" aria-hidden>
-                      ✓
-                    </span>
-                    <span className="text-[var(--fg)]">{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="/login"
-                className={[
-                  "press-shrink mt-8 inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition-colors",
-                  t.featured
-                    ? "bg-[var(--accent)] text-[var(--bg)] hover:brightness-110"
-                    : "border border-[var(--border-strong)] bg-white/[0.02] text-[var(--fg)] hover:bg-white/[0.05]",
-                ].join(" ")}
-              >
-                {t.cta}
-              </a>
-            </div>
-          ))}
+                <span className="text-[var(--fg)]">{f}</span>
+              </li>
+            ))}
+          </ul>
+          <a
+            href="/login"
+            className="press-shrink mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-medium bg-[var(--accent)] text-[var(--bg)] hover:brightness-110 transition-colors"
+          >
+            Join free
+          </a>
         </div>
       </div>
     </section>
@@ -517,12 +477,8 @@ function Faq() {
       a: "Loop analyzes your needs against every offer on the platform — by price, urgency, industry, and proven reputation. Not keywords. Not job titles.",
     },
     {
-      q: "What's your cut?",
-      a: "5–8% on closed paid engagements. Free tier pays nothing if no deal closes.",
-    },
-    {
-      q: "Who's already on it?",
-      a: "[Insert: X founders. $Y in deals closed. Z industries.]",
+      q: "What does it cost?",
+      a: "Nothing. Loop is free, and when you close a paid deal here, Loop takes no fee.",
     },
   ];
   return (
@@ -592,7 +548,7 @@ function FinalCta() {
             Log in →
           </a>
         </p>
-        <p className="mt-6 eyebrow">Only 500 spots left in the Founding Cohort</p>
+        <p className="mt-6 eyebrow">Free. No card needed.</p>
       </div>
     </section>
   );
