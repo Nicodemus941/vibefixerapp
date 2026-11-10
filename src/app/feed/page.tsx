@@ -13,7 +13,15 @@ import { LiveFeedBanner } from "./_components/LiveFeedBanner";
 import { SponsoredCard } from "./_components/SponsoredCard";
 import { LeftRail, RightRail, loadRailData } from "./_components/FeedRails";
 
-type SearchParams = Promise<{ tag?: string | string[]; view?: string | string[] }>;
+type SearchParams = Promise<{ tag?: string | string[]; view?: string | string[]; dm_error?: string | string[] }>;
+
+// Only known sentences are echoed back from the URL.
+const DM_ERRORS = new Set([
+  "That need is no longer available.",
+  "This is your own need.",
+  "You can not message this member.",
+  "Sign in to offer help.",
+]);
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +34,12 @@ export default async function FeedPage({
   const tag =
     typeof sp.tag === "string" ? sp.tag.toLowerCase().replace(/^#/, "") : null;
   const viewParam = typeof sp.view === "string" ? sp.view : null;
+  const dmError =
+    typeof sp.dm_error === "string"
+      ? DM_ERRORS.has(sp.dm_error)
+        ? sp.dm_error
+        : "That conversation could not be started. Try again."
+      : null;
   // "everyone" is the old name for Recent; keep old links working.
   const view: FeedView =
     viewParam === "everyone" || viewParam === "recent"
@@ -127,6 +141,12 @@ export default async function FeedPage({
             <FeedViewTab href="/feed?view=following" active={view === "following"} label="Following" />
             <FeedViewTab href="/feed?view=recent" active={view === "recent"} label="Recent" />
           </nav>
+        )}
+
+        {dmError && (
+          <p role="alert" className="rounded-[var(--r-md)] border border-[var(--danger)]/40 bg-[var(--danger-bg)] p-3 text-sm text-[var(--danger)]">
+            {dmError}
+          </p>
         )}
 
         {/* Reciprocity status — warned/suspended */}
