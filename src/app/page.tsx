@@ -207,9 +207,9 @@ function HeroPreview() {
   ];
   return (
     <figure className="relative" aria-label="Preview of Loop with sample members">
-      <div className="relative lg:h-[540px]">
+      <div className="relative xl:h-[540px]">
         {/* Today's matches */}
-        <div className="surface-card p-5 lg:absolute lg:left-7 lg:top-0 lg:w-[468px]">
+        <div className="surface-card p-5 xl:absolute xl:left-7 xl:top-0 xl:w-[468px]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="eyebrow">Today&apos;s matches</p>
@@ -247,9 +247,9 @@ function HeroPreview() {
           </ul>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:mt-0 lg:block">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:mt-0 xl:block">
           {/* A need */}
-          <div className="surface-card p-4 shadow-[var(--shadow-2)] lg:absolute lg:left-0 lg:bottom-0 lg:w-[230px]">
+          <div className="surface-card p-4 shadow-[var(--shadow-2)] xl:absolute xl:left-0 xl:bottom-0 xl:w-[230px]">
             <span className="chip chip-need">Need</span>
             <p className="mt-2.5 text-[13px] font-semibold">
               Fractional CFO for a seed round
@@ -265,7 +265,7 @@ function HeroPreview() {
           </div>
 
           {/* A closed deal */}
-          <div className="surface-card flex items-start gap-2.5 p-4 shadow-[var(--shadow-2)] lg:absolute lg:right-0 lg:bottom-0 lg:w-[256px]">
+          <div className="surface-card flex items-start gap-2.5 p-4 shadow-[var(--shadow-2)] xl:absolute xl:right-0 xl:bottom-0 xl:w-[256px]">
             <span
               aria-hidden
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--offer-bg)] text-[var(--offer-fg)]"
@@ -282,7 +282,7 @@ function HeroPreview() {
           </div>
         </div>
       </div>
-      <figcaption className="mt-3 text-xs text-[var(--fg-subtle)] lg:text-right">
+      <figcaption className="mt-3 text-xs text-[var(--fg-subtle)] xl:text-right">
         Sample members shown for illustration.
       </figcaption>
     </figure>
