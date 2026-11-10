@@ -238,7 +238,7 @@ function Broken() {
   const items = [
     'Another connection request from a "growth hacker"',
     "A feed of motivational posts from people who've never shipped",
-    "To pay $99/mo to InMail people who'll never reply",
+    "To pay for InMail to people who'll never reply",
   ];
   return (
     <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
@@ -324,7 +324,7 @@ function HowItWorks() {
         </div>
 
         <p className="mt-12 text-center text-[var(--fg-subtle)]">
-          That&apos;s it. No feed. No likes. No theater.
+          Plus a feed of real work: what people need, offer and ship.
         </p>
       </div>
     </section>
@@ -365,11 +365,11 @@ function BentoTile({
 
 function WhatYouGet() {
   const perks = [
-    { title: "AI-matched introductions every 24 hours", value: "$2,000/mo" },
-    { title: "Founder-only network — reciprocity enforced, recruiters blocked", value: "$500/mo" },
-    { title: "Escrow-protected contracts — funds held until delivery", value: "$300/mo" },
-    { title: "Auto-drafted warm intros — Loop writes the opener", value: "$200/mo" },
-    { title: "Outcome-based reputation score — receipts, not endorsements", value: "priceless" },
+    { title: "Daily matches between what you need and what other founders offer", value: "Free" },
+    { title: "A founder network where everyone gives as well as gets", value: "Free" },
+    { title: "Unlimited messages, posts, follows and groups", value: "Free" },
+    { title: "Paid deals with no Loop fee", value: "Free" },
+    { title: "Reputation built from shipped work and real reviews", value: "Free" },
   ];
   return (
     <section className="relative py-20 sm:py-32 px-6 border-t border-[var(--border)]">
@@ -399,10 +399,8 @@ function WhatYouGet() {
         </ul>
         <div className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-8 text-center">
           <p className="text-lg">
-            Total value:{" "}
-            <span className="font-semibold tabular-nums">$3,000+/mo</span>. Your
-            price: <span className="font-semibold text-[var(--accent)]">$0</span>
-            {" "}— as long as you reciprocate.
+            Your price: <span className="font-semibold text-[var(--accent)]">$0</span>.
+            The only rule is that you give as well as get.
           </p>
         </div>
       </div>
