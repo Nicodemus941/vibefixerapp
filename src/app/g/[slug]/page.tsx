@@ -9,6 +9,10 @@ import {
   fetchReactionState,
 } from "@/app/feed/actions";
 import { Avatar } from "@/components/Avatar";
+import { CoverBand } from "@/components/CoverBand";
+import { ImageUploadControl } from "@/components/ImageUploadControl";
+import { fetchCoverUrl } from "@/lib/covers";
+import { getGroupCoverUploadUrl, removeGroupCover, setGroupCover } from "../../groups/cover-actions";
 import { fetchGroupBySlug } from "../../groups/actions";
 import { GroupComposer } from "../../groups/_components/GroupComposer";
 import { JoinLeaveButton } from "../../groups/_components/JoinLeaveButton";
@@ -48,7 +52,7 @@ export default async function GroupPage({
           <p className="text-[var(--fg-muted)]">{error ?? "Group not found."}</p>
           <Link
             href="/groups"
-            className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
+            className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] h-11 px-4 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--surface-2)]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to groups
@@ -59,10 +63,12 @@ export default async function GroupPage({
   }
 
   const postIds = posts.map((p) => p.id);
-  const [reactionState, commentSummaries] = await Promise.all([
+  const [reactionState, commentSummaries, coverUrl] = await Promise.all([
     fetchReactionState(postIds),
     fetchCommentSummaries(postIds),
+    fetchCoverUrl(supabase, "groups", group.id),
   ]);
+  const isOwner = group.role === "owner";
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
@@ -73,37 +79,50 @@ export default async function GroupPage({
       <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-5">
         <Link
           href="/groups"
-          className="press-shrink inline-flex items-center gap-1.5 text-xs text-[var(--fg-muted)] hover:text-[var(--fg)]"
+          className="press-shrink inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-[var(--fg-muted)] hover:text-[var(--fg)]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           All groups
         </Link>
 
         {/* Header */}
-        <header className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
-          <div className="flex items-start justify-between gap-4">
+        <header className="surface-card overflow-hidden">
+          {(coverUrl || isOwner) && (
+            <CoverBand url={coverUrl} alt={`${group.name} cover image`} className="h-24 sm:h-36">
+              {isOwner && (
+                <div className="absolute right-3 top-3">
+                  <ImageUploadControl
+                    label="cover"
+                    tone="overlay"
+                    size="sm"
+                    hasImage={Boolean(coverUrl)}
+                    requestUpload={getGroupCoverUploadUrl.bind(null, group.id)}
+                    commit={setGroupCover.bind(null, group.id)}
+                    remove={removeGroupCover.bind(null, group.id)}
+                    removeConfirm="Remove the group cover?"
+                  />
+                </div>
+              )}
+            </CoverBand>
+          )}
+          <div className="p-5 sm:p-6 flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
+              <h1 className="text-[24px] sm:text-[28px] font-bold leading-tight tracking-[-0.025em] break-words">
                 {group.name}
               </h1>
               {group.description && (
-                <p className="mt-2 text-sm text-[var(--fg-muted)]">{group.description}</p>
+                <p className="mt-2 text-[15px] text-[var(--fg-muted)]">{group.description}</p>
               )}
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[var(--fg-subtle)] font-mono">
-                <span className="inline-flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  <span className="tabular-nums">{group.member_count}</span>{" "}
-                  members
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-[var(--fg-muted)]">
+                <span className="chip chip-neutral">
+                  <Users className="h-3.5 w-3.5" aria-hidden />
+                  <span className="num">{group.member_count}</span> members
                 </span>
-                <span className="inline-flex items-center gap-1">
-                  {group.visibility === "private" && <Lock className="h-3 w-3" />}
+                <span className="chip chip-neutral capitalize">
+                  {group.visibility === "private" && <Lock className="h-3.5 w-3.5" aria-hidden />}
                   {group.visibility}
                 </span>
-                {group.role && (
-                  <span className="text-[var(--accent)] uppercase tracking-wider">
-                    {group.role}
-                  </span>
-                )}
+                {group.role && <span className="chip chip-offer capitalize">{group.role}</span>}
               </div>
             </div>
             <JoinLeaveButton
@@ -134,7 +153,7 @@ export default async function GroupPage({
               </Link>
             ))}
             {group.member_count > 14 && (
-              <span className="font-mono text-xs text-[var(--fg-subtle)] self-center">
+              <span className="num text-xs text-[var(--fg-subtle)] self-center">
                 + {group.member_count - 14}
               </span>
             )}
@@ -148,7 +167,7 @@ export default async function GroupPage({
         <section aria-label="Group posts" className="space-y-4">
           <p className="eyebrow">Posts</p>
           {posts.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center">
+            <div className="rounded-[var(--r-lg)] border border-dashed border-[var(--border-strong)] p-6 text-center">
               <p className="text-sm text-[var(--fg-muted)]">No posts yet.</p>
             </div>
           ) : (

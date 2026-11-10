@@ -234,6 +234,8 @@ export async function fetchUserPositions(userId: string): Promise<PositionRow[]>
 }
 
 export type OrganizationDetail = Organization & {
+  cover_url: string | null;
+  created_by: string | null;
   current_members: Array<{
     user_id: string;
     display_name: string;
@@ -283,6 +285,10 @@ export async function fetchOrganizationBySlug(slug: string): Promise<Organizatio
     headquarters: org.headquarters,
     verified: org.verified,
     member_count: org.member_count,
+    // cover_url exists once migration 20261110130000 is applied; select("*")
+    // simply omits it before then.
+    cover_url: (org as { cover_url?: string | null }).cover_url ?? null,
+    created_by: org.created_by,
     current_members: members,
   };
 }

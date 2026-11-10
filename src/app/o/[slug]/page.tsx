@@ -7,6 +7,9 @@ import { Avatar } from "@/components/Avatar";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PublicHeader } from "@/components/PublicHeader";
 import { ShareButton } from "@/components/ShareButton";
+import { CoverBand } from "@/components/CoverBand";
+import { ImageUploadControl } from "@/components/ImageUploadControl";
+import { getOrgImageUploadUrl, removeOrgImage, setOrgImage } from "@/app/organizations/media-actions";
 import { fetchOrganizationBySlug } from "@/app/organizations/actions";
 import { fetchOrgFollowState, viewerConnectionsAtOrg } from "@/app/follows/actions";
 import { FollowOrgButton } from "./_components/FollowOrgButton";
@@ -77,6 +80,15 @@ export default async function OrganizationPage({
         .maybeSingle()
     : { data: null };
   const canPostJob = Boolean(ownPos);
+  const canManage =
+    Boolean(user) &&
+    (org.created_by === user?.id || profile?.role === "admin" || profile?.role === "owner");
+  const initials = org.name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
 
   // Open jobs at this org + how many of your connections work here
   // + the org's follower count + whether the viewer follows it
@@ -120,81 +132,103 @@ export default async function OrganizationPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
       />
-      <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-        <header className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
-          <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
-            <div className="h-16 w-16 shrink-0 rounded-2xl bg-[var(--surface-3)] flex items-center justify-center text-2xl font-semibold text-[var(--fg-muted)] overflow-hidden">
-              {org.logo_url ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={org.logo_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <Building2 className="h-7 w-7" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-semibold tracking-tight break-words">
-                  {org.name}
-                </h1>
-                {org.verified && (
-                  <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/40">
-                    Verified
-                  </span>
+      <main className="mx-auto max-w-3xl px-4 sm:px-6 py-5 sm:py-8 space-y-5">
+        <header className="surface-card overflow-hidden">
+          <CoverBand url={org.cover_url} alt={`${org.name} cover image`} className="h-28 sm:h-44">
+            {canManage && (
+              <div className="absolute right-3 top-3">
+                <ImageUploadControl
+                  label="cover"
+                  tone="overlay"
+                  size="sm"
+                  hasImage={Boolean(org.cover_url)}
+                  requestUpload={getOrgImageUploadUrl.bind(null, org.id, "cover")}
+                  commit={setOrgImage.bind(null, org.id, "cover")}
+                  remove={removeOrgImage.bind(null, org.id, "cover")}
+                  removeConfirm="Remove the cover image?"
+                />
+              </div>
+            )}
+          </CoverBand>
+          <div className="px-4 sm:px-6 pb-5">
+            <div className="-mt-10 sm:-mt-12 flex flex-col gap-3">
+              <div className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-[18px] bg-[var(--ink-2)] text-[var(--fg-on-ink)] ring-4 ring-[var(--surface-1)] flex items-center justify-center text-2xl font-extrabold tracking-[-0.03em] overflow-hidden">
+                {org.logo_url ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={org.logo_url} alt={`${org.name} logo`} className="h-full w-full object-cover bg-[var(--surface-1)]" />
+                ) : initials ? (
+                  <span aria-hidden>{initials}</span>
+                ) : (
+                  <Building2 className="h-8 w-8" aria-hidden />
                 )}
               </div>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--fg-muted)]">
-                {org.industry && (
-                  <span className="font-mono">{org.industry}</span>
-                )}
-                {org.size_band && (
-                  <span className="font-mono">{org.size_band} employees</span>
-                )}
-                {org.headquarters && (
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {org.headquarters}
-                  </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-[26px] sm:text-[30px] font-bold leading-tight tracking-[-0.025em] break-words">
+                    {org.name}
+                  </h1>
+                  {org.verified && <span className="chip chip-offer">Verified</span>}
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--fg-muted)]">
+                  {org.industry && <span>{org.industry}</span>}
+                  {org.size_band && <span>{org.size_band} employees</span>}
+                  {org.headquarters && (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5" aria-hidden />
+                      {org.headquarters}
+                    </span>
+                  )}
+                </div>
+                {org.website && (
+                  <a
+                    href={org.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1.5 inline-flex min-h-8 items-center gap-1 num text-[13px] text-[var(--accent-text)] hover:underline break-all"
+                  >
+                    {org.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                  </a>
                 )}
               </div>
-              {org.website && (
-                <a
-                  href={org.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-1 text-xs font-mono text-[var(--accent)] hover:underline break-all"
-                >
-                  {org.website.replace(/^https?:\/\//, "")}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+            </div>
+            {org.description && (
+              <p className="mt-4 text-[15px] text-[var(--fg)] leading-relaxed whitespace-pre-wrap">
+                {org.description}
+              </p>
+            )}
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[var(--border)] pt-4">
+              <FollowOrgButton
+                orgId={org.id}
+                orgSlug={org.slug}
+                initiallyFollowing={orgFollow.isFollowing}
+                initialFollowerCount={orgFollow.followerCount}
+                isAuthenticated={Boolean(user)}
+              />
+              <ShareButton
+                url={`/o/${org.slug}`}
+                title={org.name}
+                text={org.description ?? `${org.member_count} founders on Loop work at ${org.name}.`}
+                variant="ghost"
+              />
+              {canManage && (
+                <ImageUploadControl
+                  label="logo"
+                  hasImage={Boolean(org.logo_url)}
+                  requestUpload={getOrgImageUploadUrl.bind(null, org.id, "logo")}
+                  commit={setOrgImage.bind(null, org.id, "logo")}
+                  remove={removeOrgImage.bind(null, org.id, "logo")}
+                  removeConfirm="Remove the company logo?"
+                />
               )}
             </div>
-          </div>
-          {org.description && (
-            <p className="mt-4 text-sm text-[var(--fg)] leading-relaxed whitespace-pre-wrap">
-              {org.description}
-            </p>
-          )}
-          <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
-            <FollowOrgButton
-              orgId={org.id}
-              orgSlug={org.slug}
-              initiallyFollowing={orgFollow.isFollowing}
-              initialFollowerCount={orgFollow.followerCount}
-              isAuthenticated={Boolean(user)}
-            />
-            <ShareButton
-              url={`/o/${org.slug}`}
-              title={org.name}
-              text={org.description ?? `${org.member_count} founders on Loop work at ${org.name}.`}
-              variant="ghost"
-            />
           </div>
         </header>
 
         <section>
           <div className="flex items-baseline justify-between gap-3 mb-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Users className="h-4 w-4" />
+            <h2 className="text-[17px] font-semibold tracking-[-0.01em] flex items-center gap-2">
+              <Users className="h-4 w-4" aria-hidden />
               {org.member_count === 0
                 ? "No one on Loop has tagged this company yet"
                 : org.member_count === 1
@@ -207,19 +241,19 @@ export default async function OrganizationPage({
                   ? `/account?add=position&org_id=${org.id}&org_name=${encodeURIComponent(org.name)}`
                   : `/login?next=/o/${slug}`
               }
-              className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110"
+              className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] h-11 px-4 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)]"
             >
-              <Briefcase className="h-3 w-3" />
+              <Briefcase className="h-4 w-4" aria-hidden />
               <span className="hidden sm:inline">{user ? "I work here" : "Sign in to add"}</span>
               <span className="sm:hidden">{user ? "Add role" : "Sign in"}</span>
             </Link>
           </div>
 
           {connectionCount > 0 && (
-            <div className="mb-3 rounded-xl border border-[var(--job-fg)]/30 bg-[var(--job-fg)]/[0.05] px-3 py-2 inline-flex items-center gap-2">
+            <div className="mb-3 rounded-xl bg-[var(--job-bg)] px-3 py-2 inline-flex items-center gap-2">
               <Network className="h-3.5 w-3.5 text-[var(--job-fg)]" />
               <p className="text-xs text-[var(--fg)]">
-                <span className="font-mono tabular-nums">{connectionCount}</span>{" "}
+                <span className="num font-semibold">{connectionCount}</span>{" "}
                 of your connection{connectionCount === 1 ? "" : "s"} work{connectionCount === 1 ? "s" : ""} here.
               </p>
             </div>
@@ -229,26 +263,26 @@ export default async function OrganizationPage({
             <div className="mb-3">
               <Link
                 href={`/jobs/new?org_id=${org.id}`}
-                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-mono text-[var(--accent)] hover:bg-[var(--accent)]/15"
+                className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent-soft)] h-11 px-4 text-sm font-semibold text-[var(--accent-text)] hover:brightness-95"
               >
-                <Briefcase className="h-3 w-3" />
+                <Briefcase className="h-4 w-4" aria-hidden />
                 Post a job at this company
               </Link>
             </div>
           )}
 
           {(orgJobs?.length ?? 0) > 0 && (
-            <div className="mb-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
-              <p className="eyebrow mb-2">Open roles</p>
+            <div className="mb-4 surface-card p-4">
+              <h3 className="eyebrow mb-2">Open roles</h3>
               <ul className="space-y-1.5">
                 {orgJobs!.map((j) => (
                   <li key={j.id}>
                     <Link
                       href={`/jobs/${j.id}`}
-                      className="press-shrink flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 hover:bg-[var(--surface-2)]"
+                      className="press-shrink flex min-h-11 items-center justify-between gap-3 rounded-lg px-2.5 py-2 hover:bg-[var(--surface-2)]"
                     >
                       <span className="text-sm text-[var(--fg)] truncate">{j.title}</span>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)] shrink-0">
+                      <span className="chip chip-job shrink-0">
                         {j.remote_policy === "remote" ? "Remote" : j.location ?? j.remote_policy}
                       </span>
                     </Link>
@@ -259,14 +293,14 @@ export default async function OrganizationPage({
           )}
 
           {!user ? (
-            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center">
+            <div className="rounded-[var(--r-lg)] border border-dashed border-[var(--border-strong)] p-6 text-center">
               <Users className="h-6 w-6 mx-auto text-[var(--fg-subtle)] mb-2" />
               <p className="text-sm text-[var(--fg-muted)]">
                 {org.member_count > 0 ? (
                   <>
                     <Link
                       href={`/login?next=/o/${slug}`}
-                      className="text-[var(--accent)] hover:underline"
+                      className="font-semibold text-[var(--accent-text)] hover:underline"
                     >
                       Sign in
                     </Link>{" "}
@@ -277,7 +311,7 @@ export default async function OrganizationPage({
                     No one on Loop has tagged this company yet.{" "}
                     <Link
                       href={`/login?next=/o/${slug}`}
-                      className="text-[var(--accent)] hover:underline"
+                      className="font-semibold text-[var(--accent-text)] hover:underline"
                     >
                       Sign in
                     </Link>{" "}
@@ -287,7 +321,7 @@ export default async function OrganizationPage({
               </p>
             </div>
           ) : org.current_members.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center">
+            <div className="rounded-[var(--r-lg)] border border-dashed border-[var(--border-strong)] p-6 text-center">
               <p className="text-sm text-[var(--fg-muted)]">
                 Be the first to list your role here.
               </p>
@@ -297,7 +331,7 @@ export default async function OrganizationPage({
               {org.current_members.map((m) => (
                 <li
                   key={m.user_id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-3 sm:p-4 flex items-center gap-3"
+                  className="surface-card p-3 sm:p-4 flex items-center gap-3"
                 >
                   <Link href={`/u/${m.user_id}`} aria-label={`View ${m.display_name}`}>
                     <Avatar name={m.display_name} url={m.avatar_url} size="md" />
