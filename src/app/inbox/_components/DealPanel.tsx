@@ -31,13 +31,13 @@ function timeAgo(iso: string): string {
 function statusPill(s: Engagement["escrow_status"]) {
   switch (s) {
     case "held":
-      return "border-[var(--need-fg)]/40 text-[var(--need-fg)] bg-[var(--need-bg)]";
+      return "st-held";
     case "released":
-      return "border-[var(--accent)]/40 text-[var(--accent)] bg-[var(--accent)]/10";
+      return "st-released";
     case "refunded":
-      return "border-[var(--border-strong)] text-[var(--fg-muted)] bg-[var(--surface-1)]";
+      return "st-open";
     default:
-      return "border-[var(--danger)]/40 text-[var(--danger)] bg-[var(--danger)]/10";
+      return "st-disputed";
   }
 }
 
@@ -115,7 +115,7 @@ export function DealPanel({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] min-h-11 sm:min-h-9 px-3.5 text-[13px] font-semibold font-medium text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)] transition-colors"
         >
           {open ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
           {open ? "Close" : "Convert to deal"}
@@ -154,7 +154,7 @@ export function DealPanel({
             <button
               type="button"
               onClick={() => setAsProvider(false)}
-              className={`press-shrink rounded-full px-3 py-1 border ${!asProvider ? "border-[var(--accent)]/60 bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] bg-[var(--surface-1)]"}`}
+              className={`press-shrink rounded-full min-h-11 sm:min-h-9 px-3.5 font-semibold border ${!asProvider ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]" : "border-[var(--border)] bg-[var(--surface-1)]"}`}
             >
               I&apos;m paying
             </button>
@@ -162,12 +162,12 @@ export function DealPanel({
             <button
               type="button"
               onClick={() => setAsProvider(true)}
-              className={`press-shrink rounded-full px-3 py-1 border ${asProvider ? "border-[var(--accent)]/60 bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] bg-[var(--surface-1)]"}`}
+              className={`press-shrink rounded-full min-h-11 sm:min-h-9 px-3.5 font-semibold border ${asProvider ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]" : "border-[var(--border)] bg-[var(--surface-1)]"}`}
             >
               I&apos;m delivering
             </button>
           </div>
-          <p className="font-mono text-[10px] text-[var(--fg-subtle)]">
+          <p className="text-xs text-[var(--fg-subtle)]">
             No Loop fee. Funds are held until the seeker marks the work
             delivered.
           </p>
@@ -175,7 +175,7 @@ export function DealPanel({
             type="button"
             onClick={submit}
             disabled={pending || !amount}
-            className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-[var(--bg)] disabled:opacity-40 hover:brightness-110 transition-[filter]"
+            className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] min-h-12 px-4 text-sm font-semibold text-[var(--fg-on-accent)] disabled:opacity-40 hover:brightness-110 transition-[filter]"
           >
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
             Open deal
@@ -199,19 +199,19 @@ export function DealPanel({
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-mono tabular-nums text-base text-[var(--fg)]">
+                    <p className="num text-base font-semibold text-[var(--fg)]">
                       ${Number(e.amount).toLocaleString()}
                       <span className="font-sans text-xs text-[var(--fg-subtle)] ml-1.5">
                         ({iAmSeeker ? "you pay" : "you deliver"})
                       </span>
                     </p>
-                    <p className="font-mono text-[10px] text-[var(--fg-subtle)]">
+                    <p className="text-xs text-[var(--fg-subtle)]">
                       {Number(e.platform_fee) > 0 ? `fee $${Number(e.platform_fee).toLocaleString()} · ` : "no fee · "}opened {timeAgo(e.created_at)} ago
                       {e.delivery_due_at && ` · due ${new Date(e.delivery_due_at).toLocaleDateString()}`}
                     </p>
                   </div>
                   <span
-                    className={`shrink-0 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${statusPill(e.escrow_status)}`}
+                    className={`shrink-0 pill-status ${statusPill(e.escrow_status)}`}
                   >
                     {e.escrow_status}
                   </span>
@@ -223,7 +223,7 @@ export function DealPanel({
                         type="button"
                         onClick={() => release(e.id)}
                         disabled={pending}
-                        className="press-shrink inline-flex items-center gap-1 rounded-full bg-[var(--accent)] px-3 py-1 text-xs font-medium text-[var(--bg)] hover:brightness-110"
+                        className="press-shrink inline-flex items-center gap-1 rounded-full bg-[var(--accent)] min-h-11 sm:min-h-9 px-3.5 text-[13px] font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)]"
                       >
                         <CheckCircle2 className="h-3 w-3" />
                         Mark delivered
@@ -233,7 +233,7 @@ export function DealPanel({
                       type="button"
                       onClick={() => refund(e.id)}
                       disabled={pending}
-                      className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
+                      className="press-shrink inline-flex items-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] min-h-11 sm:min-h-9 px-3.5 text-[13px] font-semibold text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
                     >
                       Refund
                     </button>
@@ -256,7 +256,7 @@ export function DealPanel({
                 {e.escrow_status === "released" &&
                   pendingReviewEngagementIds.includes(e.id) && (
                     <div className="mt-3 border-t border-[var(--border)] pt-3">
-                      <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--accent)] mb-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--accent-text)] mb-2">
                         Leave a review
                       </p>
                       <ReviewForm

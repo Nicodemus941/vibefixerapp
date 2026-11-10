@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { Avatar } from "@/components/Avatar";
 import { fetchThread } from "../actions";
 import { fetchEngagementsBetween } from "../engagement-actions";
 import { fetchDocumentsForConversation } from "@/app/documents/actions";
@@ -81,7 +82,7 @@ export default async function ThreadPage({
           <p className="text-[var(--fg-muted)]">{error ?? "Conversation not found."}</p>
           <Link
             href="/inbox"
-            className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
+            className="press-shrink mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] min-h-11 sm:min-h-9 px-3.5 text-[13px] font-semibold text-[var(--fg-muted)] hover:bg-[var(--surface-2)]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to inbox
@@ -104,7 +105,7 @@ export default async function ThreadPage({
           <Link
             href="/inbox"
             aria-label="Back to inbox"
-            className="press-shrink h-8 w-8 rounded-full border border-[var(--border)] flex items-center justify-center hover:bg-[var(--surface-2)]"
+            className="press-shrink h-11 w-11 shrink-0 rounded-full border border-[var(--border)] flex items-center justify-center hover:bg-[var(--surface-2)]"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -112,14 +113,12 @@ export default async function ThreadPage({
             href={`/u/${header.counterparty_id}`}
             className="flex items-center gap-3 min-w-0 flex-1 group press-shrink"
           >
-            <div className="h-9 w-9 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center text-sm font-mono text-[var(--fg-muted)]">
-              {(header.counterparty_name[0] ?? "?").toUpperCase()}
-            </div>
+            <Avatar name={header.counterparty_name} url={null} size="md" />
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-[var(--fg)] truncate group-hover:underline underline-offset-2">
+              <p className="font-semibold text-[var(--fg)] truncate group-hover:underline underline-offset-2">
                 {header.counterparty_name}
               </p>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)] truncate">
+              <p className="text-[13px] text-[var(--fg-subtle)] truncate">
                 {[header.counterparty_company, header.counterparty_industry]
                   .filter(Boolean)
                   .join(" · ") || header.origin.toUpperCase()}

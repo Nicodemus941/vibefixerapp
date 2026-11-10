@@ -70,7 +70,7 @@ export function ThreadStream({
     return (
       <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-8 text-center">
         <p className="text-[var(--fg-muted)]">
-          New conversation. Say something concrete — what you need, what you can deliver.
+          New conversation. Say something concrete: what you need, what you can deliver.
         </p>
       </div>
     );

@@ -18,13 +18,13 @@ import {
 function statusPill(s: DocumentRow["status"]) {
   switch (s) {
     case "draft":
-      return "border-[var(--border-strong)] text-[var(--fg-muted)] bg-[var(--surface-1)]";
+      return "st-open border-transparent";
     case "signed":
-      return "border-[var(--accent)]/40 text-[var(--accent)] bg-[var(--accent)]/10";
+      return "st-released border-transparent";
     case "amended":
-      return "border-[var(--job-fg)]/40 text-[var(--job-fg)] bg-[var(--job-bg)]";
+      return "bg-[var(--job-bg)] text-[var(--job-fg)] border-transparent";
     case "void":
-      return "border-[var(--danger)]/40 text-[var(--danger)] bg-[var(--danger)]/10";
+      return "st-disputed border-transparent";
   }
 }
 
@@ -83,7 +83,7 @@ export function DocumentsPanel({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
+          className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] min-h-11 sm:min-h-9 px-3.5 text-[13px] font-semibold text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
         >
           {open ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
           {open ? "Close" : "New"}
@@ -92,7 +92,7 @@ export function DocumentsPanel({
 
       {open && (
         <div className="mb-4 space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--fg-subtle)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--fg-subtle)]">
             Pick a starting point
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -151,13 +151,13 @@ export function DocumentsPanel({
                   <Icon className="h-4 w-4 shrink-0 text-[var(--fg-muted)]" />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-[var(--fg)] truncate">{d.title}</p>
-                    <p className="font-mono text-[10px] text-[var(--fg-subtle)]">
+                    <p className="text-xs text-[var(--fg-subtle)]">
                       {kindLabel(d.kind)} ·{" "}
                       {new Date(d.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <span
-                    className={`shrink-0 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${statusPill(d.status)}`}
+                    className={`shrink-0 pill-status border ${statusPill(d.status)}`}
                   >
                     {d.status}
                   </span>
@@ -197,7 +197,7 @@ function DocChoice({
         {icon}
         {label}
       </span>
-      <span className="font-mono text-[10px] text-[var(--fg-subtle)]">{hint}</span>
+      <span className="text-xs text-[var(--fg-subtle)]">{hint}</span>
     </button>
   );
 }
