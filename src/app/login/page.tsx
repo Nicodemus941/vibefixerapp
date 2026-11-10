@@ -3,7 +3,9 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2, Mail, RotateCcw } from "lucide-react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/browser";
+import { LoopMark } from "@/components/LoopMark";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -107,45 +109,37 @@ function LoginInner() {
   const sentTo = magicSent ? email || rememberedEmail || "" : "";
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[var(--bg)] text-[var(--fg)] px-6 relative overflow-hidden">
-      <div
-        className="absolute inset-0 -z-10 opacity-40"
-        style={{
-          background:
-            "radial-gradient(60% 60% at 30% 40%, rgba(16,185,129,0.15) 0%, transparent 60%), radial-gradient(50% 50% at 70% 60%, rgba(139,92,246,0.12) 0%, transparent 60%)",
-        }}
-        aria-hidden
-      />
-      <div className="w-full max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface-1)]/80 backdrop-blur-md p-8">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/loop-mark.svg"
-          alt=""
-          width={36}
-          height={36}
-          className="h-9 w-9 mb-5"
-        />
-        <h1 className="text-2xl font-semibold tracking-tight">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-[var(--bg)] text-[var(--fg)] px-4 py-10">
+      <Link
+        href="/"
+        aria-label="Loop home"
+        className="mb-6 inline-flex min-h-11 items-center gap-2 text-xl font-bold tracking-[-0.02em] rounded-lg"
+      >
+        <LoopMark size={30} />
+        Loop
+      </Link>
+      <div className="surface-card w-full max-w-sm p-6 sm:p-8">
+        <h1 className="text-[26px] font-bold tracking-[-0.025em]">
           {returning && !magicSent ? "Welcome back." : magicSent ? "Check your email." : "Sign in to Loop"}
         </h1>
         <p className="mt-2 text-sm text-[var(--fg-muted)]">
           {returning && !magicSent
-            ? "Same one-tap sign-in — no password to remember."
+            ? "Same one tap sign in. No password to remember."
             : magicSent
             ? "The link is good for an hour and only works once."
-            : "Sign in or create your account with one tap — no password."}
+            : "Sign in or create your free account with one tap. No password."}
         </p>
 
         {magicSent ? (
-          <div className="mt-7 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/[0.06] p-4 text-sm">
+          <div className="mt-7 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent-soft)] p-4 text-sm">
             <p className="text-[var(--fg)]">
               Sent to{" "}
-              <span className="font-mono text-[var(--accent)] break-all">{sentTo}</span>.
+              <span className="font-semibold text-[var(--accent-text)] break-all">{sentTo}</span>.
             </p>
             <button
               type="button"
               onClick={useDifferentEmail}
-              className="mt-3 inline-flex items-center gap-1 text-xs font-mono text-[var(--fg-muted)] hover:text-[var(--fg)]"
+              className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-[var(--fg-muted)] hover:text-[var(--fg)]"
             >
               <RotateCcw className="h-3 w-3" />
               Use a different email
@@ -158,7 +152,7 @@ function LoginInner() {
                 type="button"
                 onClick={() => sendMagicLinkFor(rememberedEmail!)}
                 disabled={loading !== null}
-                className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--bg)] disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 transition-[filter]"
+                className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 min-h-12 text-[15px] font-semibold text-[var(--fg-on-accent)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--accent-hover)] transition-colors"
               >
                 {loading === "magic" ? (
                   <>
@@ -168,7 +162,7 @@ function LoginInner() {
                 ) : (
                   <>
                     <Mail className="h-4 w-4" />
-                    Continue as <span className="font-mono opacity-80">{rememberedEmail}</span>
+                    Continue as <span className="truncate opacity-90">{rememberedEmail}</span>
                   </>
                 )}
               </button>
@@ -176,7 +170,7 @@ function LoginInner() {
                 type="button"
                 onClick={() => setShowEmailForm(true)}
                 disabled={loading !== null}
-                className="press-shrink w-full text-center text-xs font-mono text-[var(--fg-muted)] hover:text-[var(--fg)]"
+                className="press-shrink w-full min-h-11 text-center text-sm font-semibold text-[var(--fg-muted)] hover:text-[var(--fg)]"
               >
                 Use a different email
               </button>
@@ -192,7 +186,7 @@ function LoginInner() {
               type="button"
               onClick={signInWithGithub}
               disabled={loading !== null}
-              className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-5 py-3 text-sm font-medium text-[var(--fg)] disabled:opacity-40 hover:bg-[var(--surface-2)] transition-colors"
+              className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-5 min-h-12 text-[15px] font-semibold text-[var(--fg)] disabled:opacity-40 hover:bg-[var(--surface-2)] transition-colors"
             >
               {loading === "github" ? (
                 <>
@@ -212,7 +206,7 @@ function LoginInner() {
             <form onSubmit={onFormSubmit} className="mt-7 space-y-2">
               <label
                 htmlFor="email"
-                className="block eyebrow !text-[var(--fg-subtle)]"
+                className="block text-[13px] font-semibold text-[var(--fg)]"
               >
                 Email
               </label>
@@ -224,14 +218,14 @@ function LoginInner() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@yourstartup.com"
-                className="w-full h-11 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-2)] px-3.5 text-sm text-[var(--fg)] placeholder:text-[var(--fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                className="w-full h-11 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 text-[15px] text-[var(--fg)] placeholder:text-[var(--fg-subtle)] focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--ring)]/25"
                 disabled={loading !== null}
                 autoFocus
               />
               <button
                 type="submit"
                 disabled={!email.trim() || loading !== null}
-                className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--bg)] disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 transition-[filter]"
+                className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 min-h-12 text-[15px] font-semibold text-[var(--fg-on-accent)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--accent-hover)] transition-colors"
               >
                 {loading === "magic" ? (
                   <>
@@ -257,7 +251,7 @@ function LoginInner() {
               type="button"
               onClick={signInWithGithub}
               disabled={loading !== null}
-              className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-5 py-3 text-sm font-medium text-[var(--fg)] disabled:opacity-40 hover:bg-[var(--surface-2)] transition-colors"
+              className="press-shrink w-full inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-5 min-h-12 text-[15px] font-semibold text-[var(--fg)] disabled:opacity-40 hover:bg-[var(--surface-2)] transition-colors"
             >
               {loading === "github" ? (
                 <>
@@ -274,8 +268,23 @@ function LoginInner() {
           </>
         )}
 
-        {error && <p className="mt-4 text-sm text-[var(--danger)]">{error}</p>}
+        {error && (
+          <p role="alert" className="mt-4 text-sm text-[var(--danger)]">
+            {error}
+          </p>
+        )}
       </div>
+      <p className="mt-6 max-w-sm text-center text-xs leading-relaxed text-[var(--fg-subtle)]">
+        Loop is free. By continuing you agree to the{" "}
+        <Link href="/terms" className="font-semibold text-[var(--accent-text)] hover:underline">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="font-semibold text-[var(--accent-text)] hover:underline">
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </main>
   );
 }

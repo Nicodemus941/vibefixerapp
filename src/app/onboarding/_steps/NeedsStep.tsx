@@ -39,22 +39,22 @@ export function NeedsStep({
   return (
     <div className="space-y-5">
       <p className="text-sm text-[var(--fg-muted)]">
-        Add 1–3 things you need today. Reciprocity is required — no spectators.
+        Add one to three things you need today. Everyone gives and gets on Loop.
       </p>
       {value.map((need, i) => (
         <div
           key={i}
-          className="rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-5 space-y-4"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 space-y-4"
         >
           <div className="flex items-center justify-between">
-            <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--need-fg)]">
+            <div className="chip chip-need">
               Need {i + 1}
             </div>
             {value.length > 1 && (
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="text-[var(--fg-subtle)] hover:text-[var(--danger)] transition-colors"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--fg-subtle)] hover:text-[var(--danger)] hover:bg-[var(--danger-bg)] transition-colors"
                 aria-label={`Remove need ${i + 1}`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -62,18 +62,20 @@ export function NeedsStep({
             )}
           </div>
           <div>
-            <Label>Title</Label>
+            <Label htmlFor={`need-${i}-title`}>Title</Label>
             <Input
+              id={`need-${i}-title`}
               value={need.title}
               onChange={(e) => update(i, { title: e.target.value })}
-              placeholder="Need a 3-page landing site, this week"
+              placeholder="Need a 3 page landing site, this week"
               required
               className="mt-1.5"
             />
           </div>
           <div>
-            <Label>Description</Label>
+            <Label htmlFor={`need-${i}-description`}>Description</Label>
             <Textarea
+              id={`need-${i}-description`}
               value={need.description}
               onChange={(e) => update(i, { description: e.target.value })}
               placeholder="What does done look like? Any constraints, stack, references?"
@@ -82,8 +84,9 @@ export function NeedsStep({
             />
           </div>
           <div>
-            <Label>Category</Label>
+            <Label htmlFor={`need-${i}-category`}>Category</Label>
             <Input
+              id={`need-${i}-category`}
               value={need.category}
               onChange={(e) => update(i, { category: e.target.value })}
               placeholder="design, growth, legal…"
@@ -93,8 +96,9 @@ export function NeedsStep({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Budget min ($)</Label>
+              <Label htmlFor={`need-${i}-budget-min`}>Budget min ($)</Label>
               <Input
+                id={`need-${i}-budget-min`}
                 type="number"
                 inputMode="numeric"
                 value={need.budget_min ?? ""}
@@ -109,8 +113,9 @@ export function NeedsStep({
               />
             </div>
             <div>
-              <Label>Budget max ($)</Label>
+              <Label htmlFor={`need-${i}-budget-max`}>Budget max ($)</Label>
               <Input
+                id={`need-${i}-budget-max`}
                 type="number"
                 inputMode="numeric"
                 value={need.budget_max ?? ""}
@@ -126,8 +131,9 @@ export function NeedsStep({
             </div>
           </div>
           <div>
-            <Label>Urgency</Label>
+            <Label htmlFor={`need-${i}-urgency`}>Urgency</Label>
             <Select
+              id={`need-${i}-urgency`}
               value={need.urgency}
               onChange={(e) => update(i, { urgency: e.target.value })}
               className="mt-1.5"

@@ -40,23 +40,23 @@ export function OffersStep({
   return (
     <div className="space-y-5">
       <p className="text-sm text-[var(--fg-muted)]">
-        Add 1–3 things you can deliver for another founder. Be specific —
+        Add one to three things you can deliver for another founder. Be specific:
         matches are run against this text.
       </p>
       {value.map((offer, i) => (
         <div
           key={i}
-          className="rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-5 space-y-4"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 space-y-4"
         >
           <div className="flex items-center justify-between">
-            <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
+            <div className="chip chip-offer">
               Offer {i + 1}
             </div>
             {value.length > 1 && (
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="text-[var(--fg-subtle)] hover:text-[var(--danger)] transition-colors"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--fg-subtle)] hover:text-[var(--danger)] hover:bg-[var(--danger-bg)] transition-colors"
                 aria-label={`Remove offer ${i + 1}`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -64,18 +64,20 @@ export function OffersStep({
             )}
           </div>
           <div>
-            <Label>Title</Label>
+            <Label htmlFor={`offer-${i}-title`}>Title</Label>
             <Input
+              id={`offer-${i}-title`}
               value={offer.title}
               onChange={(e) => update(i, { title: e.target.value })}
-              placeholder="Fractional CFO for seed-stage SaaS"
+              placeholder="Fractional CFO for seed stage SaaS"
               required
               className="mt-1.5"
             />
           </div>
           <div>
-            <Label>Description</Label>
+            <Label htmlFor={`offer-${i}-description`}>Description</Label>
             <Textarea
+              id={`offer-${i}-description`}
               value={offer.description}
               onChange={(e) => update(i, { description: e.target.value })}
               placeholder="What's the scope, who's it for, what's a typical outcome?"
@@ -84,8 +86,9 @@ export function OffersStep({
             />
           </div>
           <div>
-            <Label>Category</Label>
+            <Label htmlFor={`offer-${i}-category`}>Category</Label>
             <Input
+              id={`offer-${i}-category`}
               value={offer.category}
               onChange={(e) => update(i, { category: e.target.value })}
               placeholder="finance, design, growth…"
@@ -95,8 +98,9 @@ export function OffersStep({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Price min ($)</Label>
+              <Label htmlFor={`offer-${i}-price-min`}>Price min ($)</Label>
               <Input
+                id={`offer-${i}-price-min`}
                 type="number"
                 inputMode="numeric"
                 value={offer.price_min ?? ""}
@@ -111,8 +115,9 @@ export function OffersStep({
               />
             </div>
             <div>
-              <Label>Price max ($)</Label>
+              <Label htmlFor={`offer-${i}-price-max`}>Price max ($)</Label>
               <Input
+                id={`offer-${i}-price-max`}
                 type="number"
                 inputMode="numeric"
                 value={offer.price_max ?? ""}
@@ -128,8 +133,9 @@ export function OffersStep({
             </div>
           </div>
           <div>
-            <Label>Pricing model</Label>
+            <Label htmlFor={`offer-${i}-pricing-model`}>Pricing model</Label>
             <Select
+              id={`offer-${i}-pricing-model`}
               value={offer.pricing_model}
               onChange={(e) => update(i, { pricing_model: e.target.value })}
               className="mt-1.5"
