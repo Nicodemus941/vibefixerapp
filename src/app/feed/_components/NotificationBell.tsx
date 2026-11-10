@@ -27,7 +27,11 @@ export function NotificationBell({
           table: "notifications",
           filter: `user_id=eq.${userId}`,
         },
-        () => setUnread((c) => c + 1),
+        (payload) => {
+          // Rows switched off for in app (email only) never count.
+          const row = payload.new as { in_app?: boolean };
+          if (row.in_app !== false) setUnread((c) => c + 1);
+        },
       )
       .on(
         "postgres_changes",
@@ -38,9 +42,9 @@ export function NotificationBell({
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          const newRow = payload.new as { read_at: string | null };
-          const oldRow = payload.old as { read_at: string | null };
-          if (!oldRow.read_at && newRow.read_at) {
+          const newRow = payload.new as { read_at: string | null; in_app?: boolean };
+          const oldRow = payload.old as { read_at?: string | null };
+          if (newRow.in_app !== false && !oldRow.read_at && newRow.read_at) {
             setUnread((c) => Math.max(0, c - 1));
           }
         },

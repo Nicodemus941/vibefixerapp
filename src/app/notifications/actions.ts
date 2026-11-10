@@ -3,16 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export type NotificationKind =
-  | "new_match"
-  | "new_message"
-  | "new_reaction"
-  | "match_accepted"
-  | "new_comment"
-  | "comment_reply"
-  | "mention"
-  | "new_repost"
-  | "new_follower";
+export type { NotificationKind } from "@/lib/notification-kinds";
+import type { NotificationKind } from "@/lib/notification-kinds";
 
 export type NotificationRow = {
   id: string;
@@ -40,6 +32,7 @@ export async function fetchNotifications(limit = 50): Promise<NotificationRow[]>
       "id, kind, actor_id, related_post_id, related_match_id, related_conversation_id, payload, read_at, created_at",
     )
     .eq("user_id", user.id)
+    .eq("in_app", true)
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -81,6 +74,7 @@ export async function fetchUnreadCount(): Promise<number> {
     .from("notifications")
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id)
+    .eq("in_app", true)
     .is("read_at", null);
   return count ?? 0;
 }
@@ -99,4 +93,19 @@ export async function markAllRead() {
   revalidatePath("/notifications");
   revalidatePath("/feed");
   revalidatePath("/inbox");
+}
+
+export async function markRead(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || !/^[0-9a-f-]{36}$/i.test(id)) return;
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .is("read_at", null);
+  revalidatePath("/notifications");
 }

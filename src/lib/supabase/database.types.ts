@@ -1126,11 +1126,13 @@ export type Database = {
           id: string;
           kind: string;
           payload: Json | null;
+          in_app: boolean;
           read_at: string | null;
           related_conversation_id: string | null;
           related_document_id: string | null;
           related_match_id: string | null;
           related_post_id: string | null;
+          related_review_id: string | null;
           user_id: string;
         };
         Insert: {
@@ -1139,11 +1141,13 @@ export type Database = {
           id?: string;
           kind: string;
           payload?: Json | null;
+          in_app?: boolean;
           read_at?: string | null;
           related_conversation_id?: string | null;
           related_document_id?: string | null;
           related_match_id?: string | null;
           related_post_id?: string | null;
+          related_review_id?: string | null;
           user_id: string;
         };
         Update: {
@@ -1152,12 +1156,158 @@ export type Database = {
           id?: string;
           kind?: string;
           payload?: Json | null;
+          in_app?: boolean;
           read_at?: string | null;
           related_conversation_id?: string | null;
           related_document_id?: string | null;
           related_match_id?: string | null;
           related_post_id?: string | null;
+          related_review_id?: string | null;
           user_id?: string;
+        };
+        Relationships: [];
+      };
+      notification_preferences: {
+        Row: {
+          user_id: string;
+          kind: string;
+          in_app: boolean;
+          email: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          kind: string;
+          in_app?: boolean;
+          email?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          kind?: string;
+          in_app?: boolean;
+          email?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      notification_settings: {
+        Row: {
+          user_id: string;
+          email_digest: boolean;
+          emails_paused: boolean;
+          unsubscribed_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          email_digest?: boolean;
+          emails_paused?: boolean;
+          unsubscribed_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          email_digest?: boolean;
+          emails_paused?: boolean;
+          unsubscribed_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      notification_email_outbox: {
+        Row: {
+          id: string;
+          notification_id: string;
+          user_id: string;
+          kind: string;
+          status: "queued" | "sending" | "sent" | "failed" | "skipped";
+          attempts: number;
+          last_error: string | null;
+          created_at: string;
+          claimed_at: string | null;
+          sent_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          notification_id: string;
+          user_id: string;
+          kind: string;
+          status?: "queued" | "sending" | "sent" | "failed" | "skipped";
+          attempts?: number;
+          last_error?: string | null;
+          created_at?: string;
+          claimed_at?: string | null;
+          sent_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          notification_id?: string;
+          user_id?: string;
+          kind?: string;
+          status?: "queued" | "sending" | "sent" | "failed" | "skipped";
+          attempts?: number;
+          last_error?: string | null;
+          created_at?: string;
+          claimed_at?: string | null;
+          sent_at?: string | null;
+        };
+        Relationships: [];
+      };
+      notification_email_state: {
+        Row: {
+          user_id: string;
+          last_immediate_sent_at: string | null;
+          last_digest_sent_at: string | null;
+        };
+        Insert: {
+          user_id: string;
+          last_immediate_sent_at?: string | null;
+          last_digest_sent_at?: string | null;
+        };
+        Update: {
+          user_id?: string;
+          last_immediate_sent_at?: string | null;
+          last_digest_sent_at?: string | null;
+        };
+        Relationships: [];
+      };
+      owner_alert_outbox: {
+        Row: {
+          id: string;
+          kind: "new_signup";
+          user_id: string;
+          dedupe_key: string;
+          status: "queued" | "sending" | "sent" | "failed";
+          attempts: number;
+          last_error: string | null;
+          created_at: string;
+          claimed_at: string | null;
+          sent_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          kind?: "new_signup";
+          user_id: string;
+          dedupe_key: string;
+          status?: "queued" | "sending" | "sent" | "failed";
+          attempts?: number;
+          last_error?: string | null;
+          created_at?: string;
+          claimed_at?: string | null;
+          sent_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          kind?: "new_signup";
+          user_id?: string;
+          dedupe_key?: string;
+          status?: "queued" | "sending" | "sent" | "failed";
+          attempts?: number;
+          last_error?: string | null;
+          created_at?: string;
+          claimed_at?: string | null;
+          sent_at?: string | null;
         };
         Relationships: [];
       };
@@ -1563,6 +1713,53 @@ export type Database = {
           quoted_post_id: string | null;
           rank_reason: "can_help" | "fits_needs" | "following" | null;
         }>;
+      };
+      claim_owner_alerts: {
+        Args: { p_limit?: number };
+        Returns: Array<{
+          id: string;
+          user_id: string;
+          email: string | null;
+          display_name: string | null;
+          signed_up_at: string;
+          verified: boolean;
+        }>;
+      };
+      finish_owner_alert: {
+        Args: { p_id: string; p_ok: boolean; p_error?: string | null; p_final?: boolean };
+        Returns: undefined;
+      };
+      claim_notification_emails: {
+        Args: { p_mode: "immediate" | "digest"; p_limit?: number };
+        Returns: Array<{
+          outbox_id: string;
+          notification_id: string;
+          user_id: string;
+          email: string | null;
+          display_name: string | null;
+          kind: string;
+          actor_id: string | null;
+          actor_name: string | null;
+          related_post_id: string | null;
+          related_conversation_id: string | null;
+          payload: Json | null;
+          notification_created_at: string;
+          last_sent_at: string | null;
+        }>;
+      };
+      release_notification_emails: {
+        Args: { p_ids: string[] };
+        Returns: undefined;
+      };
+      finish_notification_emails: {
+        Args: {
+          p_ids: string[];
+          p_ok: boolean;
+          p_mode: "immediate" | "digest";
+          p_error?: string | null;
+          p_final?: boolean;
+        };
+        Returns: undefined;
       };
       blocked_with_viewer: {
         Args: { other: string };

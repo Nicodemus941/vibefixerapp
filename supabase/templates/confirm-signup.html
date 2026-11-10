@@ -1,0 +1,29 @@
+<!-- Supabase Auth > Emails > Templates > "Confirm signup"
+     Subject: Verify your email for Loop
+     Paste everything below into the message body. -->
+<!doctype html>
+<html lang="en">
+<body style="margin:0;padding:0;background:#F6F5F0;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F5F0;">
+<tr><td align="center" style="padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+<tr><td style="padding:0 4px 20px 4px;">
+<a href="{{ .SiteURL }}" style="text-decoration:none;color:#141F1B;font:700 20px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<img src="{{ .SiteURL }}/email/loop-mark.png" width="28" height="28" alt="" style="vertical-align:middle;border:0;margin-right:8px;">Loop</a>
+</td></tr>
+<tr><td style="background:#FFFFFF;border:1px solid #E2DFD6;border-radius:16px;padding:28px 24px;color:#141F1B;font:400 16px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<p style="margin:0 0 8px 0;">Hi,</p>
+<p style="margin:0 0 16px 0;">Welcome to Loop. Please confirm this is your email so we can finish setting up your account.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px 0;"><tr><td style="background:#0E6B4F;border-radius:999px;">
+<a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/feed" style="display:inline-block;padding:12px 22px;color:#FFFFFF;text-decoration:none;font:600 15px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">Verify my email</a>
+</td></tr></table>
+<p style="margin:16px 0 0 0;color:#4F5C56;font-size:14px;">This link works once and is good for 24 hours. If you did not sign up for Loop, you can ignore this email.</p>
+</td></tr>
+<tr><td style="padding:20px 4px 0 4px;color:#4F5C56;font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+Loop, the free professional network for founders.
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
