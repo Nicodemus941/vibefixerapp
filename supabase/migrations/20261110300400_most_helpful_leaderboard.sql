@@ -154,5 +154,16 @@ GRANT EXECUTE ON FUNCTION public.leaderboard_most_helpful(INT) TO authenticated;
 
 -- The old boards ranked money and volume. They are no longer used by the
 -- app; keep them callable only by the service role for reporting.
-REVOKE ALL ON FUNCTION leaderboard_top_closers(INT, INT) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION leaderboard_top_earners(INT, INT) FROM PUBLIC, anon, authenticated;
+-- Revoke every overload: production has (INT) while the old migration file
+-- declared (INT, INT).
+DO $$
+DECLARE f REGPROCEDURE;
+BEGIN
+  FOR f IN
+    SELECT p.oid::REGPROCEDURE FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.proname IN ('leaderboard_top_closers', 'leaderboard_top_earners')
+  LOOP
+    EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC, anon, authenticated', f);
+  END LOOP;
+END;
+$$;
