@@ -90,9 +90,9 @@ export function ShareButton({
         disabled={pending}
         aria-label={labelText}
         title={labelText}
-        className="press-shrink inline-flex items-center justify-center h-10 w-10 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
+        className="press-shrink inline-flex items-center justify-center h-11 w-11 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
       >
-        {copied ? <Check className="h-4 w-4 text-[var(--accent)]" /> : pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
+        {copied ? <Check className="h-4 w-4 text-[var(--accent-text)]" /> : pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
       </button>
     );
   }
@@ -103,7 +103,7 @@ export function ShareButton({
         type="button"
         onClick={onClick}
         disabled={pending}
-        className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110"
+        className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] h-11 px-4 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)]"
       >
         {copied ? <Check className="h-3.5 w-3.5" /> : pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
         {labelText}
@@ -116,9 +116,9 @@ export function ShareButton({
       type="button"
       onClick={onClick}
       disabled={pending}
-      className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 py-2 text-xs sm:text-sm text-[var(--fg)] hover:bg-[var(--surface-2)]"
+      className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] h-11 px-4 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--surface-2)]"
     >
-      {copied ? <Check className="h-3.5 w-3.5 text-[var(--accent)]" /> : pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
+      {copied ? <Check className="h-3.5 w-3.5 text-[var(--accent-text)]" /> : pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
       {labelText}
     </button>
   );

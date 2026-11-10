@@ -4,6 +4,10 @@ import { Briefcase, Download, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "../feed/_components/FeedHeader";
 import { AvatarUploader } from "./_components/AvatarUploader";
+import { CoverBand } from "@/components/CoverBand";
+import { ImageUploadControl } from "@/components/ImageUploadControl";
+import { fetchCoverUrl } from "@/lib/covers";
+import { getCoverUploadUrl, removeCover, setCoverFromPath } from "./cover-actions";
 import { ProfileForm } from "./_components/ProfileForm";
 import { NotificationPrefsForm } from "./_components/NotificationPrefsForm";
 import { DangerZone } from "./_components/DangerZone";
@@ -62,11 +66,12 @@ export default async function AccountPage({
     ...((profile?.notification_prefs as Partial<NotificationPrefs> | null) ?? {}),
   };
 
-  const [stripeStatus, positions, education, certifications] = await Promise.all([
+  const [stripeStatus, positions, education, certifications, coverUrl] = await Promise.all([
     fetchStripeConnectStatus(),
     fetchUserPositions(user.id),
     fetchEducation(user.id),
     fetchCertifications(user.id),
+    fetchCoverUrl(supabase, "profiles", user.id),
   ]);
 
   return (
@@ -77,12 +82,12 @@ export default async function AccountPage({
       />
       <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-            <Settings className="h-5 w-5" />
+          <h1 className="text-[28px] font-bold tracking-[-0.025em] flex items-center gap-2">
+            <Settings className="h-6 w-6" aria-hidden />
             Settings
           </h1>
-          <p className="font-mono text-xs text-[var(--fg-subtle)] mt-1">
-            Your profile, photo, notifications, and account controls.
+          <p className="text-sm text-[var(--fg-muted)] mt-1">
+            Your profile, photo, cover, notifications and account controls.
           </p>
         </div>
 
@@ -91,6 +96,27 @@ export default async function AccountPage({
             displayName={profile?.display_name ?? "founder"}
             initialUrl={profile?.avatar_url ?? null}
           />
+        </Section>
+
+        <Section title="Cover image" id="cover">
+          <div className="overflow-hidden rounded-[var(--r-md)] border border-[var(--border)]">
+            <CoverBand url={coverUrl} alt="Your cover image" className="h-28 sm:h-36" />
+          </div>
+          <p className="mt-3 text-xs text-[var(--fg-muted)]">
+            Shown across the top of your profile and public card. JPEG, PNG or
+            WebP, up to 5 MB. A wide image around 1500 by 400 works best. With
+            no cover, Loop shows a green gradient.
+          </p>
+          <div className="mt-3">
+            <ImageUploadControl
+              label="cover"
+              hasImage={Boolean(coverUrl)}
+              requestUpload={getCoverUploadUrl}
+              commit={setCoverFromPath}
+              remove={removeCover}
+              removeConfirm="Remove your cover image?"
+            />
+          </div>
         </Section>
 
         <Section title="Profile">
@@ -104,21 +130,21 @@ export default async function AccountPage({
               revenue_band: profile?.revenue_band ?? "",
             }}
           />
-          <p className="mt-3 font-mono text-[10px] text-[var(--fg-subtle)]">
+          <p className="mt-3 text-xs text-[var(--fg-subtle)]">
             Public on your profile at{" "}
-            <Link href={`/u/${user.id}`} className="text-[var(--accent)] hover:underline">
+            <Link href={`/u/${user.id}`} className="num font-semibold text-[var(--accent-text)] hover:underline">
               /u/{user.id.slice(0, 8)}…
             </Link>
           </p>
         </Section>
 
-        <Section title="Experience">
+        <Section title="Experience" id="experience">
           <div className="mb-3 flex items-start gap-2 text-xs text-[var(--fg-muted)]">
             <Briefcase className="h-4 w-4 mt-0.5 shrink-0" />
             <p>
               Add the companies you&apos;ve worked at. Tag a Loop company page if it
-              exists, or just type the name — you can link it later when the page
-              is added. <Link href="/organizations/new" className="text-[var(--accent)] hover:underline">Create a company page</Link>.
+              exists, or just type the name and link it later when the page
+              is added. <Link href="/organizations/new" className="font-semibold text-[var(--accent-text)] hover:underline">Create a company page</Link>.
             </p>
           </div>
           <PositionsEditor
@@ -136,7 +162,7 @@ export default async function AccountPage({
           <CertificationsEditor initial={certifications} />
         </Section>
 
-        <Section title="Payments — Stripe Connect">
+        <Section title="Payments with Stripe Connect">
           <StripeConnectSection status={stripeStatus} />
         </Section>
 
@@ -146,14 +172,14 @@ export default async function AccountPage({
 
         <Section title="Your data">
           <p className="text-xs text-[var(--fg-muted)] mb-3">
-            Download a JSON file with every record Loop holds about you —
+            Download a JSON file with every record Loop holds about you:
             profile, posts, messages, matches, documents, reviews. Take it
             with you anytime.
           </p>
           <a
             href="/api/export"
             download
-            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-4 py-2 text-sm text-[var(--fg)] hover:bg-[var(--surface-2)]"
+            className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] h-11 px-4 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--surface-2)]"
           >
             <Download className="h-4 w-4" />
             Export my data
@@ -163,7 +189,7 @@ export default async function AccountPage({
         <Section title="Account">
           <p className="text-xs text-[var(--fg-muted)] mb-3">
             Email:{" "}
-            <span className="font-mono text-[var(--fg)]">{user.email ?? "—"}</span>
+            <span className="font-mono text-[var(--fg)]">{user.email ?? "none"}</span>
           </p>
           <DangerZone email={user.email} />
         </Section>
@@ -174,15 +200,20 @@ export default async function AccountPage({
 
 function Section({
   title,
+  id,
   children,
 }: {
   title: string;
+  id?: string;
   children: React.ReactNode;
 }) {
+  const headingId = `settings-${title.toLowerCase().replace(/[^a-z]+/g, "-")}`;
   return (
-    <section className="space-y-3">
-      <p className="eyebrow">{title}</p>
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5">
+    <section id={id} aria-labelledby={headingId} className="space-y-3 scroll-mt-20">
+      <h2 id={headingId} className="text-[17px] font-semibold tracking-[-0.01em] px-1">
+        {title}
+      </h2>
+      <div className="surface-card p-5">
         {children}
       </div>
     </section>

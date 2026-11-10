@@ -277,7 +277,7 @@ function AddPositionForm({
                 <div className="min-w-0">
                   <p className="text-sm text-[var(--fg)] truncate">{h.name}</p>
                   <p className="font-mono text-[10px] text-[var(--fg-subtle)] truncate">
-                    {h.industry ?? "—"} · {h.member_count} on Loop
+                    {h.industry ?? "No industry"} · {h.member_count} on Loop
                   </p>
                 </div>
               </button>
@@ -292,7 +292,7 @@ function AddPositionForm({
         )}
         {!orgId && orgQuery.length >= 2 && (
           <p className="mt-1 font-mono text-[10px] text-[var(--fg-subtle)]">
-            No match? Keep typing — Loop will store the name as-is.
+            No match? Keep typing. Loop will store the name as typed.
           </p>
         )}
       </div>
@@ -369,7 +369,7 @@ function formatRange(start: string, end: string | null, isCurrent: boolean): str
     const d = new Date(s);
     return d.toLocaleString(undefined, { month: "short", year: "numeric" });
   };
-  if (isCurrent) return `${fmt(start)} — Present`;
-  if (end) return `${fmt(start)} — ${fmt(end)}`;
+  if (isCurrent) return `${fmt(start)} to now`;
+  if (end) return `${fmt(start)} to ${fmt(end)}`;
   return fmt(start);
 }

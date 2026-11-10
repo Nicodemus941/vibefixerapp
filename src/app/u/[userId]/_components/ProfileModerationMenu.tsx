@@ -65,12 +65,12 @@ export function ProfileModerationMenu({
           setError(null);
         }}
         aria-label="More"
-        className="press-shrink inline-flex items-center justify-center h-10 w-10 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
+        className="press-shrink inline-flex items-center justify-center h-11 w-11 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-3 shadow-xl z-50">
+        <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-3 shadow-[var(--shadow-2)] z-50">
           {!reportMode ? (
             <div className="space-y-2">
               <button

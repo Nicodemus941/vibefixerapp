@@ -406,16 +406,16 @@ function Input({
 }
 
 function formatYearRange(start: number | null, end: number | null): string {
-  if (start && end) return `${start} — ${end}`;
-  if (start && !end) return `${start} — Present`;
+  if (start && end) return `${start} to ${end}`;
+  if (start && !end) return `${start} to now`;
   if (!start && end) return `${end}`;
-  return "—";
+  return "";
 }
 
 function formatCertDates(issued: string | null, expires: string | null): string {
   const fmt = (s: string) => new Date(s).toLocaleString(undefined, { month: "short", year: "numeric" });
-  if (issued && expires) return `${fmt(issued)} — expires ${fmt(expires)}`;
+  if (issued && expires) return `${fmt(issued)}, expires ${fmt(expires)}`;
   if (issued) return `Issued ${fmt(issued)}`;
   if (expires) return `Expires ${fmt(expires)}`;
-  return "—";
+  return "";
 }

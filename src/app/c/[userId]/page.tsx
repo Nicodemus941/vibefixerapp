@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Briefcase, MessageSquare, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/Avatar";
+import { CoverBand } from "@/components/CoverBand";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { fetchCoverUrl } from "@/lib/covers";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PublicHeader } from "@/components/PublicHeader";
 import { ShareButton } from "@/components/ShareButton";
@@ -27,7 +30,7 @@ export async function generateMetadata({
       ? `${card.current_position_title} at ${card.current_position_org_name}`
       : card.current_position_title
     : card.company_name ?? "Founder on Loop";
-  const title = `${card.display_name} — ${role}`;
+  const title = `${card.display_name} · ${role}`;
   const description = card.bio
     ? card.bio.length > 160
       ? `${card.bio.slice(0, 157).trim()}…`
@@ -51,10 +54,10 @@ export async function generateMetadata({
 function formatPrice(min: number | null, max: number | null, model: string | null): string {
   const fmt = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k` : `$${n}`);
   const range =
-    min && max ? `${fmt(min)}–${fmt(max)}` :
-    min ? `${fmt(min)}+` :
+    min && max ? `${fmt(min)} to ${fmt(max)}` :
+    min ? `From ${fmt(min)}` :
     max ? `up to ${fmt(max)}` : "";
-  return [range, model].filter(Boolean).join(" · ");
+  return [range, model === "revshare" ? "Revenue share" : model ? model[0].toUpperCase() + model.slice(1) : null].filter(Boolean).join(" · ");
 }
 
 export default async function PublicCardPage({
@@ -68,9 +71,15 @@ export default async function PublicCardPage({
   if (!card) notFound();
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [
+    {
+      data: { user },
+    },
+    coverUrl,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    fetchCoverUrl(createAdminClient(), "profiles", userId),
+  ]);
   const { data: viewerProfile } = user
     ? await supabase
         .from("profiles")
@@ -119,15 +128,22 @@ export default async function PublicCardPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personLd) }}
       />
       <main className="mx-auto max-w-xl px-4 sm:px-6 py-6 sm:py-10 space-y-6">
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
-          <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
-            <Avatar name={card.display_name} url={card.avatar_url} size="xl" />
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight break-words">
+        <section className="surface-card overflow-hidden">
+          <CoverBand url={coverUrl} alt={`${card.display_name} cover image`} className="h-28 sm:h-36" />
+          <div className="px-5 sm:px-6 pb-5 sm:pb-6">
+          <div className="-mt-12 flex flex-col gap-3">
+            <Avatar
+              name={card.display_name}
+              url={card.avatar_url}
+              size="2xl"
+              className="ring-4 ring-[var(--surface-1)]"
+            />
+            <div className="min-w-0">
+              <h1 className="text-[26px] font-bold leading-tight tracking-[-0.025em] break-words">
                 {card.display_name}
               </h1>
               {role && (
-                <p className="mt-1 text-sm text-[var(--fg-muted)] break-words">
+                <p className="mt-1 text-[15px] text-[var(--fg)] break-words">
                   {card.current_position_org_slug && card.current_position_title ? (
                     <>
                       {card.current_position_title}
@@ -145,20 +161,19 @@ export default async function PublicCardPage({
                 </p>
               )}
               {card.industry && (
-                <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)] mt-1">
-                  {card.industry}
-                </p>
+                <p className="mt-1 text-[13px] text-[var(--fg-subtle)]">{card.industry}</p>
               )}
               {card.review_count > 0 && (
-                <p className="mt-1.5 inline-flex items-center gap-1 text-xs text-[var(--fg-muted)] tabular-nums">
-                  <Star className="h-3.5 w-3.5" />
-                  {card.review_count} review{card.review_count === 1 ? "" : "s"} · reputation {card.reputation_score.toFixed(0)}
+                <p className="mt-2 inline-flex items-center gap-1.5 text-[13px] text-[var(--fg-muted)]">
+                  <Star className="h-4 w-4 fill-[var(--star)] text-[var(--star)]" aria-hidden />
+                  <span className="num">{card.review_count}</span> review{card.review_count === 1 ? "" : "s"} · reputation{" "}
+                  <span className="num">{card.reputation_score.toFixed(0)}</span>
                 </p>
               )}
             </div>
           </div>
           {card.bio && (
-            <p className="mt-4 text-sm text-[var(--fg)] leading-relaxed whitespace-pre-wrap break-words">
+            <p className="mt-4 text-[15px] text-[var(--fg)] leading-relaxed whitespace-pre-wrap break-words">
               {card.bio}
             </p>
           )}
@@ -166,17 +181,17 @@ export default async function PublicCardPage({
             {user ? (
               <Link
                 href={`/u/${userId}`}
-                className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:brightness-110"
+                className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] h-11 px-5 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)]"
               >
-                <MessageSquare className="h-3.5 w-3.5" />
+                <MessageSquare className="h-4 w-4" aria-hidden />
                 Reach out on Loop
               </Link>
             ) : (
               <Link
                 href={`/login?next=/u/${userId}`}
-                className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:brightness-110"
+                className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] h-11 px-5 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)]"
               >
-                <MessageSquare className="h-3.5 w-3.5" />
+                <MessageSquare className="h-4 w-4" aria-hidden />
                 Sign in to reach out
               </Link>
             )}
@@ -187,44 +202,44 @@ export default async function PublicCardPage({
               variant="ghost"
             />
           </div>
+          </div>
         </section>
 
         {card.offers.length > 0 && (
           <section className="space-y-3">
-            <p className="eyebrow flex items-center gap-2">
-              <Briefcase className="h-3.5 w-3.5" />
-              Active offers
-            </p>
+            <h2 className="eyebrow flex items-center gap-2 px-1">
+              <Briefcase className="h-3.5 w-3.5" aria-hidden />
+              What I offer
+            </h2>
             <ul className="space-y-2">
               {card.offers.map((o) => (
-                <li
-                  key={o.id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4"
-                >
-                  <p className="font-medium text-[var(--fg)] break-words">{o.title}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)]">
-                    <span>{o.category}</span>
-                    {formatPrice(o.price_min, o.price_max, o.pricing_model) && (
-                      <span>· {formatPrice(o.price_min, o.price_max, o.pricing_model)}</span>
-                    )}
-                  </div>
+                <li key={o.id} className="surface-card p-4">
+                  {o.category && <span className="chip chip-offer">{o.category}</span>}
+                  <p className="mt-2 font-semibold text-[15px] text-[var(--fg)] break-words">{o.title}</p>
+                  {formatPrice(o.price_min, o.price_max, o.pricing_model) && (
+                    <p className="mt-2">
+                      <span className="chip chip-neutral num">
+                        {formatPrice(o.price_min, o.price_max, o.pricing_model)}
+                      </span>
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>
           </section>
         )}
 
-        <section className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-5 text-center">
+        <section className="rounded-[var(--r-lg)] border border-dashed border-[var(--border-strong)] p-5 text-center">
           <p className="text-sm text-[var(--fg-muted)]">
-            Loop is a reciprocal marketplace — every founder gives as well as gets.
+            Loop is a free network for people who build. Everyone gives as well as gets.
           </p>
           {!user && (
             <Link
               href="/login?next=/discover"
-              className="press-shrink mt-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-xs font-medium text-[var(--bg)] hover:brightness-110"
+              className="press-shrink mt-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] h-11 px-5 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)]"
             >
-              Join Loop
-              <ArrowRight className="h-3 w-3" />
+              Join Loop free
+              <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           )}
         </section>

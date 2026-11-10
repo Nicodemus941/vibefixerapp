@@ -1,6 +1,7 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { redirect, notFound } from "next/navigation";
-import { Award, Briefcase, Building2, GraduationCap, MessageSquare } from "lucide-react";
+import { Award, Building2, GraduationCap, MessageSquare, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PostCard } from "@/app/feed/_components/PostCard";
@@ -9,6 +10,9 @@ import { startDmAndRedirect } from "@/app/inbox/actions";
 import { fetchReviewsForUser } from "@/app/reviews/actions";
 import { ReviewList, Stars } from "@/app/reviews/_components/ReviewList";
 import { Avatar } from "@/components/Avatar";
+import { CoverBand } from "@/components/CoverBand";
+import { ShareButton } from "@/components/ShareButton";
+import { fetchCoverUrl } from "@/lib/covers";
 import { fetchUserPositions } from "@/app/organizations/actions";
 import { fetchCertifications, fetchEducation } from "@/app/resume/actions";
 import { fetchFollowState, fetchSocialCounts } from "@/app/follows/actions";
@@ -17,20 +21,38 @@ import { ProfileModerationMenu } from "./_components/ProfileModerationMenu";
 
 export const dynamic = "force-dynamic";
 
-function timeAgo(iso: string | null): string {
-  if (!iso) return "—";
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.round(diff / 60_000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m`;
-  const h = Math.round(m / 60);
-  if (h < 24) return `${h}h`;
-  const d = Math.round(h / 24);
-  if (d < 365) return `${d}d`;
-  return new Date(iso).toLocaleDateString();
+const UUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function money(n: number | null | undefined): string {
+  if (n === null || n === undefined) return "?";
+  if (n >= 1000) {
+    const k = n / 1000;
+    return `$${Number.isInteger(k) ? k : k.toFixed(1)}k`;
+  }
+  return `$${n}`;
 }
 
-const UUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function range(min: number | null, max: number | null): string | null {
+  if (min === null && max === null) return null;
+  if (min !== null && max !== null && max !== min) return `${money(min)} to ${money(max)}`;
+  if (min !== null) return max === null ? `From ${money(min)}` : money(min);
+  return `Up to ${money(max)}`;
+}
+
+const PRICING_LABEL: Record<string, string> = {
+  fixed: "Fixed scope",
+  hourly: "Hourly",
+  retainer: "Retainer",
+  equity: "Equity",
+  revshare: "Revenue share",
+};
+
+const URGENCY_LABEL: Record<string, string> = {
+  now: "Now",
+  this_week: "This week",
+  this_month: "This month",
+  exploratory: "Exploratory",
+};
 
 export default async function ProfilePage({
   params,
@@ -63,7 +85,13 @@ export default async function ProfilePage({
 
   const isOwn = profile.id === user.id;
 
-  const [{ data: posts }, { data: offers }, { data: needs }, { count: dealCount }] = await Promise.all([
+  const [
+    { data: posts },
+    { data: offers },
+    { data: needs },
+    { count: dealCount },
+    coverUrl,
+  ] = await Promise.all([
     supabase
       .from("posts")
       .select("id, user_id, body, hashtags, kind, created_at")
@@ -89,6 +117,7 @@ export default async function ProfilePage({
       .select("id", { count: "exact", head: true })
       .or(`seeker_id.eq.${profile.id},provider_id.eq.${profile.id}`)
       .eq("escrow_status", "released"),
+    fetchCoverUrl(supabase, "profiles", profile.id),
   ]);
 
   const postIds = (posts ?? []).map((p) => p.id);
@@ -125,13 +154,20 @@ export default async function ProfilePage({
     reviews.length > 0
       ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
       : 0;
+  const reputation = Math.max(0, Math.min(100, Number(profile.reputation_score ?? 0)));
+  const joined = profile.created_at
+    ? new Date(profile.created_at).toLocaleString("en-US", { month: "long", year: "numeric" })
+    : null;
+  const deals = dealCount ?? 0;
+  const publicCardPath = `/c/${profile.id}`;
+  const currentPosition = positions.find((p) => p.is_current);
 
-  const stats = [
-    { label: "Followers", value: socialCounts.followers },
-    { label: "Following", value: socialCounts.following },
-    { label: "Connections", value: socialCounts.connections },
-    { label: "Deals shipped", value: dealCount ?? 0 },
-  ];
+  const headline = [
+    currentPosition ? `${currentPosition.title}, ${currentPosition.resolved_name}` : profile.company_name,
+    profile.industry,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
@@ -139,369 +175,549 @@ export default async function ProfilePage({
         displayName={viewerProfile?.display_name ?? "founder"}
         role={viewerProfile?.role ?? "user"}
       />
-      <main className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-        {/* Header */}
-        <header className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5 sm:p-6">
-          <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
-            <Avatar
-              name={profile.display_name}
-              url={profile.avatar_url}
-              size="xl"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-baseline gap-2">
-                <h1 className="text-xl sm:text-2xl font-semibold tracking-tight truncate">
-                  {profile.display_name}
-                </h1>
-                {profile.role === "owner" && (
-                  <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/40">
-                    Owner
-                  </span>
-                )}
-                {profile.role === "admin" && (
-                  <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--need-bg)] text-[var(--need-fg)] border border-[var(--need-fg)]/40">
-                    Admin
-                  </span>
-                )}
-              </div>
-              {(profile.company_name || profile.industry) && (
-                <p className="mt-1 text-sm text-[var(--fg-muted)] break-words">
-                  {profile.company_name}
-                  {profile.company_name && profile.industry && " · "}
-                  {profile.industry}
-                </p>
-              )}
-              {reviews.length > 0 && (
-                <div className="mt-1.5 flex items-center gap-2">
-                  <Stars value={Math.round(avgRating)} />
-                  <span className="font-mono text-xs text-[var(--fg-muted)] tabular-nums">
-                    {avgRating.toFixed(1)} · {reviews.length} review
-                    {reviews.length === 1 ? "" : "s"}
-                  </span>
-                </div>
-              )}
-              {profile.company_url && (
-                <a
-                  href={profile.company_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 inline-block text-xs font-mono text-[var(--accent)] hover:underline break-all"
-                >
-                  {profile.company_url.replace(/^https?:\/\//, "")}
-                </a>
-              )}
-            </div>
-            {!isOwn && (
-              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
-                {!isBlocked && (
-                  <FollowButton
-                    targetUserId={profile.id}
-                    initiallyFollowing={followState.isFollowing}
-                    followsYou={followState.followsYou}
-                  />
-                )}
-                {!isBlocked && (
-                  <form action={startDmAndRedirect.bind(null, profile.id, "profile")}>
-                    <button
-                      type="submit"
-                      className="press-shrink inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-xs sm:text-sm font-medium text-[var(--bg)] hover:brightness-110 transition-[filter]"
-                    >
-                      <MessageSquare className="h-3.5 w-3.5" />
-                      Message
-                    </button>
-                  </form>
-                )}
-                <ProfileModerationMenu
-                  targetId={profile.id}
-                  initiallyBlocked={isBlocked}
-                />
-              </div>
-            )}
-          </div>
-
-          {profile.bio && (
-            <p className="mt-4 text-sm text-[var(--fg)] leading-relaxed">
-              {profile.bio}
-            </p>
-          )}
-
-          {/* Stats strip */}
-          <dl className="mt-5 grid grid-cols-4 gap-2 sm:gap-3 border-t border-[var(--border)] pt-4">
-            {stats.map((s) => (
-              <div key={s.label} className="min-w-0">
-                <dt className="font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)]">
-                  {s.label}
-                </dt>
-                <dd className="mt-0.5 text-base sm:text-lg font-semibold tabular-nums">
-                  {s.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-
-          <p className="mt-3 font-mono text-[10px] text-[var(--fg-subtle)]">
-            Joined {timeAgo(profile.created_at)} ago
-          </p>
-        </header>
-
-        {/* Experience */}
-        {positions.length > 0 && (
-          <section aria-label="Experience" className="space-y-3">
-            <p className="eyebrow">Experience</p>
-            <ul className="space-y-2">
-              {positions.map((p) => (
-                <li
-                  key={p.id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 flex items-start gap-3"
-                >
-                  <div className="h-10 w-10 shrink-0 rounded-xl bg-[var(--surface-3)] flex items-center justify-center text-[var(--fg-muted)] overflow-hidden">
-                    {p.organization_logo_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={p.organization_logo_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <Building2 className="h-4 w-4" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--fg)] break-words">{p.title}</p>
-                    <p className="text-sm text-[var(--fg-muted)] break-words">
-                      {p.organization_slug ? (
-                        <Link
-                          href={`/o/${p.organization_slug}`}
-                          className="hover:underline underline-offset-2"
-                        >
-                          {p.resolved_name}
-                        </Link>
-                      ) : (
-                        p.resolved_name
-                      )}
-                    </p>
-                    <p className="mt-0.5 font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums">
-                      {formatPositionRange(p.start_date, p.end_date, p.is_current)}
-                    </p>
-                    {p.description && (
-                      <p className="mt-2 text-xs text-[var(--fg-muted)] whitespace-pre-wrap">
-                        {p.description}
-                      </p>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-5 sm:py-6 space-y-4 sm:space-y-5">
+        {/* Hero */}
+        <header className="surface-card overflow-hidden">
+          <CoverBand
+            url={coverUrl}
+            alt={`${profile.display_name} cover image`}
+            className="h-28 sm:h-48"
+          >
             {isOwn && (
               <Link
-                href="/account"
-                className="press-shrink inline-flex items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-3 py-1.5 text-xs text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg)]"
+                href="/account#cover"
+                className="press-shrink absolute right-3 top-3 inline-flex h-11 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface-1)]/95 px-4 text-sm font-semibold text-[var(--fg)] shadow-[var(--shadow-2)] hover:bg-[var(--surface-1)]"
               >
-                <Briefcase className="h-3 w-3" />
-                Manage experience
+                <Pencil className="h-4 w-4" aria-hidden />
+                {coverUrl ? "Change cover" : "Add cover"}
               </Link>
             )}
-          </section>
-        )}
+          </CoverBand>
 
-        {/* Education */}
-        {education.length > 0 && (
-          <section aria-label="Education" className="space-y-3">
-            <p className="eyebrow">Education</p>
-            <ul className="space-y-2">
-              {education.map((e) => (
-                <li
-                  key={e.id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 flex items-start gap-3"
-                >
-                  <GraduationCap className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--fg)] break-words">{e.school_name}</p>
-                    {(e.degree || e.field_of_study) && (
-                      <p className="text-sm text-[var(--fg-muted)] break-words">
-                        {[e.degree, e.field_of_study].filter(Boolean).join(", ")}
-                      </p>
-                    )}
-                    <p className="mt-0.5 font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums">
-                      {e.start_year && e.end_year
-                        ? `${e.start_year} — ${e.end_year}`
-                        : e.start_year
-                        ? `${e.start_year} — Present`
-                        : e.end_year ?? ""}
-                    </p>
-                    {e.description && (
-                      <p className="mt-2 text-xs text-[var(--fg-muted)] whitespace-pre-wrap">
-                        {e.description}
-                      </p>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Certifications / Accreditations */}
-        {certifications.length > 0 && (
-          <section aria-label="Certifications" className="space-y-3">
-            <p className="eyebrow">Certifications & accreditations</p>
-            <ul className="space-y-2">
-              {certifications.map((c) => (
-                <li
-                  key={c.id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 flex items-start gap-3"
-                >
-                  <Award className="h-4 w-4 mt-0.5 shrink-0 text-[var(--fg-subtle)]" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--fg)] break-words">{c.name}</p>
-                    {c.issuer && (
-                      <p className="text-sm text-[var(--fg-muted)] break-words">{c.issuer}</p>
-                    )}
-                    <p className="mt-0.5 font-mono text-[10px] text-[var(--fg-subtle)] tabular-nums">
-                      {c.issued_date && c.expires_date
-                        ? `Issued ${new Date(c.issued_date).toLocaleString(undefined, { month: "short", year: "numeric" })} · expires ${new Date(c.expires_date).toLocaleString(undefined, { month: "short", year: "numeric" })}`
-                        : c.issued_date
-                        ? `Issued ${new Date(c.issued_date).toLocaleString(undefined, { month: "short", year: "numeric" })}`
-                        : ""}
-                    </p>
-                    {c.credential_url && (
+          <div className="px-4 sm:px-8 pb-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+              <div className="-mt-12 sm:-mt-16 shrink-0">
+                <Avatar
+                  name={profile.display_name}
+                  url={profile.avatar_url}
+                  size="3xl"
+                  className="!h-24 !w-24 sm:!h-32 sm:!w-32 ring-4 ring-[var(--surface-1)]"
+                />
+              </div>
+              <div className="min-w-0 flex-1 sm:pb-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-[26px] sm:text-[30px] font-bold leading-tight tracking-[-0.025em] break-words">
+                    {profile.display_name}
+                  </h1>
+                  {offers && offers.length > 0 && (
+                    <span className="chip chip-offer">Open to deals</span>
+                  )}
+                  {profile.role === "owner" && (
+                    <span className="chip chip-neutral">Loop team</span>
+                  )}
+                  {profile.role === "admin" && (
+                    <span className="chip chip-need">Admin</span>
+                  )}
+                </div>
+                {headline && (
+                  <p className="mt-1 text-[15px] text-[var(--fg)] break-words">{headline}</p>
+                )}
+                <p className="mt-1 text-[13px] text-[var(--fg-subtle)] break-words">
+                  {joined && <>On Loop since {joined}</>}
+                  {profile.company_url && (
+                    <>
+                      {joined && " · "}
                       <a
-                        href={c.credential_url}
+                        href={profile.company_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-1 inline-block font-mono text-[10px] text-[var(--accent)] hover:underline break-all"
+                        className="num text-[var(--accent-text)] hover:underline break-all"
                       >
-                        View credential
+                        {profile.company_url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                       </a>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Offers */}
-        {offers && offers.length > 0 && (
-          <section aria-label="Offers" className="space-y-3">
-            <p className="eyebrow">Offers</p>
-            <ul className="space-y-2.5">
-              {offers.map((o) => (
-                <li
-                  key={o.id}
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4 hover:border-[var(--border-strong)] transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium text-[var(--fg)]">{o.title}</p>
-                    <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-[var(--fg-subtle)]">
-                      {o.category}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-[var(--fg-muted)] leading-relaxed line-clamp-2">
-                    {o.description}
-                  </p>
-                  {(o.price_min !== null || o.price_max !== null) && (
-                    <p className="mt-2 font-mono text-xs text-[var(--accent)] tabular-nums">
-                      ${o.price_min ?? "?"}
-                      {o.price_max && o.price_max !== o.price_min && `–$${o.price_max}`}
-                      {o.pricing_model && ` ${o.pricing_model}`}
-                    </p>
+                    </>
                   )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Needs */}
-        {needs && needs.length > 0 && (
-          <section aria-label="Needs" className="space-y-3">
-            <p className="eyebrow">Open needs</p>
-            <ul className="space-y-2.5">
-              {needs.map((n) => (
-                <li
-                  key={n.id}
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4 hover:border-[var(--border-strong)] transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium text-[var(--fg)]">{n.title}</p>
-                    <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-[var(--need-fg)]/40 text-[var(--need-fg)] bg-[var(--need-bg)]">
-                      {(n.urgency ?? "?").replace("_", " ")}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-[var(--fg-muted)] leading-relaxed line-clamp-2">
-                    {n.description}
-                  </p>
-                  {(n.budget_min !== null || n.budget_max !== null) && (
-                    <p className="mt-2 font-mono text-xs text-[var(--fg-subtle)] tabular-nums">
-                      budget ${n.budget_min ?? "?"}
-                      {n.budget_max && n.budget_max !== n.budget_min && `–$${n.budget_max}`}
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Reviews */}
-        {reviews.length > 0 && (
-          <section aria-label="Reviews" className="space-y-3">
-            <p className="eyebrow">Reviews</p>
-            <ReviewList reviews={reviews} />
-          </section>
-        )}
-
-        {/* Posts */}
-        <section aria-label="Posts" className="space-y-3">
-          <p className="eyebrow">Posts</p>
-          {posts && posts.length > 0 ? (
-            <div className="space-y-4">
-              {posts.map((p) => (
-                <PostCard
-                  key={p.id}
-                  viewerId={user.id}
-                  viewerRole={viewerProfile?.role ?? "user"}
-                  reactionState={reactionState[p.id]}
-                  commentSummary={commentSummaries[p.id]}
-                  post={{
-                    id: p.id,
-                    user_id: p.user_id,
-                    body: p.body,
-                    hashtags: p.hashtags,
-                    kind: p.kind,
-                    created_at: p.created_at as string,
-                    similarity: null,
-                    author_display_name: profile.display_name,
-                    author_company_name: profile.company_name,
-                    author_industry: profile.industry,
-                    author_avatar_url: profile.avatar_url,
-                  }}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center text-sm text-[var(--fg-muted)]">
-              {isOwn ? (
-                <>
-                  You haven&apos;t posted yet.{" "}
-                  <Link href="/feed" className="text-[var(--accent)] hover:underline">
-                    Write your first post.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {isOwn ? (
+                  <Link
+                    href="/account"
+                    className="press-shrink inline-flex h-11 items-center gap-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface-1)] px-4 text-sm font-semibold hover:bg-[var(--surface-2)]"
+                  >
+                    <Pencil className="h-4 w-4" aria-hidden />
+                    Edit profile
                   </Link>
-                </>
-              ) : (
-                "No posts yet."
-              )}
+                ) : (
+                  <>
+                    {!isBlocked && (
+                      <form action={startDmAndRedirect.bind(null, profile.id, "profile")}>
+                        <button
+                          type="submit"
+                          className="press-shrink inline-flex h-11 items-center gap-1.5 rounded-full bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)] transition-colors"
+                        >
+                          <MessageSquare className="h-4 w-4" aria-hidden />
+                          Message
+                        </button>
+                      </form>
+                    )}
+                    {!isBlocked && (
+                      <FollowButton
+                        targetUserId={profile.id}
+                        initiallyFollowing={followState.isFollowing}
+                        followsYou={followState.followsYou}
+                      />
+                    )}
+                    <ProfileModerationMenu
+                      targetId={profile.id}
+                      initiallyBlocked={isBlocked}
+                    />
+                  </>
+                )}
+              </div>
             </div>
-          )}
-        </section>
+          </div>
+
+          {/* Stat row */}
+          <dl className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[var(--border)] border-t border-[var(--border)]">
+            <Stat label="Deals closed" value={String(deals)} />
+            <Stat
+              label="Rating"
+              value={reviews.length > 0 ? avgRating.toFixed(1) : "None yet"}
+              suffix={
+                reviews.length > 0
+                  ? `from ${reviews.length} review${reviews.length === 1 ? "" : "s"}`
+                  : undefined
+              }
+            />
+            <Stat label="Followers" value={String(socialCounts.followers)} />
+            <Stat label="Following" value={String(socialCounts.following)} />
+          </dl>
+        </header>
+
+        <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_320px] items-start">
+          {/* Main column */}
+          <div className="space-y-4 sm:space-y-5 min-w-0">
+            {profile.bio && (
+              <Card title="About">
+                <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
+              </Card>
+            )}
+
+            {offers && offers.length > 0 ? (
+              <Card title="What I offer" meta={`${offers.length} active`}>
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {offers.map((o) => {
+                    const price = range(o.price_min, o.price_max);
+                    return (
+                      <li
+                        key={o.id}
+                        className="rounded-[var(--r-md)] border border-[var(--border)] p-4"
+                      >
+                        {o.category && <span className="chip chip-offer">{o.category}</span>}
+                        <p className="mt-2.5 font-semibold text-[15px] break-words">{o.title}</p>
+                        <p className="mt-1 text-[13px] leading-relaxed text-[var(--fg-muted)] line-clamp-3">
+                          {o.description}
+                        </p>
+                        {(price || o.pricing_model) && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {price && <span className="chip chip-neutral num">{price}</span>}
+                            {o.pricing_model && (
+                              <span className="chip chip-neutral">
+                                {PRICING_LABEL[o.pricing_model] ?? o.pricing_model}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Card>
+            ) : (
+              isOwn && (
+                <EmptyCard title="What I offer">
+                  List what you deliver so the right people find you.{" "}
+                  <Link href="/onboarding" className="font-semibold text-[var(--accent-text)] hover:underline">
+                    Add an offer
+                  </Link>
+                </EmptyCard>
+              )
+            )}
+
+            {needs && needs.length > 0 ? (
+              <Card title="What I need" meta={`${needs.length} open`}>
+                <ul className="space-y-3">
+                  {needs.map((n) => {
+                    const budget = range(n.budget_min, n.budget_max);
+                    return (
+                      <li
+                        key={n.id}
+                        className="rounded-[var(--r-md)] border border-[var(--border)] p-4"
+                      >
+                        {n.category && <span className="chip chip-need">{n.category}</span>}
+                        <p className="mt-2.5 font-semibold text-[15px] break-words">{n.title}</p>
+                        <p className="mt-1 text-[13px] leading-relaxed text-[var(--fg-muted)] line-clamp-3">
+                          {n.description}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {budget && <span className="chip chip-neutral num">{budget}</span>}
+                          {n.urgency && (
+                            <span className="chip chip-neutral">
+                              {URGENCY_LABEL[n.urgency] ?? n.urgency.replace("_", " ")}
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Card>
+            ) : null}
+
+            <Card
+              title="Deals closed and reviews"
+              meta={`${deals} deal${deals === 1 ? "" : "s"} · ${reviews.length} review${reviews.length === 1 ? "" : "s"}`}
+            >
+              {reviews.length > 0 ? (
+                <ReviewList reviews={reviews} />
+              ) : (
+                <p className="text-sm text-[var(--fg-muted)]">
+                  {isOwn
+                    ? "Reviews from people you work with on Loop show up here."
+                    : "No reviews yet."}
+                </p>
+              )}
+            </Card>
+
+            {positions.length > 0 && (
+              <Card
+                title="Experience"
+                action={isOwn ? { href: "/account#experience", label: "Edit" } : undefined}
+              >
+                <ul>
+                  {positions.map((p, i) => (
+                    <li
+                      key={p.id}
+                      className={`flex items-start gap-3.5 py-4 ${i > 0 ? "border-t border-[var(--border)]" : "pt-0"}`}
+                    >
+                      <div className="h-11 w-11 shrink-0 rounded-[10px] bg-[var(--ink-2)] text-[var(--fg-on-ink)] flex items-center justify-center overflow-hidden text-sm font-bold">
+                        {p.organization_logo_url ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src={p.organization_logo_url} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <Building2 className="h-5 w-5" aria-hidden />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-[15px] break-words">{p.title}</p>
+                        <p className="text-[13px] text-[var(--fg)] break-words">
+                          {p.organization_slug ? (
+                            <Link
+                              href={`/o/${p.organization_slug}`}
+                              className="hover:underline underline-offset-2"
+                            >
+                              {p.resolved_name}
+                            </Link>
+                          ) : (
+                            p.resolved_name
+                          )}
+                        </p>
+                        <p className="mt-0.5 text-[13px] text-[var(--fg-subtle)]">
+                          {formatPositionRange(p.start_date, p.end_date, p.is_current)}
+                        </p>
+                        {p.description && (
+                          <p className="mt-2 text-[13px] text-[var(--fg-muted)] whitespace-pre-wrap">
+                            {p.description}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            {(education.length > 0 || certifications.length > 0) && (
+              <Card title="Education and certifications">
+                <ul>
+                  {education.map((e, i) => (
+                    <li
+                      key={e.id}
+                      className={`flex items-start gap-3.5 py-4 ${i > 0 ? "border-t border-[var(--border)]" : "pt-0"}`}
+                    >
+                      <div className="h-11 w-11 shrink-0 rounded-[10px] bg-[var(--surface-2)] text-[var(--fg-muted)] flex items-center justify-center">
+                        <GraduationCap className="h-5 w-5" aria-hidden />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-[15px] break-words">{e.school_name}</p>
+                        {(e.degree || e.field_of_study) && (
+                          <p className="text-[13px] break-words">
+                            {[e.degree, e.field_of_study].filter(Boolean).join(", ")}
+                          </p>
+                        )}
+                        <p className="mt-0.5 text-[13px] text-[var(--fg-subtle)]">
+                          {e.start_year && e.end_year
+                            ? `${e.start_year} to ${e.end_year}`
+                            : e.start_year
+                            ? `${e.start_year} to now`
+                            : e.end_year ?? ""}
+                        </p>
+                        {e.description && (
+                          <p className="mt-2 text-[13px] text-[var(--fg-muted)] whitespace-pre-wrap">
+                            {e.description}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                  {certifications.map((c, i) => (
+                    <li
+                      key={c.id}
+                      className={`flex items-start gap-3.5 py-4 ${
+                        i > 0 || education.length > 0 ? "border-t border-[var(--border)]" : "pt-0"
+                      }`}
+                    >
+                      <div className="h-11 w-11 shrink-0 rounded-[10px] bg-[var(--accent-soft)] text-[var(--accent-text)] flex items-center justify-center">
+                        <Award className="h-5 w-5" aria-hidden />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-[15px] break-words">{c.name}</p>
+                        {c.issuer && <p className="text-[13px] break-words">{c.issuer}</p>}
+                        <p className="mt-0.5 text-[13px] text-[var(--fg-subtle)]">
+                          {c.issued_date && c.expires_date
+                            ? `Issued ${monthYear(c.issued_date)} · expires ${monthYear(c.expires_date)}`
+                            : c.issued_date
+                            ? `Issued ${monthYear(c.issued_date)}`
+                            : ""}
+                        </p>
+                        {c.credential_url && (
+                          <a
+                            href={c.credential_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 inline-flex min-h-11 items-center text-[13px] font-semibold text-[var(--accent-text)] hover:underline"
+                          >
+                            View credential
+                          </a>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            <section aria-labelledby="activity-title" className="space-y-3">
+              <h2 id="activity-title" className="text-[17px] font-semibold tracking-[-0.01em] px-1">
+                Activity
+              </h2>
+              {posts && posts.length > 0 ? (
+                <div className="space-y-4">
+                  {posts.map((p) => (
+                    <PostCard
+                      key={p.id}
+                      viewerId={user.id}
+                      viewerRole={viewerProfile?.role ?? "user"}
+                      reactionState={reactionState[p.id]}
+                      commentSummary={commentSummaries[p.id]}
+                      post={{
+                        id: p.id,
+                        user_id: p.user_id,
+                        body: p.body,
+                        hashtags: p.hashtags,
+                        kind: p.kind,
+                        created_at: p.created_at as string,
+                        similarity: null,
+                        author_display_name: profile.display_name,
+                        author_company_name: profile.company_name,
+                        author_industry: profile.industry,
+                        author_avatar_url: profile.avatar_url,
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="surface-card p-6 text-center text-sm text-[var(--fg-muted)]">
+                  {isOwn ? (
+                    <>
+                      You haven&apos;t posted yet.{" "}
+                      <Link href="/feed" className="font-semibold text-[var(--accent-text)] hover:underline">
+                        Write your first post.
+                      </Link>
+                    </>
+                  ) : (
+                    "No posts yet."
+                  )}
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* Rail */}
+          <aside className="space-y-4 sm:space-y-5 lg:sticky lg:top-20" aria-label="Profile details">
+            <div className="surface-card p-5">
+              <p className="eyebrow">Reputation</p>
+              <div className="mt-3 flex items-center gap-4">
+                <ReputationRing value={reputation} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">
+                    {reviews.length === 0
+                      ? "No reviews yet"
+                      : reputation >= 80
+                      ? "Strong track record"
+                      : "Building a track record"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-[var(--fg-muted)]">
+                    Based on {deals} closed deal{deals === 1 ? "" : "s"} and{" "}
+                    {reviews.length} review{reviews.length === 1 ? "" : "s"}.
+                  </p>
+                  {reviews.length > 0 && <Stars value={Math.round(avgRating)} className="mt-1.5" />}
+                </div>
+              </div>
+            </div>
+
+            <div className="surface-card p-5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="eyebrow">Public card</p>
+                <ShareButton
+                  url={`https://loopfounders.com${publicCardPath}`}
+                  title={`${profile.display_name} on Loop`}
+                  label="Share"
+                />
+              </div>
+              <Link
+                href={publicCardPath}
+                className="mt-2 block num text-[13px] text-[var(--accent-text)] hover:underline break-all"
+              >
+                loopfounders.com{publicCardPath}
+              </Link>
+              <p className="mt-1 text-xs text-[var(--fg-muted)]">
+                Anyone can view it, even without a Loop account.
+              </p>
+            </div>
+
+            {currentPosition?.organization_slug && (
+              <div className="surface-card p-5">
+                <p className="eyebrow">Company</p>
+                <Link
+                  href={`/o/${currentPosition.organization_slug}`}
+                  className="mt-3 flex items-center gap-3 rounded-lg hover:underline underline-offset-2"
+                >
+                  <span className="h-10 w-10 shrink-0 rounded-[10px] bg-[var(--ink-2)] text-[var(--fg-on-ink)] flex items-center justify-center overflow-hidden">
+                    {currentPosition.organization_logo_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={currentPosition.organization_logo_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 className="h-5 w-5" aria-hidden />
+                    )}
+                  </span>
+                  <span className="text-sm font-semibold">{currentPosition.resolved_name}</span>
+                </Link>
+              </div>
+            )}
+
+            <div className="surface-card p-5">
+              <p className="eyebrow">Network</p>
+              <p className="mt-2 text-sm">
+                <span className="num font-semibold">{socialCounts.connections}</span>{" "}
+                <span className="text-[var(--fg-muted)]">
+                  connection{socialCounts.connections === 1 ? "" : "s"}
+                </span>
+              </p>
+            </div>
+          </aside>
+        </div>
       </main>
     </div>
   );
 }
 
+function Stat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
+  return (
+    <div className="bg-[var(--surface-1)] px-4 sm:px-6 py-4">
+      <dt className="eyebrow">{label}</dt>
+      <dd className="mt-1 flex items-baseline gap-1.5">
+        <span className="num text-xl font-semibold">{value}</span>
+        {suffix && <span className="text-xs text-[var(--fg-muted)]">{suffix}</span>}
+      </dd>
+    </div>
+  );
+}
+
+function Card({
+  title,
+  meta,
+  action,
+  children,
+}: {
+  title: string;
+  meta?: string;
+  action?: { href: string; label: string };
+  children: ReactNode;
+}) {
+  const id = `sec-${title.toLowerCase().replace(/[^a-z]+/g, "-")}`;
+  return (
+    <section aria-labelledby={id} className="surface-card p-5 sm:p-6">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 id={id} className="text-[17px] font-semibold tracking-[-0.01em]">
+          {title}
+        </h2>
+        {meta && <span className="text-xs text-[var(--fg-subtle)]">{meta}</span>}
+        {action && (
+          <Link
+            href={action.href}
+            className="inline-flex min-h-11 items-center px-2 text-[13px] font-semibold text-[var(--accent-text)] hover:underline"
+          >
+            {action.label}
+          </Link>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function EmptyCard({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="rounded-[var(--r-lg)] border border-dashed border-[var(--border-strong)] p-5 sm:p-6">
+      <h2 className="text-[17px] font-semibold tracking-[-0.01em]">{title}</h2>
+      <p className="mt-2 text-sm text-[var(--fg-muted)]">{children}</p>
+    </section>
+  );
+}
+
+function ReputationRing({ value }: { value: number }) {
+  const r = 22;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="relative h-14 w-14 shrink-0" role="img" aria-label={`Reputation ${Math.round(value)} out of 100`}>
+      <svg viewBox="0 0 56 56" className="h-14 w-14 -rotate-90" aria-hidden>
+        <circle cx="28" cy="28" r={r} fill="none" stroke="var(--surface-2)" strokeWidth="6" />
+        <circle
+          cx="28"
+          cy="28"
+          r={r}
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={`${(value / 100) * c} ${c}`}
+        />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center num text-sm font-bold" aria-hidden>
+        {Math.round(value)}
+      </span>
+    </div>
+  );
+}
+
+function monthYear(s: string): string {
+  return new Date(s).toLocaleString("en-US", { month: "short", year: "numeric" });
+}
+
 function formatPositionRange(start: string, end: string | null, isCurrent: boolean): string {
-  const fmt = (s: string) => {
-    const d = new Date(s);
-    return d.toLocaleString(undefined, { month: "short", year: "numeric" });
-  };
-  if (isCurrent) return `${fmt(start)} — Present`;
-  if (end) return `${fmt(start)} — ${fmt(end)}`;
-  return fmt(start);
+  if (isCurrent) return `${monthYear(start)} to now`;
+  if (end) return `${monthYear(start)} to ${monthYear(end)}`;
+  return monthYear(start);
 }

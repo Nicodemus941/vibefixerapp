@@ -37,7 +37,7 @@ export function StripeConnectSection({ status }: { status: StripeConnectStatus }
                 Connected and ready to receive payments
               </span>
             )}
-            {s === "onboarding" && "Stripe onboarding started — finish to receive payments."}
+            {s === "onboarding" && "Stripe onboarding started. Finish it to receive payments."}
             {s === "disabled" && (
               <span className="text-[var(--danger)]">
                 Stripe disabled this account. Check requirements.
