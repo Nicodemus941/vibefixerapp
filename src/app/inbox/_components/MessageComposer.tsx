@@ -1,34 +1,97 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useId, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Send, Sparkles, X } from "lucide-react";
-import { sendMessage } from "../actions";
+import { HandHeart, Loader2, Send, Sparkles, X } from "lucide-react";
+import { HELP_LINE_MIN, validateHelpLine } from "@/lib/cold-dm";
+import { sendMessage, type DmStatus } from "../actions";
 
 const MAX = 4000;
 
 export function MessageComposer({
   conversationId,
   initialDraft,
+  dm,
+  counterpartyName,
 }: {
   conversationId: string;
   initialDraft?: string | null;
+  /** Set only before the first message to someone new. */
+  dm?: DmStatus | null;
+  counterpartyName?: string;
 }) {
   const [body, setBody] = useState(initialDraft ?? "");
+  const [helpLine, setHelpLine] = useState("");
   const [draftBanner, setDraftBanner] = useState(Boolean(initialDraft));
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const helpRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const ids = useId();
+
+  const cold = Boolean(dm?.isCold);
+  const name = counterpartyName ?? "them";
+
+  if (cold && dm && !dm.hasOffer) {
+    return (
+      <div className="mb-3 rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface-1)] p-4">
+        <p className="flex items-center gap-2 text-sm font-semibold text-[var(--fg)]">
+          <HandHeart className="h-4 w-4 text-[var(--accent)]" aria-hidden />
+          Give first
+        </p>
+        <p className="mt-1 text-sm text-[var(--fg-muted)]">
+          To message someone new on Loop, list at least one thing you can do for others. {name} will
+          see it with your note.
+        </p>
+        <Link
+          href="/onboarding"
+          className="press-shrink mt-3 inline-flex h-11 items-center rounded-full bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--fg-on-accent)] hover:bg-[var(--accent-hover)]"
+        >
+          Add an offer
+        </Link>
+      </div>
+    );
+  }
+
+  if (cold && dm && dm.coldLeftToday <= 0) {
+    return (
+      <div className="mb-3 rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface-1)] p-4 text-sm text-[var(--fg-muted)]" role="status">
+        You have started 10 new conversations today. You can start more tomorrow. Replies in
+        conversations you already have are not limited.
+      </div>
+    );
+  }
+
+  const helpProblem = cold ? validateHelpLine(helpLine) : null;
+  const canSend = cold ? !helpProblem : Boolean(body.trim());
 
   function submit() {
+    if (pending) return;
+    if (cold && helpProblem) {
+      setError(helpProblem);
+      helpRef.current?.focus();
+      return;
+    }
     const text = body.trim();
-    if (!text || pending) return;
+    if (!cold && !text) return;
+    setError(null);
     const fd = new FormData();
     fd.set("conversation_id", conversationId);
     fd.set("body", text);
+    if (cold) {
+      fd.set("help_line", helpLine);
+      if (dm?.topOffer) fd.set("offer_id", dm.topOffer.id);
+    }
     startTransition(async () => {
-      await sendMessage(fd);
+      const r = await sendMessage(fd);
+      if (r.error) {
+        setError(r.error);
+        return;
+      }
       setBody("");
+      setHelpLine("");
       setDraftBanner(false);
       router.refresh();
       requestAnimationFrame(() => textareaRef.current?.focus());
@@ -59,12 +122,46 @@ export function MessageComposer({
           </button>
         </div>
       )}
+
+      {cold && (
+        <div className="space-y-1.5">
+          <label htmlFor={`${ids}-help`} className="block text-[13px] font-semibold text-[var(--fg)]">
+            How can you help them?
+          </label>
+          <input
+            ref={helpRef}
+            id={`${ids}-help`}
+            value={helpLine}
+            onChange={(e) => setHelpLine(e.target.value.slice(0, 300))}
+            required
+            minLength={HELP_LINE_MIN}
+            aria-describedby={`${ids}-help-hint`}
+            aria-invalid={Boolean(error && helpProblem)}
+            placeholder="I set up cold email for two B2B SaaS teams this quarter and can..."
+            disabled={pending}
+            className="w-full h-11 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-1)] px-3.5 text-[15px] text-[var(--fg)] placeholder:text-[var(--fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+          />
+          <p id={`${ids}-help-hint`} className="text-xs text-[var(--fg-subtle)]">
+            This is your first line. Lead with what you can do for {name}, not what you want.{" "}
+            {dm?.topOffer && (
+              <>
+                They will also see your offer{" "}
+                <span className="font-semibold text-[var(--offer-fg)]">{dm.topOffer.title}</span>.{" "}
+              </>
+            )}
+            <span className="num">{dm?.coldLeftToday ?? 0}</span> new conversation
+            {dm?.coldLeftToday === 1 ? "" : "s"} left today.
+          </p>
+        </div>
+      )}
+
       <div className="flex items-end gap-2">
         <textarea
           ref={textareaRef}
           value={body}
           onChange={(e) => setBody(e.target.value.slice(0, MAX))}
-          placeholder="Message…"
+          placeholder={cold ? "Add more if you like (optional)" : "Message…"}
+          aria-label={cold ? "More details, optional" : "Message"}
           rows={1}
           className="flex-1 resize-none bg-[var(--surface-2)] border border-[var(--border)] rounded-2xl px-4 py-2.5 text-sm text-[var(--fg)] placeholder:text-[var(--fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] max-h-40"
           disabled={pending}
@@ -83,7 +180,7 @@ export function MessageComposer({
         <button
           type="button"
           onClick={submit}
-          disabled={!body.trim() || pending}
+          disabled={!canSend || pending}
           aria-label="Send message"
           className="press-shrink shrink-0 inline-flex items-center justify-center h-11 w-11 rounded-full bg-[var(--accent)] text-[var(--fg-on-accent)] disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 transition-[filter]"
         >
@@ -94,6 +191,11 @@ export function MessageComposer({
           )}
         </button>
       </div>
+      {error && (
+        <p role="alert" className="text-sm text-[var(--danger)]">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

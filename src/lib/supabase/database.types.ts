@@ -554,25 +554,22 @@ export type Database = {
       };
       cold_dm_quota: {
         Row: {
-          limit_count: number;
-          month_year: string;
-          updated_at: string | null;
-          used: number | null;
           user_id: string;
+          day: string;
+          used: number;
+          updated_at: string;
         };
         Insert: {
-          limit_count?: number;
-          month_year: string;
-          updated_at?: string | null;
-          used?: number | null;
           user_id: string;
+          day: string;
+          used?: number;
+          updated_at?: string;
         };
         Update: {
-          limit_count?: number;
-          month_year?: string;
-          updated_at?: string | null;
-          used?: number | null;
           user_id?: string;
+          day?: string;
+          used?: number;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -926,6 +923,8 @@ export type Database = {
           created_at: string | null;
           id: string;
           is_ai_drafted: boolean | null;
+          is_cold: boolean;
+          offer_id: string | null;
           sender_id: string;
         };
         Insert: {
@@ -935,6 +934,8 @@ export type Database = {
           created_at?: string | null;
           id?: string;
           is_ai_drafted?: boolean | null;
+          is_cold?: boolean;
+          offer_id?: string | null;
           sender_id: string;
         };
         Update: {
@@ -944,6 +945,8 @@ export type Database = {
           created_at?: string | null;
           id?: string;
           is_ai_drafted?: boolean | null;
+          is_cold?: boolean;
+          offer_id?: string | null;
           sender_id?: string;
         };
         Relationships: [];
@@ -1698,6 +1701,10 @@ export type Database = {
           reply_rate: number | null;
           median_reply_seconds: number | null;
         }>;
+      };
+      viewer_dm_status: {
+        Args: { other: string };
+        Returns: Array<{ is_cold: boolean; has_offer: boolean; cold_left_today: number }>;
       };
       pending_matches_for: {
         Args: { viewer_id: string };

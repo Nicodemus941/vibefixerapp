@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/Avatar";
-import { fetchThread } from "../actions";
+import { fetchDmStatus, fetchThread } from "../actions";
 import { fetchEngagementsBetween } from "../engagement-actions";
 import { fetchDocumentsForConversation } from "@/app/documents/actions";
 import { fetchPendingReviews } from "@/app/reviews/actions";
@@ -50,7 +50,10 @@ export default async function ThreadPage({
     .eq("id", user.id)
     .maybeSingle();
 
-  const { header, messages, error } = await fetchThread(conversationId);
+  const { header, messages, offers, error } = await fetchThread(conversationId);
+  // Before the first message the composer may need the give first rules.
+  const dmStatus =
+    header && messages.length === 0 ? await fetchDmStatus(header.counterparty_id) : null;
   const [engagements, documents, pendingReviews] = header
     ? await Promise.all([
         fetchEngagementsBetween(header.counterparty_id),
@@ -147,6 +150,8 @@ export default async function ThreadPage({
           conversationId={conversationId}
           viewerId={user.id}
           initial={messages}
+          offers={offers}
+          counterpartyName={header.counterparty_name}
         />
       </main>
 
@@ -155,6 +160,8 @@ export default async function ThreadPage({
           <MessageComposer
             conversationId={conversationId}
             initialDraft={initialDraft}
+            dm={dmStatus}
+            counterpartyName={header.counterparty_name}
           />
         </div>
       </div>
