@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { toDisplayText } from "@/lib/post-text";
 import { redirect } from "next/navigation";
 import { Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -151,11 +152,11 @@ function PostRow({ post }: { post: SearchPost }) {
   return (
     <li>
       <Link
-        href={`/u/${post.user_id}`}
+        href={`/p/${post.id}`}
         className="block rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 hover:border-[var(--border-strong)] transition-colors"
       >
         <p className="text-sm text-[var(--fg)] leading-relaxed line-clamp-3 whitespace-pre-wrap">
-          {post.body}
+          {toDisplayText(post.body)}
         </p>
         <div className="mt-2 flex items-center gap-2 text-xs text-[var(--fg-subtle)] font-mono">
           <span>{timeAgo(post.created_at)}</span>

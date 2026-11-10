@@ -4,10 +4,8 @@ import { ArrowLeft, Lock, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { PostCard } from "@/app/feed/_components/PostCard";
-import {
-  fetchCommentSummaries,
-  fetchReactionState,
-} from "@/app/feed/actions";
+import { hydrateFeed } from "@/app/feed/data";
+import type { FeedPost } from "@/lib/feed-types";
 import { Avatar } from "@/components/Avatar";
 import { CoverBand } from "@/components/CoverBand";
 import { ImageUploadControl } from "@/components/ImageUploadControl";
@@ -62,10 +60,21 @@ export default async function GroupPage({
     );
   }
 
-  const postIds = posts.map((p) => p.id);
-  const [reactionState, commentSummaries, coverUrl] = await Promise.all([
-    fetchReactionState(postIds),
-    fetchCommentSummaries(postIds),
+  const feedPosts: FeedPost[] = posts.map((p) => ({
+    id: p.id,
+    user_id: p.user_id,
+    body: p.body,
+    hashtags: p.hashtags,
+    kind: p.kind,
+    created_at: p.created_at,
+    similarity: null,
+    author_display_name: p.author_display_name,
+    author_company_name: p.author_company_name,
+    author_industry: p.author_industry,
+    author_avatar_url: p.author_avatar_url,
+  }));
+  const [bundle, coverUrl] = await Promise.all([
+    hydrateFeed(supabase, user.id, feedPosts),
     fetchCoverUrl(supabase, "groups", group.id),
   ]);
   const isOwner = group.role === "owner";
@@ -171,26 +180,14 @@ export default async function GroupPage({
               <p className="text-sm text-[var(--fg-muted)]">No posts yet.</p>
             </div>
           ) : (
-            posts.map((p) => (
+            feedPosts.map((p) => (
               <PostCard
                 key={p.id}
                 viewerId={user.id}
                 viewerRole={viewer?.role ?? "user"}
-                reactionState={reactionState[p.id]}
-                commentSummary={commentSummaries[p.id]}
-                post={{
-                  id: p.id,
-                  user_id: p.user_id,
-                  body: p.body,
-                  hashtags: p.hashtags,
-                  kind: p.kind,
-                  created_at: p.created_at,
-                  similarity: null,
-                  author_display_name: p.author_display_name,
-                  author_company_name: p.author_company_name,
-                  author_industry: p.author_industry,
-                  author_avatar_url: p.author_avatar_url,
-                }}
+                bundle={bundle}
+                post={p}
+                allowRepost={false}
               />
             ))
           )}

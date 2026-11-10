@@ -1,15 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  AtSign,
   Bell,
-  Flame,
-  Hand,
-  Handshake,
+  MessageCircle,
   MessageSquare,
+  Repeat2,
   Sparkles,
   Check,
+  UserPlus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { REACTION_ICONS } from "../feed/_components/reaction-icons";
+import { REACTION_VERBS, isReactionKind } from "@/lib/reactions";
+import { toDisplayText } from "@/lib/post-text";
 import { FeedHeader } from "../feed/_components/FeedHeader";
 import {
   fetchNotifications,
@@ -103,7 +107,15 @@ function NotificationItem({ note }: { note: NotificationRow }) {
       : note.kind === "new_message"
       ? MessageSquare
       : note.kind === "new_reaction"
-      ? reactionIcon((note.payload?.reaction_kind as string) ?? "fire")
+      ? reactionIcon(note.payload?.reaction_kind)
+      : note.kind === "new_comment" || note.kind === "comment_reply"
+      ? MessageCircle
+      : note.kind === "mention"
+      ? AtSign
+      : note.kind === "new_repost"
+      ? Repeat2
+      : note.kind === "new_follower"
+      ? UserPlus
       : Bell;
 
   const href =
@@ -111,6 +123,15 @@ function NotificationItem({ note }: { note: NotificationRow }) {
       ? `/inbox/${note.related_conversation_id}`
       : note.kind === "new_match" || note.kind === "match_accepted"
       ? "/matches"
+      : note.related_post_id &&
+        (note.kind === "new_reaction" ||
+          note.kind === "new_comment" ||
+          note.kind === "comment_reply" ||
+          note.kind === "mention" ||
+          note.kind === "new_repost")
+      ? `/p/${note.related_post_id}`
+      : note.kind === "new_follower" && note.actor_id
+      ? `/u/${note.actor_id}`
       : note.kind === "new_reaction" && note.actor_id
       ? `/u/${note.actor_id}`
       : "/feed";
@@ -136,7 +157,7 @@ function NotificationItem({ note }: { note: NotificationRow }) {
           <p className="text-sm text-[var(--fg)] leading-relaxed">{body}</p>
           {note.payload?.preview ? (
             <p className="mt-1 text-sm text-[var(--fg-muted)] line-clamp-1">
-              &ldquo;{String(note.payload.preview)}&rdquo;
+              &ldquo;{toDisplayText(String(note.payload.preview))}&rdquo;
             </p>
           ) : null}
           <p className="mt-1 font-mono text-[10px] text-[var(--fg-subtle)]">
@@ -155,29 +176,45 @@ function describe(n: NotificationRow): string {
   const who = n.actor_name ?? "Someone";
   switch (n.kind) {
     case "new_match":
-      return `New match with ${who} — open Matches to accept or pass.`;
+      return `New match with ${who}. Open Matches to accept or pass.`;
     case "match_accepted":
       return `${who} accepted your match. Conversation is open.`;
     case "new_message":
       return `${who} sent you a message.`;
     case "new_reaction": {
-      const r = (n.payload?.reaction_kind as string) ?? "reacted";
-      const label =
-        r === "fire" ? "fired up" : r === "handshake" ? "offered help on" : r === "in" ? "is in on" : "reacted to";
+      const r = n.payload?.reaction_kind;
+      // Rows written before the reaction migration used fire/handshake/in.
+      const legacy: Record<string, string> = { fire: "liked", handshake: "supported", in: "celebrated" };
+      const label = isReactionKind(r)
+        ? REACTION_VERBS[r]
+        : typeof r === "string" && legacy[r]
+        ? legacy[r]
+        : "reacted to";
       return `${who} ${label} your post.`;
     }
+    case "new_comment":
+      return `${who} commented on your post.`;
+    case "comment_reply":
+      return `${who} replied to your comment.`;
+    case "mention":
+      return n.payload?.in_comment
+        ? `${who} mentioned you in a comment.`
+        : `${who} mentioned you in a post.`;
+    case "new_repost":
+      return n.payload?.quote ? `${who} quoted your post.` : `${who} reposted your post.`;
+    case "new_follower":
+      return `${who} started following you.`;
     default:
       return "Something happened.";
   }
 }
 
-function reactionIcon(kind: string) {
-  switch (kind) {
-    case "handshake":
-      return Handshake;
-    case "in":
-      return Hand;
-    default:
-      return Flame;
-  }
+function reactionIcon(kind: unknown) {
+  if (isReactionKind(kind)) return REACTION_ICONS[kind];
+  const legacy: Record<string, keyof typeof REACTION_ICONS> = {
+    fire: "like",
+    handshake: "support",
+    in: "celebrate",
+  };
+  return REACTION_ICONS[typeof kind === "string" ? legacy[kind] ?? "like" : "like"];
 }
