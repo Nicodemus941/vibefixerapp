@@ -1614,7 +1614,7 @@ export type Database = {
       };
       profile_social_counts: {
         Args: { target_user: string };
-        Returns: Array<{ followers: number; following: number; connections: number }>;
+        Returns: Array<{ followers: number | null; following: number | null; connections: number | null }>;
       };
       viewer_connections_at_org: {
         Args: { viewer_id: string; target_org: string };

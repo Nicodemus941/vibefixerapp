@@ -309,8 +309,8 @@ export default async function ProfilePage({
                   : undefined
               }
             />
-            <Stat label="Followers" value={String(socialCounts.followers)} />
-            <Stat label="Following" value={String(socialCounts.following)} />
+            <Stat label="Can help with" value={String(offers?.length ?? 0)} suffix={(offers?.length ?? 0) === 1 ? "offer" : "offers"} />
+            <Stat label="Looking for" value={String(needs?.length ?? 0)} suffix={(needs?.length ?? 0) === 1 ? "need" : "needs"} />
           </dl>
         </header>
 
@@ -612,15 +612,20 @@ export default async function ProfilePage({
               </div>
             )}
 
-            <div className="surface-card p-5">
-              <p className="eyebrow">Network</p>
-              <p className="mt-2 text-sm">
-                <span className="num font-semibold">{socialCounts.connections}</span>{" "}
-                <span className="text-[var(--fg-muted)]">
-                  connection{socialCounts.connections === 1 ? "" : "s"}
-                </span>
-              </p>
-            </div>
+            {isOwn && socialCounts.followers !== null && (
+              <div className="surface-card p-5">
+                <p className="eyebrow">Your network</p>
+                <p className="mt-2 text-sm text-[var(--fg-muted)]">
+                  <span className="num font-semibold text-[var(--fg)]">{socialCounts.followers}</span>{" "}
+                  follower{socialCounts.followers === 1 ? "" : "s"},{" "}
+                  <span className="num font-semibold text-[var(--fg)]">{socialCounts.following ?? 0}</span>{" "}
+                  following
+                </p>
+                <p className="mt-1 text-xs text-[var(--fg-subtle)]">
+                  Only you can see this. Loop never shows follower counts to anyone else.
+                </p>
+              </div>
+            )}
           </aside>
         </div>
       </main>
