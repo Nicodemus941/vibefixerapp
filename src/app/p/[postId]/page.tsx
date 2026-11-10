@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { FeedItem } from "@/app/feed/_components/PostCard";
-import { ImpressionTracker } from "@/app/feed/_components/ImpressionTracker";
 import { POST_COLUMNS, hydrateFeed, toFeedPost } from "@/app/feed/data";
 import { PublicHeader } from "@/components/PublicHeader";
 import { Avatar } from "@/components/Avatar";
@@ -187,7 +186,7 @@ export default async function PostPermalinkPage({
     const post = toFeedPost(row, author);
     const bundle = await hydrateFeed(supabase, user.id, [post], { commentMode: "full" });
     content = (
-      <ImpressionTracker>
+      <div>
         <FeedItem
           post={post}
           bundle={bundle}
@@ -196,7 +195,7 @@ export default async function PostPermalinkPage({
           commentMode="full"
           allowRepost={!row.group_id}
         />
-      </ImpressionTracker>
+      </div>
     );
   }
 

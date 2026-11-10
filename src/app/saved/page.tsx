@@ -4,7 +4,6 @@ import { Bookmark } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { FeedItem } from "@/app/feed/_components/PostCard";
-import { ImpressionTracker } from "@/app/feed/_components/ImpressionTracker";
 import { hydrateFeed, loadPostsByIds } from "@/app/feed/data";
 
 export const dynamic = "force-dynamic";
@@ -65,11 +64,11 @@ export default async function SavedPostsPage() {
             </Link>
           </div>
         ) : (
-          <ImpressionTracker className="space-y-4">
+          <div className="space-y-4">
             {posts.map((p) => (
               <FeedItem key={p.id} post={p} bundle={bundle} viewerId={user.id} viewerRole={viewer?.role ?? "user"} />
             ))}
-          </ImpressionTracker>
+          </div>
         )}
       </main>
     </div>

@@ -4,7 +4,6 @@ import { Award, Briefcase, Building2, GraduationCap, MessageSquare } from "lucid
 import { createClient } from "@/lib/supabase/server";
 import { FeedHeader } from "@/app/feed/_components/FeedHeader";
 import { FeedItem } from "@/app/feed/_components/PostCard";
-import { ImpressionTracker } from "@/app/feed/_components/ImpressionTracker";
 import { POST_COLUMNS, hydrateFeed, toFeedPost } from "@/app/feed/data";
 import { startDmAndRedirect } from "@/app/inbox/actions";
 import { fetchReviewsForUser } from "@/app/reviews/actions";
@@ -452,7 +451,7 @@ export default async function ProfilePage({
         <section aria-label="Posts" className="space-y-3">
           <p className="eyebrow">Posts</p>
           {posts && posts.length > 0 ? (
-            <ImpressionTracker className="space-y-4">
+            <div className="space-y-4">
               {feedPosts.map((p) => (
                 <FeedItem
                   key={p.id}
@@ -462,7 +461,7 @@ export default async function ProfilePage({
                   viewerRole={viewerProfile?.role ?? "user"}
                 />
               ))}
-            </ImpressionTracker>
+            </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-1)]/40 p-6 text-center text-sm text-[var(--fg-muted)]">
               {isOwn ? (

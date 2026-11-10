@@ -593,25 +593,3 @@ export async function votePoll(input: {
   return {};
 }
 
-// ============================================
-// Impressions
-// ============================================
-
-export async function recordImpressions(postIds: string[]): Promise<void> {
-  const ids = Array.from(new Set(postIds.filter((id) => /^[0-9a-f-]{36}$/.test(id)))).slice(0, 50);
-  if (ids.length === 0) return;
-  const { supabase, user } = await requireUser();
-  if (!user) return;
-  // Only posts the viewer can see and didn't write (RLS would reject the
-  // whole batch otherwise).
-  const { data: visible } = await supabase
-    .from("posts")
-    .select("id")
-    .in("id", ids)
-    .neq("user_id", user.id);
-  const rows = (visible ?? []).map((p) => ({ post_id: p.id, viewer_id: user.id }));
-  if (rows.length === 0) return;
-  await supabase
-    .from("post_impressions")
-    .upsert(rows, { onConflict: "post_id,viewer_id", ignoreDuplicates: true });
-}

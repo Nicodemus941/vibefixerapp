@@ -7,7 +7,6 @@ import { hydrateFeed } from "./data";
 import type { FeedView } from "@/lib/feed-types";
 import { Composer } from "./_components/Composer";
 import { FeedItem } from "./_components/PostCard";
-import { ImpressionTracker } from "./_components/ImpressionTracker";
 import { FeedHeader } from "./_components/FeedHeader";
 import { ReciprocityBanner } from "./_components/ReciprocityBanner";
 import { LiveFeedBanner } from "./_components/LiveFeedBanner";
@@ -215,7 +214,7 @@ export default async function FeedPage({
             </p>
           )}
           {!feedError && posts.length === 0 && <EmptyState tag={tag} view={view} />}
-          <ImpressionTracker className="space-y-4">
+          <div className="space-y-4">
             {posts.map((p, idx) => (
               <div key={p.id}>
                 <FeedItem post={p} bundle={bundle} viewerId={user.id} viewerRole={role} />
@@ -225,7 +224,7 @@ export default async function FeedPage({
                 {idx === 4 && <div className="mt-4"><SponsoredCard /></div>}
               </div>
             ))}
-          </ImpressionTracker>
+          </div>
         </section>
       </main>
     </div>

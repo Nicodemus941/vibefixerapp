@@ -235,7 +235,7 @@ export function PostCard({
         repostCount={extras.repostCount}
         myRepostId={extras.myRepostId}
         allowRepost={allowRepost}
-        views={isOwn ? extras.views ?? 0 : null}
+        views={null}
         quotePreview={<QuotedPost post={post} />}
         messageSlot={
           !isOwn ? (

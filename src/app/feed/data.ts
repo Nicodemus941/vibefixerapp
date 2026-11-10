@@ -271,23 +271,16 @@ async function loadExtras(
   for (const id of ids) out[id] = { repostCount: 0, myRepostId: null, saved: false, views: null, poll: null };
   if (ids.length === 0) return out;
 
-  const ownIds = ids.filter((id) => byId[id]?.user_id === viewerId);
-
-  const [counts, mine, saves, views, polls] = await Promise.all([
+  const [counts, mine, saves, polls] = await Promise.all([
     supabase.rpc("post_repost_counts", { post_ids: ids }),
     supabase.from("posts").select("id, repost_of_id").eq("user_id", viewerId).in("repost_of_id", ids),
     supabase.from("post_saves").select("post_id").eq("user_id", viewerId).in("post_id", ids),
-    ownIds.length > 0
-      ? supabase.rpc("post_view_counts", { post_ids: ownIds })
-      : Promise.resolve({ data: [] as Array<{ post_id: string; views: number }> }),
     supabase.rpc("poll_results", { post_ids: ids }),
   ]);
 
   for (const r of counts.data ?? []) if (out[r.post_id]) out[r.post_id].repostCount = Number(r.reposts);
   for (const r of mine.data ?? []) if (r.repost_of_id && out[r.repost_of_id]) out[r.repost_of_id].myRepostId = r.id;
   for (const r of saves.data ?? []) if (out[r.post_id]) out[r.post_id].saved = true;
-  for (const id of ownIds) out[id].views = 0;
-  for (const r of views.data ?? []) if (out[r.post_id]) out[r.post_id].views = Number(r.views);
   for (const r of polls.data ?? []) {
     if (!out[r.post_id]) continue;
     out[r.post_id].poll = {
