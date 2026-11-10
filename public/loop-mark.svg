@@ -1,4 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="64" height="64">
-  <!-- Loop mark: open ring in Loop green (Fable redesign 2026-11-10) -->
-  <circle cx="14" cy="14" r="9.5" fill="none" stroke="#0E6B4F" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="46 14" transform="rotate(-50 14 14)" />
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"  width="64" height="64"><path fill="#0E6B4F" transform="translate(0.000 0.000)" d="M7.000 24.000 L18.500 24.000 L18.500 45.500 L40.000 45.500 L40.000 57.000 L7.000 57.000 Z M57.000 40.000 L45.500 40.000 L45.500 18.500 L24.000 18.500 L24.000 7.000 L57.000 7.000 Z"/></svg>
