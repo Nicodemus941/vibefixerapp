@@ -4,7 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/feed";
+  const rawNext = url.searchParams.get("next") ?? "/feed";
+  // Same-site paths only: "//evil.com" or "/\\evil.com" would leave the site.
+  const next =
+    rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\")
+      ? rawNext
+      : "/feed";
 
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=missing_code", url));
