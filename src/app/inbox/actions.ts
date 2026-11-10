@@ -27,6 +27,23 @@ export async function startDmAndRedirect(otherUserId: string, origin: "post" | "
   redirect(`/inbox/${data}`);
 }
 
+// "I can help" on a need: opens the DM with its author and records the
+// offer of help (it counts toward Most helpful once they reply).
+export async function offerHelpAndRedirect(postId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect(`/login?next=/p/${postId}`);
+
+  const { data, error } = await supabase.rpc("offer_help", { target_post: postId });
+  if (error || !data) {
+    redirect(`/feed?dm_error=${encodeURIComponent(error?.message ?? "That need is no longer available.")}`);
+  }
+  await logEvent("help_offered", user.id, { post_id: postId });
+  redirect(`/inbox/${data}?help=${postId}`);
+}
+
 export async function sendMessage(formData: FormData): Promise<{ error?: string }> {
   const conversationId = String(formData.get("conversation_id") ?? "");
   const helpLine = String(formData.get("help_line") ?? "");

@@ -552,6 +552,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      help_offers: {
+        Row: {
+          id: string;
+          helper_id: string;
+          post_id: string;
+          need_author_id: string;
+          conversation_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          helper_id: string;
+          post_id: string;
+          need_author_id: string;
+          conversation_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          helper_id?: string;
+          post_id?: string;
+          need_author_id?: string;
+          conversation_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       cold_dm_quota: {
         Row: {
           user_id: string;
@@ -1705,6 +1732,24 @@ export type Database = {
       viewer_dm_status: {
         Args: { other: string };
         Returns: Array<{ is_cold: boolean; has_offer: boolean; cold_left_today: number }>;
+      };
+      offer_help: {
+        Args: { target_post: string };
+        Returns: string;
+      };
+      leaderboard_most_helpful: {
+        Args: { limit_count?: number };
+        Returns: Array<{
+          user_id: string;
+          display_name: string;
+          company_name: string | null;
+          avatar_url: string | null;
+          deals_delivered: number;
+          needs_helped: number;
+          reviews_received: number;
+          avg_rating: number | null;
+          score: number;
+        }>;
       };
       pending_matches_for: {
         Args: { viewer_id: string };
